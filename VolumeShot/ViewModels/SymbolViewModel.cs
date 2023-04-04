@@ -81,8 +81,37 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(() =>
             {
-
+                if (Symbol.BestAskPriceLast > 0m)
+                {
+                    decimal price = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.BufferUpper);
+                    if (price <= Symbol.BestBidPrice)
+                    {
+                        if (!Symbol.IsOpenLongOrder)
+                        {
+                            Symbol.IsOpenLongOrder = true;
+                            Symbol.OpenLongOrderPrice = Symbol.BestAskPrice;
+                        }
+                    }
+                }
+                if (Symbol.BestBidPriceLast > 0m)
+                {
+                    decimal price = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.BufferLower);
+                    if (price >= Symbol.BestAskPrice)
+                    {
+                        if (!Symbol.IsOpenShortOrder)
+                        {
+                            Symbol.IsOpenShortOrder = true;
+                            Symbol.OpenShortOrderPrice = Symbol.BestBidPrice;
+                        }
+                    }
+                }
+                Symbol.BestAskPriceLast = Symbol.BestAskPrice;
+                Symbol.BestBidPriceLast = Symbol.BestBidPrice;
             });
+        }
+        private async Task CheckDistanceUpperAsync()
+        {
+
         }
         private async Task CheckShotAsync()
         {
