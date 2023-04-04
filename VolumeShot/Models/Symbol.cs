@@ -52,24 +52,24 @@
                 OnPropertyChanged("BestBidPriceLast");
             }
         }
-        private decimal _percentAsk { get; set; } = 0.3m;
-        public decimal PercentAsk
+        private decimal _distanceLong { get; set; } = 0.3m;
+        public decimal DistanceLong
         {
-            get { return _percentAsk; }
+            get { return _distanceLong; }
             set
             {
-                _percentAsk = value;
-                OnPropertyChanged("PercentAsk");
+                _distanceLong = value;
+                OnPropertyChanged("DistanceLong");
             }
         }
-        private decimal _percentBid { get; set; } = 0.3m;
-        public decimal PercentBid
+        private decimal _distanceShort { get; set; } = 0.3m;
+        public decimal DistanceShort
         {
-            get { return _percentBid; }
+            get { return _distanceShort; }
             set
             {
-                _percentBid = value;
-                OnPropertyChanged("PercentBid");
+                _distanceShort = value;
+                OnPropertyChanged("DistanceShort");
             }
         }
         private decimal _openLongOrderPrice { get; set; }

@@ -82,7 +82,7 @@ namespace VolumeShot.ViewModels
             await Task.Run(() => {
                 if (Symbol.BestAskPriceLast > 0m)
                 {
-                    decimal price = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.PercentAsk);
+                    decimal price = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.DistanceLong);
                     if (price <= Symbol.BestBidPrice)
                     {
                         if (!Symbol.IsOpenLongOrder)
@@ -94,7 +94,7 @@ namespace VolumeShot.ViewModels
                 }
                 if(Symbol.BestBidPriceLast > 0m)
                 {
-                    decimal price = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.PercentBid);
+                    decimal price = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.DistanceShort);
                     if (price >= Symbol.BestAskPrice)
                     {
                         if (!Symbol.IsOpenShortOrder)
