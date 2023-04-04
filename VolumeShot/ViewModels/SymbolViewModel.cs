@@ -77,12 +77,19 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
+        private async Task SetBufferAsync()
+        {
+            await Task.Run(() =>
+            {
+
+            });
+        }
         private async Task CheckShotAsync()
         {
             await Task.Run(() => {
                 if (Symbol.BestAskPriceLast > 0m)
                 {
-                    decimal price = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.DistanceLong);
+                    decimal price = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.DistanceUpper);
                     if (price <= Symbol.BestBidPrice)
                     {
                         if (!Symbol.IsOpenLongOrder)
@@ -94,7 +101,7 @@ namespace VolumeShot.ViewModels
                 }
                 if(Symbol.BestBidPriceLast > 0m)
                 {
-                    decimal price = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.DistanceShort);
+                    decimal price = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.DistanceLower);
                     if (price >= Symbol.BestAskPrice)
                     {
                         if (!Symbol.IsOpenShortOrder)

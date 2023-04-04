@@ -52,24 +52,44 @@
                 OnPropertyChanged("BestBidPriceLast");
             }
         }
-        private decimal _distanceLong { get; set; } = 0.3m;
-        public decimal DistanceLong
+        private decimal _distanceUpper { get; set; } = 0.3m;
+        public decimal DistanceUpper
         {
-            get { return _distanceLong; }
+            get { return _distanceUpper; }
             set
             {
-                _distanceLong = value;
-                OnPropertyChanged("DistanceLong");
+                _distanceUpper = value;
+                OnPropertyChanged("DistanceUpper");
             }
         }
-        private decimal _distanceShort { get; set; } = 0.3m;
-        public decimal DistanceShort
+        private decimal _distanceLower { get; set; } = 0.3m;
+        public decimal DistanceLower
         {
-            get { return _distanceShort; }
+            get { return _distanceLower; }
             set
             {
-                _distanceShort = value;
-                OnPropertyChanged("DistanceShort");
+                _distanceLower = value;
+                OnPropertyChanged("DistanceLower");
+            }
+        }
+        private decimal _bufferUpper { get; set; } = 0.15m;
+        public decimal BufferUpper
+        {
+            get { return _bufferUpper; }
+            set
+            {
+                _bufferUpper = value;
+                OnPropertyChanged("BufferUpper");
+            }
+        }
+        private decimal _bufferLower { get; set; } = 0.15m;
+        public decimal BufferLower
+        {
+            get { return _bufferLower; }
+            set
+            {
+                _bufferLower = value;
+                OnPropertyChanged("BufferLower");
             }
         }
         private decimal _openLongOrderPrice { get; set; }
