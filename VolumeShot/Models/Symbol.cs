@@ -1,7 +1,10 @@
-﻿namespace VolumeShot.Models
+﻿using System.Collections.Generic;
+
+namespace VolumeShot.Models
 {
     public class Symbol : Changed
     {
+        public List<Order> Orders { get; set; } = new();
         private string _name { get; set; }
         public string Name
         {
