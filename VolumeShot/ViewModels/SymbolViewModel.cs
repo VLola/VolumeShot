@@ -83,32 +83,36 @@ namespace VolumeShot.ViewModels
         }
         private void NewBet(decimal openPrice)
         {
-            Symbol.Bet = new();
-            Symbol.Bet.OpenTime = DateTime.UtcNow;
-            Symbol.Bet.OpenPrice = openPrice;
-            Symbol.Bet.PriceBufferLower = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.BufferLower);
-            Symbol.Bet.PriceDistanceLower = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.DistanceLower);
-            Symbol.Bet.PriceBufferUpper = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.BufferUpper);
-            Symbol.Bet.PriceDistanceUpper = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.DistanceUpper);
+            Bet bet = new();
+            bet.OpenTime = DateTime.UtcNow;
+            bet.OpenPrice = openPrice;
+            bet.PriceBufferLower = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.BufferLower);
+            bet.PriceDistanceLower = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.DistanceLower);
+            bet.PriceBufferUpper = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.BufferUpper);
+            bet.PriceDistanceUpper = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.DistanceUpper);
             if (Symbol.IsOpenLongOrder)
             {
-                Symbol.Bet.PriceStopLoss = Symbol.OpenLongOrderPrice - (Symbol.OpenLongOrderPrice / 100 * Symbol.StopLoss);
-                Symbol.Bet.PriceTakeProfit = Symbol.OpenLongOrderPrice + (Symbol.OpenLongOrderPrice / 100 * Symbol.TakeProfit);
+                bet.PriceStopLoss = Symbol.OpenLongOrderPrice - (Symbol.OpenLongOrderPrice / 100 * Symbol.StopLoss);
+                bet.PriceTakeProfit = Symbol.OpenLongOrderPrice + (Symbol.OpenLongOrderPrice / 100 * Symbol.TakeProfit);
             }
             if (Symbol.IsOpenShortOrder)
             {
-                Symbol.Bet.PriceStopLoss = Symbol.OpenShortOrderPrice + (Symbol.OpenShortOrderPrice / 100 * Symbol.StopLoss);
-                Symbol.Bet.PriceTakeProfit = Symbol.OpenShortOrderPrice - (Symbol.OpenShortOrderPrice / 100 * Symbol.TakeProfit);
+                bet.PriceStopLoss = Symbol.OpenShortOrderPrice + (Symbol.OpenShortOrderPrice / 100 * Symbol.StopLoss);
+                bet.PriceTakeProfit = Symbol.OpenShortOrderPrice - (Symbol.OpenShortOrderPrice / 100 * Symbol.TakeProfit);
             }
+            App.Current.Dispatcher.Invoke(new Action(() => {
+                Symbol.Bets.Add(bet);
+            }));
         }
         private void CloseBet(decimal closePrice)
         {
-            Symbol.Bet.CloseTime = DateTime.UtcNow;
-            Symbol.Bet.ClosePrice = closePrice;
+            int count = Symbol.Bets.Count - 1;
+            Bet bet = Symbol.Bets[count];
+            bet.CloseTime = DateTime.UtcNow;
+            bet.ClosePrice = closePrice;
             Order[] orders = Symbol.Orders.ToArray();
-            Symbol.Bet.Orders = orders.Where(order => order.DateTime >= Symbol.Bet.OpenTime.AddSeconds(-20));
+            bet.Orders = orders.Where(order => order.DateTime >= bet.OpenTime.AddSeconds(-20));
             Symbol.Orders.Clear();
-            Symbol.Bets.Add(Symbol.Bet);
         }
 
         private async void CheckBuffersAsync()

@@ -13,32 +13,36 @@ namespace VolumeShot.Views
         {
             InitializeComponent();
             Chart();
-            double bufferLower = Decimal.ToDouble(bet.PriceBufferLower);
-            double bufferUpper = Decimal.ToDouble(bet.PriceBufferUpper);
-            double distanceLower = Decimal.ToDouble(bet.PriceDistanceLower);
-            double distanceUpper = Decimal.ToDouble(bet.PriceDistanceUpper);
-            double takeProfit = Decimal.ToDouble(bet.PriceTakeProfit);
-            double stopLoss = Decimal.ToDouble(bet.PriceStopLoss);
-            double[] xPrice = bet.Orders.Select(order=>order.DateTime.ToOADate()).ToArray();
-            double[] asks = bet.Orders.Select(order=>Decimal.ToDouble(order.BestAskPrice)).ToArray();
-            double[] bids = bet.Orders.Select(order=>Decimal.ToDouble(order.BestBidPrice)).ToArray();
-
-            double[] xBuffer = { bet.Orders.ToList()[0].DateTime.ToOADate(), bet.OpenTime.ToOADate() };
-            double[] xDictance = { bet.OpenTime.ToOADate(), bet.CloseTime.ToOADate() };
-            plt.Dispatcher.Invoke(() =>
+            if(bet.Orders != null)
             {
-                plt.Plot.AddScatter(xPrice, asks, color: Color.Red, lineWidth: 0, markerSize: 3);
-                plt.Plot.AddScatter(xPrice, bids, color: Color.Green, lineWidth: 0, markerSize: 3);
-                plt.Plot.AddScatterLines(xBuffer, new double[] { bufferLower, bufferLower }, Color.Gray, lineStyle: LineStyle.Dash);
-                plt.Plot.AddScatterLines(xBuffer, new double[] { bufferUpper, bufferUpper }, Color.Gray, lineStyle: LineStyle.Dash);
-                plt.Plot.AddScatterLines(xDictance, new double[] { distanceLower, distanceLower }, Color.Orange, lineStyle: LineStyle.Dash);
-                plt.Plot.AddScatterLines(xDictance, new double[] { distanceUpper, distanceUpper }, Color.Orange, lineStyle: LineStyle.Dash);
-                plt.Plot.AddScatterLines(xDictance, new double[] { takeProfit, takeProfit }, Color.Green, lineStyle: LineStyle.Dash);
-                plt.Plot.AddScatterLines(xDictance, new double[] { stopLoss, stopLoss }, Color.Red, lineStyle: LineStyle.Dash);
-                plt.Plot.AddPoint(bet.OpenTime.ToOADate(), Decimal.ToDouble(bet.OpenPrice), color: Color.Orange, size: 8);
-                plt.Plot.AddPoint(bet.CloseTime.ToOADate(), Decimal.ToDouble(bet.ClosePrice), color: Color.DeepSkyBlue, size: 8);
-                plt.Render();
-            });
+                double bufferLower = Decimal.ToDouble(bet.PriceBufferLower);
+                double bufferUpper = Decimal.ToDouble(bet.PriceBufferUpper);
+                double distanceLower = Decimal.ToDouble(bet.PriceDistanceLower);
+                double distanceUpper = Decimal.ToDouble(bet.PriceDistanceUpper);
+                double takeProfit = Decimal.ToDouble(bet.PriceTakeProfit);
+                double stopLoss = Decimal.ToDouble(bet.PriceStopLoss);
+                double[] xPrice = bet.Orders.Select(order => order.DateTime.ToOADate()).ToArray();
+                double[] asks = bet.Orders.Select(order => Decimal.ToDouble(order.BestAskPrice)).ToArray();
+                double[] bids = bet.Orders.Select(order => Decimal.ToDouble(order.BestBidPrice)).ToArray();
+
+                double[] xBuffer = { bet.Orders.ToList()[0].DateTime.ToOADate(), bet.OpenTime.ToOADate() };
+                double[] xDictance = { bet.OpenTime.ToOADate(), bet.CloseTime.ToOADate() };
+                plt.Dispatcher.Invoke(() =>
+                {
+                    plt.Plot.AddScatter(xPrice, asks, color: Color.Red, lineWidth: 0, markerSize: 3);
+                    plt.Plot.AddScatter(xPrice, bids, color: Color.Green, lineWidth: 0, markerSize: 3);
+                    plt.Plot.AddScatterLines(xBuffer, new double[] { bufferLower, bufferLower }, Color.Gray, lineStyle: LineStyle.Dash, label: "buffer");
+                    plt.Plot.AddScatterLines(xBuffer, new double[] { bufferUpper, bufferUpper }, Color.Gray, lineStyle: LineStyle.Dash);
+                    plt.Plot.AddScatterLines(xDictance, new double[] { distanceLower, distanceLower }, Color.Orange, lineStyle: LineStyle.Dash, label: "distance");
+                    plt.Plot.AddScatterLines(xDictance, new double[] { distanceUpper, distanceUpper }, Color.Orange, lineStyle: LineStyle.Dash);
+                    plt.Plot.AddScatterLines(xDictance, new double[] { takeProfit, takeProfit }, Color.Green, lineStyle: LineStyle.Dash, label: "take profit");
+                    plt.Plot.AddScatterLines(xDictance, new double[] { stopLoss, stopLoss }, Color.Red, lineStyle: LineStyle.Dash, label: "stop loss");
+                    plt.Plot.AddPoint(bet.OpenTime.ToOADate(), Decimal.ToDouble(bet.OpenPrice), color: Color.Orange, size: 8);
+                    plt.Plot.AddPoint(bet.CloseTime.ToOADate(), Decimal.ToDouble(bet.ClosePrice), color: Color.DeepSkyBlue, size: 8);
+                    plt.Render();
+                });
+            }
+            
         }
         private void Chart()
         {
