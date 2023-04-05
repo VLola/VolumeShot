@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace VolumeShot.Models
 {
     public class Symbol : Changed
     {
+        public Bet Bet { get; set; } = new();
+        public ObservableCollection<Bet> Bets { get; set; } = new();
         public List<Order> Orders { get; set; } = new();
         private string _name { get; set; }
         public string Name

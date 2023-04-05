@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using VolumeShot.Command;
+using VolumeShot.Views;
 
 namespace VolumeShot.Models
 {
@@ -6,10 +9,26 @@ namespace VolumeShot.Models
     {
         public IEnumerable<Order>? Orders { get; set; }
         public decimal PriceBufferLower { get; set; }
-        public decimal PriceBuffeUpper { get; set; }
+        public decimal PriceBufferUpper { get; set; }
         public decimal PriceDistanceLower { get; set; }
         public decimal PriceDistanceUpper { get; set; }
         public decimal PriceTakeProfit { get; set; }
         public decimal PriceStopLoss { get; set; }
+        public DateTime OpenTime { get; set; }
+        public DateTime CloseTime { get; set; }
+        public decimal OpenPrice { get; set; }
+        public decimal ClosePrice { get; set; }
+
+        private RelayCommand? _showCommand;
+        public RelayCommand ShowCommand
+        {
+            get
+            {
+                return _showCommand ?? (_showCommand = new RelayCommand(obj => {
+                    ChartWindow chartWindow = new(this);
+                    chartWindow.Show();
+                }));
+            }
+        }
     }
 }

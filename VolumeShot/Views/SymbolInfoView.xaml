@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="VolumeShot.Views.MainView"
+﻿<UserControl x:Class="VolumeShot.Views.SymbolInfoView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -7,17 +7,16 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="5*"/>
-            <ColumnDefinition Width="2*"/>
-        </Grid.ColumnDefinitions>
-        <ListBox Grid.Column="0" ItemsSource="{Binding Path=Main.Symbols}" SelectedItem="{Binding Path=Main.SelectedSymbol}" HorizontalContentAlignment="Stretch">
+        <ListBox ItemsSource="{Binding Path=Main.SelectedSymbol.Bets}" HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <local:SymbolView/>
+                    <StackPanel>
+                        <TextBlock Text="{Binding Path=OpenTime}"/>
+                        <TextBlock Text="{Binding Path=CloseTime}"/>
+                        <Button Content="Show" Command="{Binding Path=ShowCommand}"/>
+                    </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <local:SymbolInfoView Grid.Column="1"/>
     </Grid>
 </UserControl>

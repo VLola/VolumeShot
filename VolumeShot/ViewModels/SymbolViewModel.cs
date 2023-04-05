@@ -1,6 +1,7 @@
 ﻿using Binance.Net.Clients;
 using Binance.Net.Objects.Models.Futures;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using VolumeShot.Models;
 
@@ -25,6 +26,9 @@ namespace VolumeShot.ViewModels
                     decimal price = Symbol.OpenShortOrderPrice + (Symbol.OpenShortOrderPrice / 100 * Symbol.StopLoss);
                     if (Symbol.BestBidPrice >= price)
                     {
+                        CloseBet(Symbol.BestBidPrice);
+                        Symbol.BestAskPriceLast = Symbol.BestAskPrice;
+                        Symbol.BestBidPriceLast = Symbol.BestBidPrice;
                         Symbol.ShortMinus += 1;
                         Symbol.IsOpenShortOrder = false;
                     }
@@ -35,6 +39,9 @@ namespace VolumeShot.ViewModels
                     decimal price = Symbol.OpenLongOrderPrice + (Symbol.OpenLongOrderPrice / 100 * Symbol.TakeProfit);
                     if (Symbol.BestBidPrice >= price)
                     {
+                        CloseBet(Symbol.BestBidPrice);
+                        Symbol.BestAskPriceLast = Symbol.BestAskPrice;
+                        Symbol.BestBidPriceLast = Symbol.BestBidPrice;
                         Symbol.LongPlus += 1;
                         Symbol.IsOpenLongOrder = false;
                     }
@@ -48,6 +55,9 @@ namespace VolumeShot.ViewModels
                     decimal price = Symbol.OpenShortOrderPrice - (Symbol.OpenShortOrderPrice / 100 * Symbol.TakeProfit);
                     if (Symbol.BestAskPrice <= price)
                     {
+                        CloseBet(Symbol.BestAskPrice);
+                        Symbol.BestAskPriceLast = Symbol.BestAskPrice;
+                        Symbol.BestBidPriceLast = Symbol.BestBidPrice;
                         Symbol.ShortPlus += 1;
                         Symbol.IsOpenShortOrder = false;
                     }
@@ -55,9 +65,12 @@ namespace VolumeShot.ViewModels
                 if (Symbol.IsOpenLongOrder)
                 {
                     // Stop Loss Long
-                    decimal price = Symbol.OpenLongOrderPrice + (Symbol.OpenLongOrderPrice / 100 * Symbol.StopLoss);
+                    decimal price = Symbol.OpenLongOrderPrice - (Symbol.OpenLongOrderPrice / 100 * Symbol.StopLoss);
                     if (Symbol.BestAskPrice <= price)
                     {
+                        CloseBet(Symbol.BestAskPrice);
+                        Symbol.BestAskPriceLast = Symbol.BestAskPrice;
+                        Symbol.BestBidPriceLast = Symbol.BestBidPrice;
                         Symbol.LongMinus += 1;
                         Symbol.IsOpenLongOrder = false;
                     }
@@ -68,6 +81,35 @@ namespace VolumeShot.ViewModels
                 CheckBuffersAsync();
             }
         }
+        private void NewBet(decimal openPrice)
+        {
+            Symbol.Bet = new();
+            Symbol.Bet.OpenTime = DateTime.UtcNow;
+            Symbol.Bet.OpenPrice = openPrice;
+            Symbol.Bet.PriceBufferLower = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.BufferLower);
+            Symbol.Bet.PriceDistanceLower = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.DistanceLower);
+            Symbol.Bet.PriceBufferUpper = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.BufferUpper);
+            Symbol.Bet.PriceDistanceUpper = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.DistanceUpper);
+            if (Symbol.IsOpenLongOrder)
+            {
+                Symbol.Bet.PriceStopLoss = Symbol.OpenLongOrderPrice - (Symbol.OpenLongOrderPrice / 100 * Symbol.StopLoss);
+                Symbol.Bet.PriceTakeProfit = Symbol.OpenLongOrderPrice + (Symbol.OpenLongOrderPrice / 100 * Symbol.TakeProfit);
+            }
+            if (Symbol.IsOpenShortOrder)
+            {
+                Symbol.Bet.PriceStopLoss = Symbol.OpenShortOrderPrice + (Symbol.OpenShortOrderPrice / 100 * Symbol.StopLoss);
+                Symbol.Bet.PriceTakeProfit = Symbol.OpenShortOrderPrice - (Symbol.OpenShortOrderPrice / 100 * Symbol.TakeProfit);
+            }
+        }
+        private void CloseBet(decimal closePrice)
+        {
+            Symbol.Bet.CloseTime = DateTime.UtcNow;
+            Symbol.Bet.ClosePrice = closePrice;
+            Order[] orders = Symbol.Orders.ToArray();
+            Symbol.Bet.Orders = orders.Where(order => order.DateTime >= Symbol.Bet.OpenTime.AddSeconds(-20));
+            Symbol.Orders.Clear();
+            Symbol.Bets.Add(Symbol.Bet);
+        }
 
         private async void CheckBuffersAsync()
         {
@@ -77,17 +119,38 @@ namespace VolumeShot.ViewModels
                 await CheckBufferLowerAsync();
             });
         }
+        private async void ReBuffers()
+        {
+            await Task.Run(async() =>
+            {
+                await Task.Delay(1500);
+                if (!Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
+                {
+                    Symbol.BestAskPriceLast = Symbol.BestAskPrice;
+                    Symbol.BestBidPriceLast = Symbol.BestBidPrice;
+                }
+            });
+        }
         private async Task CheckBufferLowerAsync()
         {
             await Task.Run(async () =>
             {
-                if (Symbol.BestBidPriceLast > 0m && !Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
+                if (Symbol.BestBidPriceLast > 0m)
                 {
-                    decimal price = Symbol.BestBidPriceLast + (Symbol.BestBidPriceLast / 100 * Symbol.BufferLower);
-                    if (price >= Symbol.BestAskPrice)
+                    if(!Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
                     {
-                        await CheckDistanceLowerAsync();
+                        decimal price = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.BufferLower);
+                        if (price >= Symbol.BestAskPrice)
+                        {
+                            ReBuffers();
+                            await CheckDistanceLowerAsync();
+                        }
                     }
+                }
+                else
+                {
+                    Symbol.BestAskPriceLast = Symbol.BestAskPrice;
+                    Symbol.BestBidPriceLast = Symbol.BestBidPrice;
                 }
             });
         }
@@ -95,22 +158,14 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                await Task.Delay(1500);
-                decimal price = Symbol.BestBidPriceLast + (Symbol.BestBidPriceLast / 100 * Symbol.DistanceLower);
+                decimal price = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.DistanceLower);
                 if (price >= Symbol.BestAskPrice)
                 {
                     if (!Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
                     {
                         Symbol.IsOpenLongOrder = true;
                         Symbol.OpenLongOrderPrice = Symbol.BestAskPrice;
-                    }
-                }
-                else
-                {
-                    if (!Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
-                    {
-                        Symbol.BestAskPriceLast = Symbol.BestAskPrice;
-                        Symbol.BestBidPriceLast = Symbol.BestBidPrice;
+                        NewBet(Symbol.BestAskPrice);
                     }
                 }
             });
@@ -119,13 +174,22 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                if (Symbol.BestAskPriceLast > 0m && !Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
+                if (Symbol.BestAskPriceLast > 0m)
                 {
-                    decimal price = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.BufferUpper);
-                    if (price <= Symbol.BestBidPrice)
+                    if(!Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
                     {
-                        await CheckDistanceUpperAsync();
+                        decimal price = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.BufferUpper);
+                        if (price <= Symbol.BestBidPrice)
+                        {
+                            ReBuffers();
+                            await CheckDistanceUpperAsync();
+                        }
                     }
+                }
+                else
+                {
+                    Symbol.BestAskPriceLast = Symbol.BestAskPrice;
+                    Symbol.BestBidPriceLast = Symbol.BestBidPrice;
                 }
             });
         }
@@ -133,7 +197,6 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                await Task.Delay(1000);
                 decimal price = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.DistanceUpper);
                 if (price <= Symbol.BestBidPrice)
                 {
@@ -141,14 +204,7 @@ namespace VolumeShot.ViewModels
                     {
                         Symbol.IsOpenShortOrder = true;
                         Symbol.OpenShortOrderPrice = Symbol.BestBidPrice;
-                    }
-                }
-                else
-                {
-                    if (!Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
-                    {
-                        Symbol.BestAskPriceLast = Symbol.BestAskPrice;
-                        Symbol.BestBidPriceLast = Symbol.BestBidPrice;
+                        NewBet(Symbol.BestBidPrice);
                     }
                 }
             });
@@ -161,6 +217,7 @@ namespace VolumeShot.ViewModels
                 {
                     Symbol.BestAskPrice = Message.Data.BestAskPrice;
                     Symbol.BestBidPrice = Message.Data.BestBidPrice;
+                    Symbol.Orders.Add(new Order() { BestAskPrice = Message.Data.BestAskPrice , BestBidPrice = Message.Data.BestBidPrice , DateTime = DateTime.UtcNow });
                 });
                 if (!result.Success)
                 {
