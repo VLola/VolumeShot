@@ -13,7 +13,6 @@ namespace VolumeShot.ViewModels
             Symbol.Name = binanceFuturesUsdtSymbol.Name;
             Symbol.PropertyChanged += Symbol_PropertyChanged;
             SubscribeAsync(socketClient);
-            RunAsync();
         }
 
         private void Symbol_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -64,84 +63,94 @@ namespace VolumeShot.ViewModels
                     }
                 }
             }
+            if(e.PropertyName == "BestBidPrice" || e.PropertyName == "BestAskPrice")
+            {
+                CheckBuffersAsync();
+            }
         }
 
-        private async void RunAsync()
+        private async void CheckBuffersAsync()
         {
             await Task.Run(async () =>
             {
-                while (true)
+                await CheckBufferUpperAsync();
+                await CheckBufferLowerAsync();
+            });
+        }
+        private async Task CheckBufferLowerAsync()
+        {
+            await Task.Run(async () =>
+            {
+                if (Symbol.BestBidPriceLast > 0m && !Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
                 {
-                    await Task.Delay(1500);
-                    await CheckShotAsync();
+                    decimal price = Symbol.BestBidPriceLast + (Symbol.BestBidPriceLast / 100 * Symbol.BufferLower);
+                    if (price >= Symbol.BestAskPrice)
+                    {
+                        await CheckDistanceLowerAsync();
+                    }
                 }
             });
         }
-        private async Task SetBufferAsync()
+        private async Task CheckDistanceLowerAsync()
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
-                if (Symbol.BestAskPriceLast > 0m)
+                await Task.Delay(1500);
+                decimal price = Symbol.BestBidPriceLast + (Symbol.BestBidPriceLast / 100 * Symbol.DistanceLower);
+                if (price >= Symbol.BestAskPrice)
+                {
+                    if (!Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
+                    {
+                        Symbol.IsOpenLongOrder = true;
+                        Symbol.OpenLongOrderPrice = Symbol.BestAskPrice;
+                    }
+                }
+                else
+                {
+                    if (!Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
+                    {
+                        Symbol.BestAskPriceLast = Symbol.BestAskPrice;
+                        Symbol.BestBidPriceLast = Symbol.BestBidPrice;
+                    }
+                }
+            });
+        }
+        private async Task CheckBufferUpperAsync()
+        {
+            await Task.Run(async () =>
+            {
+                if (Symbol.BestAskPriceLast > 0m && !Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
                 {
                     decimal price = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.BufferUpper);
                     if (price <= Symbol.BestBidPrice)
                     {
-                        if (!Symbol.IsOpenLongOrder)
-                        {
-                            Symbol.IsOpenLongOrder = true;
-                            Symbol.OpenLongOrderPrice = Symbol.BestAskPrice;
-                        }
+                        await CheckDistanceUpperAsync();
                     }
                 }
-                if (Symbol.BestBidPriceLast > 0m)
-                {
-                    decimal price = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.BufferLower);
-                    if (price >= Symbol.BestAskPrice)
-                    {
-                        if (!Symbol.IsOpenShortOrder)
-                        {
-                            Symbol.IsOpenShortOrder = true;
-                            Symbol.OpenShortOrderPrice = Symbol.BestBidPrice;
-                        }
-                    }
-                }
-                Symbol.BestAskPriceLast = Symbol.BestAskPrice;
-                Symbol.BestBidPriceLast = Symbol.BestBidPrice;
             });
         }
         private async Task CheckDistanceUpperAsync()
         {
-
-        }
-        private async Task CheckShotAsync()
-        {
-            await Task.Run(() => {
-                if (Symbol.BestAskPriceLast > 0m)
+            await Task.Run(async () =>
+            {
+                await Task.Delay(1000);
+                decimal price = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.DistanceUpper);
+                if (price <= Symbol.BestBidPrice)
                 {
-                    decimal price = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.DistanceUpper);
-                    if (price <= Symbol.BestBidPrice)
+                    if (!Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
                     {
-                        if (!Symbol.IsOpenLongOrder)
-                        {
-                            Symbol.IsOpenLongOrder = true;
-                            Symbol.OpenLongOrderPrice = Symbol.BestAskPrice;
-                        }
+                        Symbol.IsOpenShortOrder = true;
+                        Symbol.OpenShortOrderPrice = Symbol.BestBidPrice;
                     }
                 }
-                if(Symbol.BestBidPriceLast > 0m)
+                else
                 {
-                    decimal price = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.DistanceLower);
-                    if (price >= Symbol.BestAskPrice)
+                    if (!Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
                     {
-                        if (!Symbol.IsOpenShortOrder)
-                        {
-                            Symbol.IsOpenShortOrder = true;
-                            Symbol.OpenShortOrderPrice = Symbol.BestBidPrice;
-                        }
+                        Symbol.BestAskPriceLast = Symbol.BestAskPrice;
+                        Symbol.BestBidPriceLast = Symbol.BestBidPrice;
                     }
                 }
-                Symbol.BestAskPriceLast = Symbol.BestAskPrice;
-                Symbol.BestBidPriceLast = Symbol.BestBidPrice;
             });
         }
         private async void SubscribeAsync(BinanceSocketClient socketClient)
