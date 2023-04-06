@@ -238,7 +238,7 @@ namespace VolumeShot.ViewModels
                     decimal percentAsk = (Symbol.Asks.GetPrice(500000m) - minAsk) / minAsk * 100;
                     Symbol.PercentAsk = percentAsk;
                     Symbol.QuantityAsk = Symbol.Asks.Orders.Sum(o => (o.Value.Quantity * o.Value.Price));
-                    Symbol.OrdersAsks = Symbol.Asks.Orders.ToDictionary(entry => entry.Key, entry => entry.Value);
+                    //Symbol.OrdersAsks = Symbol.Asks.Orders.ToDictionary(entry => entry.Key, entry => entry.Value);
                 });
                 if (!result1.Success)
                 {
