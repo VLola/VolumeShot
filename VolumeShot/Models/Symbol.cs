@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Binance.Net.Objects.Models;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace VolumeShot.Models
@@ -7,6 +8,17 @@ namespace VolumeShot.Models
     {
         public ObservableCollection<Bet> Bets { get; set; } = new();
         public List<Order> Orders { get; set; } = new();
+        public Asks Asks = new();
+        private Dictionary<decimal, BinanceOrderBookEntry> _ordersAsks { get; set; }
+        public Dictionary<decimal, BinanceOrderBookEntry> OrdersAsks
+        {
+            get { return _ordersAsks; }
+            set
+            {
+                _ordersAsks = value;
+                OnPropertyChanged("OrdersAsks");
+            }
+        }
         private string _name { get; set; }
         public string Name
         {
@@ -196,6 +208,26 @@ namespace VolumeShot.Models
             {
                 _longMinus = value;
                 OnPropertyChanged("LongMinus");
+            }
+        }
+        private decimal _percentAsk { get; set; }
+        public decimal PercentAsk
+        {
+            get { return _percentAsk; }
+            set
+            {
+                _percentAsk = value;
+                OnPropertyChanged("PercentAsk");
+            }
+        }
+        private decimal _quantityAsk { get; set; }
+        public decimal QuantityAsk
+        {
+            get { return _quantityAsk; }
+            set
+            {
+                _quantityAsk = value;
+                OnPropertyChanged("QuantityAsk");
             }
         }
     }

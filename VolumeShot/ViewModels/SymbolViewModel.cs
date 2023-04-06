@@ -1,8 +1,11 @@
 ﻿using Binance.Net.Clients;
+using Binance.Net.Objects.Models;
 using Binance.Net.Objects.Models.Futures;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using VolumeShot.Models;
 
 namespace VolumeShot.ViewModels
@@ -224,6 +227,20 @@ namespace VolumeShot.ViewModels
                     Symbol.Orders.Add(new Order() { BestAskPrice = Message.Data.BestAskPrice , BestBidPrice = Message.Data.BestBidPrice , DateTime = DateTime.UtcNow });
                 });
                 if (!result.Success)
+                {
+                    Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeAsync: {result.Error?.Message}");
+                }
+                var result1 = await socketClient.UsdFuturesStreams.SubscribeToOrderBookUpdatesAsync(Symbol.Name, updateInterval: 500, Message =>
+                {
+                    Symbol.Asks.Add(Message.Data.Asks);
+                    Symbol.Asks.Remove();
+                    decimal minAsk = Symbol.Asks.Min();
+                    decimal percentAsk = (Symbol.Asks.GetPrice(500000m) - minAsk) / minAsk * 100;
+                    Symbol.PercentAsk = percentAsk;
+                    Symbol.QuantityAsk = Symbol.Asks.Orders.Sum(o => (o.Value.Quantity * o.Value.Price));
+                    Symbol.OrdersAsks = Symbol.Asks.Orders.ToDictionary(entry => entry.Key, entry => entry.Value);
+                });
+                if (!result1.Success)
                 {
                     Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeAsync: {result.Error?.Message}");
                 }
