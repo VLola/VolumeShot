@@ -1,6 +1,9 @@
 ﻿using Binance.Net.Clients;
 using Binance.Net.Objects.Models.Futures;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using VolumeShot.Models;
@@ -18,6 +21,10 @@ namespace VolumeShot.ViewModels
 
         private void Symbol_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            if (e.PropertyName == "Volume")
+            {
+                SaveVolumeAsync();
+            }
             if (e.PropertyName == "IsRun")
             {
                 if(Symbol.IsRun) SubscribeAsync();
@@ -84,6 +91,36 @@ namespace VolumeShot.ViewModels
             {
                 CheckBuffersAsync();
             }
+        }
+        private async void SaveVolumeAsync()
+        {
+            await Task.Run(() =>
+            {
+                List<Config>? configs = new();
+                string path = Directory.GetCurrentDirectory() + "/config";
+                if (File.Exists(path))
+                {
+                    string json = File.ReadAllText(path);
+                    configs = JsonConvert.DeserializeObject<List<Config>>(json);
+                    if (configs != null)
+                    {
+                        Config? config = configs.FirstOrDefault(conf => conf.Name == Symbol.Name);
+                        if (config != null)
+                        {
+                            configs.Remove(config);
+                        }
+                        configs.Add(new Config() { Name = Symbol.Name, Volume = Symbol.Volume });
+                        string json1 = JsonConvert.SerializeObject(configs);
+                        File.WriteAllText(path, json1);
+                    }
+                }
+                else
+                {
+                    configs.Add(new Config() { Name = Symbol.Name, Volume = Symbol.Volume });
+                    string json = JsonConvert.SerializeObject(configs);
+                    File.WriteAllText(path, json);
+                }
+            });
         }
         private void NewBet(decimal openPrice)
         {

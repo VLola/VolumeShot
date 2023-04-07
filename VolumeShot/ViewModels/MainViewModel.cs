@@ -34,6 +34,11 @@ namespace VolumeShot.ViewModels
                     decimal volume = 500000m;
                     if (symbol.QuoteAsset == "USDT")
                     {
+                        if (configs != null)
+                        {
+                            Config? config = configs.FirstOrDefault(conf => conf.Name == symbol.Name);
+                            if (config != null) volume = config.Volume;
+                        }
                         SymbolViewModel symbolViewModel = new(symbol, volume);
                         Main.Symbols.Add(symbolViewModel.Symbol);
                     }
