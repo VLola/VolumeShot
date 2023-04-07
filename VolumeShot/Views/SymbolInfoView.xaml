@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:VolumeShot.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <StackPanel>
+    <Grid>
         <ListBox ItemsSource="{Binding Path=Main.SelectedSymbol.Bets}" HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -18,5 +18,5 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-    </StackPanel>
+    </Grid>
 </UserControl>

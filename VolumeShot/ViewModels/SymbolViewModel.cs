@@ -25,11 +25,19 @@ namespace VolumeShot.ViewModels
             {
                 SaveVolumeAsync();
             }
-            if (e.PropertyName == "IsRun")
+            else if (e.PropertyName == "IsRun")
             {
                 if(Symbol.IsRun) SubscribeAsync();
             }
-            if (e.PropertyName == "BestBidPrice")
+            else if (e.PropertyName == "DistanceUpper")
+            {
+                Symbol.BufferUpper = Symbol.DistanceUpper / 5;
+            }
+            else if (e.PropertyName == "DistanceLower")
+            {
+                Symbol.BufferLower = Symbol.DistanceLower / 5;
+            }
+            else if (e.PropertyName == "BestBidPrice")
             {
                 if (Symbol.IsOpenShortOrder)
                 {
@@ -131,13 +139,21 @@ namespace VolumeShot.ViewModels
             bet.PriceDistanceLower = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.DistanceLower);
             bet.PriceBufferUpper = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.BufferUpper);
             bet.PriceDistanceUpper = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.DistanceUpper);
+            bet.BufferLower = Symbol.BufferLower;
+            bet.DistanceLower = Symbol.DistanceLower;
+            bet.BufferUpper = Symbol.BufferUpper;
+            bet.DistanceUpper = Symbol.DistanceUpper;
             if (Symbol.IsOpenLongOrder)
             {
+                Symbol.StopLoss = Symbol.DistanceLower / 2;
+                Symbol.TakeProfit = Symbol.DistanceLower / 5;
                 bet.PriceStopLoss = Symbol.OpenLongOrderPrice - (Symbol.OpenLongOrderPrice / 100 * Symbol.StopLoss);
                 bet.PriceTakeProfit = Symbol.OpenLongOrderPrice + (Symbol.OpenLongOrderPrice / 100 * Symbol.TakeProfit);
             }
             if (Symbol.IsOpenShortOrder)
             {
+                Symbol.StopLoss = Symbol.DistanceUpper / 2;
+                Symbol.TakeProfit = Symbol.DistanceUpper / 5;
                 bet.PriceStopLoss = Symbol.OpenShortOrderPrice + (Symbol.OpenShortOrderPrice / 100 * Symbol.StopLoss);
                 bet.PriceTakeProfit = Symbol.OpenShortOrderPrice - (Symbol.OpenShortOrderPrice / 100 * Symbol.TakeProfit);
             }
@@ -180,7 +196,7 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                if (Symbol.BestBidPriceLast > 0m)
+                if (Symbol.BestBidPriceLast > 0m && Symbol.DistanceUpper > 0m)
                 {
                     if(!Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
                     {
@@ -219,7 +235,7 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                if (Symbol.BestAskPriceLast > 0m)
+                if (Symbol.BestAskPriceLast > 0m && Symbol.DistanceUpper > 0m)
                 {
                     if(!Symbol.IsOpenShortOrder && !Symbol.IsOpenLongOrder)
                     {

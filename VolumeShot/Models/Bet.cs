@@ -14,6 +14,12 @@ namespace VolumeShot.Models
         public decimal PriceDistanceUpper { get; set; }
         public decimal PriceTakeProfit { get; set; }
         public decimal PriceStopLoss { get; set; }
+        public decimal BufferLower { get; set; }
+        public decimal BufferUpper { get; set; }
+        public decimal DistanceLower { get; set; }
+        public decimal DistanceUpper { get; set; }
+        public decimal TakeProfit { get; set; }
+        public decimal StopLoss { get; set; }
         public DateTime OpenTime { get; set; }
         public DateTime CloseTime { get; set; }
         public decimal OpenPrice { get; set; }
