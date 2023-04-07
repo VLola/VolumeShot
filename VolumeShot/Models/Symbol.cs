@@ -29,6 +29,16 @@ namespace VolumeShot.Models
                 OnPropertyChanged("IsRun");
             }
         }
+        private decimal _volume { get; set; }
+        public decimal Volume
+        {
+            get { return _volume; }
+            set
+            {
+                _volume = value;
+                OnPropertyChanged("Volume");
+            }
+        }
         private decimal _bestAskPrice { get; set; }
         public decimal BestAskPrice
         {
@@ -208,26 +218,6 @@ namespace VolumeShot.Models
             {
                 _longMinus = value;
                 OnPropertyChanged("LongMinus");
-            }
-        }
-        private decimal _percentAsk { get; set; }
-        public decimal PercentAsk
-        {
-            get { return _percentAsk; }
-            set
-            {
-                _percentAsk = value;
-                OnPropertyChanged("PercentAsk");
-            }
-        }
-        private decimal _quantityAsk { get; set; }
-        public decimal QuantityAsk
-        {
-            get { return _quantityAsk; }
-            set
-            {
-                _quantityAsk = value;
-                OnPropertyChanged("QuantityAsk");
             }
         }
     }

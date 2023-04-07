@@ -8,22 +8,15 @@ namespace VolumeShot.Models
     {
         public SortedDictionary<decimal, BinanceOrderBookEntry> Asks = new();
         public SortedDictionary<decimal, BinanceOrderBookEntry> Bids = new(new IntegerDecreaseComparer());
-        public void RemoveAsks()
-        {
-            IEnumerable<decimal> list = Asks.Where(order => order.Value.Quantity == 0m).Select(order => order.Key);
-            foreach (var entry in list) Asks.Remove(entry);
-        }
         public void AddAsks(IEnumerable<BinanceOrderBookEntry> binanceOrderBookEntries)
         {
-            foreach (var entry in binanceOrderBookEntries) Asks[entry.Price] = entry;
+            IEnumerable<decimal> list = binanceOrderBookEntries.Where(order => order.Quantity == 0m).Select(order => order.Price);
+            foreach (var entry in list) Asks.Remove(entry);
+            foreach (var entry in binanceOrderBookEntries) if(entry.Quantity != 0m) Asks[entry.Price] = entry;
         }
         public decimal MinAsk()
         {
             return Asks.Min(order => order.Key);
-        }
-        public decimal MaxAsk()
-        {
-            return Asks.Max(order => order.Key);
         }
         public decimal GetPriceAsks(decimal volume)
         {
@@ -39,18 +32,11 @@ namespace VolumeShot.Models
             }
             return result;
         }
-        public void RemoveBids()
-        {
-            IEnumerable<decimal> list = Bids.Where(order => order.Value.Quantity == 0m).Select(order => order.Key);
-            foreach (var entry in list) Bids.Remove(entry);
-        }
         public void AddBids(IEnumerable<BinanceOrderBookEntry> binanceOrderBookEntries)
         {
-            foreach (var entry in binanceOrderBookEntries) Bids[entry.Price] = entry;
-        }
-        public decimal MinBid()
-        {
-            return Bids.Min(order => order.Key);
+            IEnumerable<decimal> list = binanceOrderBookEntries.Where(order => order.Quantity == 0m).Select(order => order.Price);
+            foreach (var entry in list) Bids.Remove(entry);
+            foreach (var entry in binanceOrderBookEntries) if (entry.Quantity != 0m) Bids[entry.Price] = entry;
         }
         public decimal MaxBid()
         {

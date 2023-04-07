@@ -4,6 +4,8 @@ using System.Linq;
 using System;
 using VolumeShot.Models;
 using Binance.Net.Objects.Models.Futures;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace VolumeShot.ViewModels
 {
@@ -17,19 +19,24 @@ namespace VolumeShot.ViewModels
         }
         private void Load()
         {
-            int i = 0;
             List<BinanceFuturesUsdtSymbol> list = ListSymbols();
             if (list.Count > 0)
             {
+                List<Config>? configs = new();
+                string path = Directory.GetCurrentDirectory() + "/config";
+                if (File.Exists(path))
+                {
+                    string json = File.ReadAllText(path);
+                    configs = JsonConvert.DeserializeObject<List<Config>>(json);
+                }
                 foreach (var symbol in list)
                 {
+                    decimal volume = 500000m;
                     if (symbol.QuoteAsset == "USDT")
                     {
-                        i++;
-                        SymbolViewModel symbolViewModel = new(symbol);
+                        SymbolViewModel symbolViewModel = new(symbol, volume);
                         Main.Symbols.Add(symbolViewModel.Symbol);
                     }
-                    if (i > 25) break;
                 }
             }
         }

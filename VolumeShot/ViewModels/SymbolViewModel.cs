@@ -1,13 +1,8 @@
 ﻿using Binance.Net.Clients;
-using Binance.Net.Objects.Models;
 using Binance.Net.Objects.Models.Futures;
-using ScottPlot.Renderable;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using System.Threading.Tasks;
-using System.Windows.Documents;
 using VolumeShot.Models;
 
 namespace VolumeShot.ViewModels
@@ -15,8 +10,9 @@ namespace VolumeShot.ViewModels
     internal class SymbolViewModel
     {
         public Symbol Symbol { get; set; } = new();
-        public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol) {
+        public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, decimal volume) {
             Symbol.Name = binanceFuturesUsdtSymbol.Name;
+            Symbol.Volume = volume;
             Symbol.PropertyChanged += Symbol_PropertyChanged;
         }
 
@@ -225,66 +221,95 @@ namespace VolumeShot.ViewModels
         {
             try
             {
-                BinanceSocketClient socketClient = new();
-                BinanceClient client = new BinanceClient();
-                {
-                    int socketId = 0;
-                    var result = await socketClient.UsdFuturesStreams.SubscribeToBookTickerUpdatesAsync(Symbol.Name, Message =>
-                    {
-                        if (!Symbol.IsRun) {
-                            socketClient.UnsubscribeAsync(socketId);
-                            Symbol.Orders.Clear();
-                        }
-                        Symbol.BestAskPrice = Message.Data.BestAskPrice;
-                        Symbol.BestBidPrice = Message.Data.BestBidPrice;
-                        Symbol.Orders.Add(new Order() { BestAskPrice = Message.Data.BestAskPrice, BestBidPrice = Message.Data.BestBidPrice, DateTime = DateTime.UtcNow });
-                    });
-                    if (!result.Success) Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeToBookTickerUpdatesAsync: {result.Error?.Message}");
-                    else socketId = result.Data.SocketId;
-                }
-                {
-                    var result = await client.UsdFuturesApi.ExchangeData.GetOrderBookAsync(Symbol.Name, limit: 1000);
-                    if (!result.Success) Error.WriteLog("binance", Symbol.Name, $"Failed GetOrderBookAsync: {result.Error?.Message}");
-                    else {
-                        Symbol.OrderBook.Bids.Clear();
-                        Symbol.OrderBook.Asks.Clear();
-                        Symbol.OrderBook.AddBids(result.Data.Bids);
-                        Symbol.OrderBook.AddAsks(result.Data.Asks);
-                    }
-                }
-                {
-                    int socketId = 0;
-                    var result = await socketClient.UsdFuturesStreams.SubscribeToOrderBookUpdatesAsync(Symbol.Name, updateInterval: 500, Message =>
-                    {
-                        if (!Symbol.IsRun) {
-                            socketClient.UnsubscribeAsync(socketId);
-                            Symbol.OrderBook.Bids.Clear();
-                            Symbol.OrderBook.Asks.Clear();
-                        }
-
-                        // Bids
-                        Symbol.OrderBook.AddBids(Message.Data.Bids);
-                        Symbol.OrderBook.RemoveBids();
-                        decimal maxBid = Symbol.OrderBook.MaxBid();
-                        decimal percentBid = Symbol.OrderBook.GetPriceBids(500000m);
-                        Symbol.DistanceLower = (maxBid - percentBid) / percentBid * 100;
-
-                        // Asks
-                        Symbol.OrderBook.AddAsks(Message.Data.Asks);
-                        Symbol.OrderBook.RemoveAsks();
-                        decimal minAsk = Symbol.OrderBook.MaxBid();
-                        decimal percentAsk = Symbol.OrderBook.GetPriceAsks(500000m);
-                        Symbol.DistanceUpper = (percentAsk - minAsk) / minAsk * 100;
-
-                    });
-                    if (!result.Success) Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeToOrderBookUpdatesAsync: {result.Error?.Message}");
-                    else socketId = result.Data.SocketId;
-                }
+                await SubscribeToBookTickerUpdatesAsync();
+                await GetOrderBookAsync();
+                await SubscribeToOrderBookUpdatesAsync();
             }
             catch (Exception ex)
             {
                 Error.WriteLog("binance", Symbol.Name, $"Exception SubscribeAsync {ex.Message}");
             }
+        }
+        private async Task SubscribeToBookTickerUpdatesAsync()
+        {
+            await Task.Run(async () =>
+            {
+                BinanceSocketClient socketClient = new();
+                int socketId = 0;
+                var result = await socketClient.UsdFuturesStreams.SubscribeToBookTickerUpdatesAsync(Symbol.Name, Message =>
+                {
+                    if (!Symbol.IsRun)
+                    {
+                        socketClient.UnsubscribeAsync(socketId);
+                        Symbol.Orders.Clear();
+                    }
+                    Symbol.BestAskPrice = Message.Data.BestAskPrice;
+                    Symbol.BestBidPrice = Message.Data.BestBidPrice;
+                    Symbol.Orders.Add(new Order() { BestAskPrice = Message.Data.BestAskPrice, BestBidPrice = Message.Data.BestBidPrice, DateTime = DateTime.UtcNow });
+                });
+                if (!result.Success) Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeToBookTickerUpdatesAsync: {result.Error?.Message}");
+                else socketId = result.Data.Id;
+            });
+        }
+        private async Task GetOrderBookAsync()
+        {
+            await Task.Run(async () =>
+            {
+                BinanceClient client = new BinanceClient();
+                var result = await client.UsdFuturesApi.ExchangeData.GetOrderBookAsync(Symbol.Name, limit: 1000);
+                if (!result.Success) Error.WriteLog("binance", Symbol.Name, $"Failed GetOrderBookAsync: {result.Error?.Message}");
+                else
+                {
+                    Symbol.OrderBook.Bids.Clear();
+                    Symbol.OrderBook.Asks.Clear();
+                    Symbol.OrderBook.AddBids(result.Data.Bids);
+                    Symbol.OrderBook.AddAsks(result.Data.Asks);
+                }
+            });
+        }
+        private async Task SubscribeToOrderBookUpdatesAsync()
+        {
+            await Task.Run(async () =>
+            {
+                BinanceSocketClient socketClient = new();
+                int socketId = 0;
+                int i = 0;
+                var result = await socketClient.UsdFuturesStreams.SubscribeToOrderBookUpdatesAsync(Symbol.Name, updateInterval: 500, Message =>
+                {
+                    if (!Symbol.IsRun)
+                    {
+                        socketClient.UnsubscribeAsync(socketId);
+                        Symbol.OrderBook.Bids.Clear();
+                        Symbol.OrderBook.Asks.Clear();
+                    }
+
+                    try
+                    {
+
+                        // Bids
+                        Symbol.OrderBook.AddBids(Message.Data.Bids);
+
+                        // Asks
+                        Symbol.OrderBook.AddAsks(Message.Data.Asks);
+
+
+                        decimal maxBid = Symbol.OrderBook.MaxBid();
+                        decimal percentBid = Symbol.OrderBook.GetPriceBids(Symbol.Volume);
+                        Symbol.DistanceLower = (maxBid - percentBid) / percentBid * 100;
+
+                        decimal minAsk = Symbol.OrderBook.MinAsk();
+                        decimal percentAsk = Symbol.OrderBook.GetPriceAsks(Symbol.Volume);
+                        Symbol.DistanceUpper = (percentAsk - minAsk) / minAsk * 100;
+                    }
+                    catch (Exception ex)
+                    {
+                        Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeToOrderBookUpdatesAsync: {ex.Message}");
+                    }
+
+                });
+                if (!result.Success) Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeToOrderBookUpdatesAsync: {result.Error?.Message}");
+                else socketId = result.Data.Id;
+            });
         }
     }
 }
