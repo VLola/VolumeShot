@@ -8,17 +8,7 @@ namespace VolumeShot.Models
     {
         public ObservableCollection<Bet> Bets { get; set; } = new();
         public List<Order> Orders { get; set; } = new();
-        public Asks Asks = new();
-        private Dictionary<decimal, BinanceOrderBookEntry> _ordersAsks { get; set; }
-        public Dictionary<decimal, BinanceOrderBookEntry> OrdersAsks
-        {
-            get { return _ordersAsks; }
-            set
-            {
-                _ordersAsks = value;
-                OnPropertyChanged("OrdersAsks");
-            }
-        }
+        public OrderBook OrderBook = new();
         private string _name { get; set; }
         public string Name
         {
@@ -27,6 +17,16 @@ namespace VolumeShot.Models
             {
                 _name = value;
                 OnPropertyChanged("Name");
+            }
+        }
+        private bool _isRun { get; set; }
+        public bool IsRun
+        {
+            get { return _isRun; }
+            set
+            {
+                _isRun = value;
+                OnPropertyChanged("IsRun");
             }
         }
         private decimal _bestAskPrice { get; set; }

@@ -1,9 +1,11 @@
 ﻿using Binance.Net.Clients;
 using Binance.Net.Objects.Models;
 using Binance.Net.Objects.Models.Futures;
+using ScottPlot.Renderable;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows.Documents;
 using VolumeShot.Models;
@@ -13,14 +15,17 @@ namespace VolumeShot.ViewModels
     internal class SymbolViewModel
     {
         public Symbol Symbol { get; set; } = new();
-        public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, BinanceSocketClient socketClient) {
+        public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol) {
             Symbol.Name = binanceFuturesUsdtSymbol.Name;
             Symbol.PropertyChanged += Symbol_PropertyChanged;
-            SubscribeAsync(socketClient);
         }
 
         private void Symbol_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            if (e.PropertyName == "IsRun")
+            {
+                if(Symbol.IsRun) SubscribeAsync();
+            }
             if (e.PropertyName == "BestBidPrice")
             {
                 if (Symbol.IsOpenShortOrder)
@@ -216,33 +221,64 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
-        private async void SubscribeAsync(BinanceSocketClient socketClient)
+        private async void SubscribeAsync()
         {
             try
             {
-                var result = await socketClient.UsdFuturesStreams.SubscribeToBookTickerUpdatesAsync(Symbol.Name, Message =>
+                BinanceSocketClient socketClient = new();
+                BinanceClient client = new BinanceClient();
                 {
-                    Symbol.BestAskPrice = Message.Data.BestAskPrice;
-                    Symbol.BestBidPrice = Message.Data.BestBidPrice;
-                    Symbol.Orders.Add(new Order() { BestAskPrice = Message.Data.BestAskPrice , BestBidPrice = Message.Data.BestBidPrice , DateTime = DateTime.UtcNow });
-                });
-                if (!result.Success)
-                {
-                    Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeAsync: {result.Error?.Message}");
+                    int socketId = 0;
+                    var result = await socketClient.UsdFuturesStreams.SubscribeToBookTickerUpdatesAsync(Symbol.Name, Message =>
+                    {
+                        if (!Symbol.IsRun) {
+                            socketClient.UnsubscribeAsync(socketId);
+                            Symbol.Orders.Clear();
+                        }
+                        Symbol.BestAskPrice = Message.Data.BestAskPrice;
+                        Symbol.BestBidPrice = Message.Data.BestBidPrice;
+                        Symbol.Orders.Add(new Order() { BestAskPrice = Message.Data.BestAskPrice, BestBidPrice = Message.Data.BestBidPrice, DateTime = DateTime.UtcNow });
+                    });
+                    if (!result.Success) Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeToBookTickerUpdatesAsync: {result.Error?.Message}");
+                    else socketId = result.Data.SocketId;
                 }
-                var result1 = await socketClient.UsdFuturesStreams.SubscribeToOrderBookUpdatesAsync(Symbol.Name, updateInterval: 500, Message =>
                 {
-                    Symbol.Asks.Add(Message.Data.Asks);
-                    Symbol.Asks.Remove();
-                    decimal minAsk = Symbol.Asks.Min();
-                    decimal percentAsk = (Symbol.Asks.GetPrice(500000m) - minAsk) / minAsk * 100;
-                    Symbol.PercentAsk = percentAsk;
-                    Symbol.QuantityAsk = Symbol.Asks.Orders.Sum(o => (o.Value.Quantity * o.Value.Price));
-                    //Symbol.OrdersAsks = Symbol.Asks.Orders.ToDictionary(entry => entry.Key, entry => entry.Value);
-                });
-                if (!result1.Success)
+                    var result = await client.UsdFuturesApi.ExchangeData.GetOrderBookAsync(Symbol.Name, limit: 1000);
+                    if (!result.Success) Error.WriteLog("binance", Symbol.Name, $"Failed GetOrderBookAsync: {result.Error?.Message}");
+                    else {
+                        Symbol.OrderBook.Bids.Clear();
+                        Symbol.OrderBook.Asks.Clear();
+                        Symbol.OrderBook.AddBids(result.Data.Bids);
+                        Symbol.OrderBook.AddAsks(result.Data.Asks);
+                    }
+                }
                 {
-                    Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeAsync: {result.Error?.Message}");
+                    int socketId = 0;
+                    var result = await socketClient.UsdFuturesStreams.SubscribeToOrderBookUpdatesAsync(Symbol.Name, updateInterval: 500, Message =>
+                    {
+                        if (!Symbol.IsRun) {
+                            socketClient.UnsubscribeAsync(socketId);
+                            Symbol.OrderBook.Bids.Clear();
+                            Symbol.OrderBook.Asks.Clear();
+                        }
+
+                        // Bids
+                        Symbol.OrderBook.AddBids(Message.Data.Bids);
+                        Symbol.OrderBook.RemoveBids();
+                        decimal maxBid = Symbol.OrderBook.MaxBid();
+                        decimal percentBid = Symbol.OrderBook.GetPriceBids(500000m);
+                        Symbol.DistanceLower = (maxBid - percentBid) / percentBid * 100;
+
+                        // Asks
+                        Symbol.OrderBook.AddAsks(Message.Data.Asks);
+                        Symbol.OrderBook.RemoveAsks();
+                        decimal minAsk = Symbol.OrderBook.MaxBid();
+                        decimal percentAsk = Symbol.OrderBook.GetPriceAsks(500000m);
+                        Symbol.DistanceUpper = (percentAsk - minAsk) / minAsk * 100;
+
+                    });
+                    if (!result.Success) Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeToOrderBookUpdatesAsync: {result.Error?.Message}");
+                    else socketId = result.Data.SocketId;
                 }
             }
             catch (Exception ex)

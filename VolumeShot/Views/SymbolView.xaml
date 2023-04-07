@@ -20,9 +20,9 @@
         </Grid.ColumnDefinitions>
         <TextBlock Grid.Column="0" Text="{Binding Path=Name}"/>
         <TextBlock Grid.Column="1" Text="{Binding Path=BestAskPrice, StringFormat=Ask: {0}}"/>
-        <TextBlock Grid.Column="2" Text="{Binding Path=BestBidPrice, StringFormat=Bid: {0}}"/>
-        <TextBlock Grid.Column="3" Text="{Binding Path=PercentAsk, StringFormat={}{0:N2}}"/>
-        <TextBlock Grid.Column="4" Text="{Binding Path=QuantityAsk, StringFormat={}{0:N0}}"/>
+        <TextBlock Grid.Column="2" Text="{Binding Path=PercentAsk, StringFormat={}{0:N2}}"/>
+        <TextBlock Grid.Column="3" Text="{Binding Path=BestBidPrice, StringFormat=Bid: {0}}"/>
+        <TextBlock Grid.Column="4" Text="{Binding Path=PercentBid, StringFormat={}{0:N2}}"/>
         <TextBlock Grid.Column="5" Text="{Binding Path=ShortPlus, StringFormat=ShortPlus: {0}}"/>
         <TextBlock Grid.Column="6" Text="{Binding Path=ShortMinus, StringFormat=ShortMinus: {0}}"/>
         <TextBlock Grid.Column="7" Text="{Binding Path=LongPlus, StringFormat=LongPlus: {0}}"/>

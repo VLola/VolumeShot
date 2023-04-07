@@ -17,17 +17,19 @@ namespace VolumeShot.ViewModels
         }
         private void Load()
         {
+            int i = 0;
             List<BinanceFuturesUsdtSymbol> list = ListSymbols();
             if (list.Count > 0)
             {
-                BinanceSocketClient socketClient = new();
                 foreach (var symbol in list)
                 {
                     if (symbol.QuoteAsset == "USDT")
                     {
-                        SymbolViewModel symbolViewModel = new(symbol, socketClient);
+                        i++;
+                        SymbolViewModel symbolViewModel = new(symbol);
                         Main.Symbols.Add(symbolViewModel.Symbol);
                     }
+                    if (i > 25) break;
                 }
             }
         }
