@@ -1,7 +1,5 @@
 ﻿using Binance.Net.Clients;
-using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
-using Binance.Net.Objects.Models.Futures.Socket;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
