@@ -1,5 +1,7 @@
 ﻿using Binance.Net.Clients;
+using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
+using Binance.Net.Objects.Models.Futures.Socket;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -17,6 +19,14 @@ namespace VolumeShot.ViewModels
             Symbol.Name = binanceFuturesUsdtSymbol.Name;
             Symbol.Volume = volume;
             Symbol.PropertyChanged += Symbol_PropertyChanged;
+        }
+
+        public void OrderUpdate(BinanceFuturesStreamOrderUpdate OrderUpdate)
+        {
+            if (OrderUpdate.UpdateData.Symbol == Symbol.Name)
+            {
+                
+            }
         }
 
         private void Symbol_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

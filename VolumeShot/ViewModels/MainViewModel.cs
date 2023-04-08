@@ -6,6 +6,9 @@ using VolumeShot.Models;
 using Binance.Net.Objects.Models.Futures;
 using System.IO;
 using Newtonsoft.Json;
+using CryptoExchange.Net.Interfaces;
+using System.Threading.Tasks;
+using Binance.Net.Objects.Models.Futures.Socket;
 
 namespace VolumeShot.ViewModels
 {
@@ -13,9 +16,57 @@ namespace VolumeShot.ViewModels
     {
         string errorFile = "Binance";
         public Main Main { get; set; } = new();
+        public BinanceClient client = new();
+        public BinanceSocketClient socketClient = new();
+        public delegate void AccountOnOrderUpdate(BinanceFuturesStreamOrderUpdate OrderUpdate);
+        public event AccountOnOrderUpdate? OnOrderUpdate;
         public MainViewModel()
         {
             Load();
+        }
+        private async void SubscribeToUserDataUpdatesAsync()
+        {
+            var listenKey = await client.UsdFuturesApi.Account.StartUserStreamAsync();
+            if (!listenKey.Success)
+            {
+                Error.WriteLog("", errorFile, $"Failed to start user stream: listenKey");
+            }
+            else
+            {
+                KeepAliveUserStreamAsync(listenKey.Data);
+                Error.WriteLog("", errorFile, $"Listen Key Created");
+                var result = await socketClient.UsdFuturesStreams.SubscribeToUserDataUpdatesAsync(listenKey: listenKey.Data,
+                    onLeverageUpdate => { },
+                    onMarginUpdate => { },
+                    onAccountUpdate => { },
+                    onOrderUpdate =>
+                    {
+                        OnOrderUpdate?.Invoke(onOrderUpdate.Data);
+                    },
+                    onListenKeyExpired => { },
+                    onStrategyUpdate => { },
+                    onGridUpdate => { });
+                if (!result.Success)
+                {
+                    Error.WriteLog("", errorFile, $"Failed UserDataUpdates: {result.Error?.Message}");
+                }
+            }
+        }
+        private async void KeepAliveUserStreamAsync(string listenKey)
+        {
+            await Task.Run(async () =>
+            {
+                while (true)
+                {
+                    var result = await client.UsdFuturesApi.Account.KeepAliveUserStreamAsync(listenKey);
+                    if (!result.Success) Error.WriteLog("", errorFile, $"Failed KeepAliveUserStreamAsync: {result.Error?.Message}");
+                    else
+                    {
+                        Error.WriteLog("", errorFile, "Success KeepAliveUserStreamAsync");
+                    }
+                    await Task.Delay(900000);
+                }
+            });
         }
         private void Load()
         {
@@ -40,6 +91,7 @@ namespace VolumeShot.ViewModels
                             if (config != null) volume = config.Volume;
                         }
                         SymbolViewModel symbolViewModel = new(symbol, volume);
+                        OnOrderUpdate += symbolViewModel.OrderUpdate;
                         Main.Symbols.Add(symbolViewModel.Symbol);
                     }
                 }
