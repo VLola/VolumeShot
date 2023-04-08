@@ -15,7 +15,11 @@ namespace VolumeShot.ViewModels
     internal class SymbolViewModel
     {
         public Symbol Symbol { get; set; } = new();
-        public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, decimal volume) {
+        public BinanceClient client { get; set; }
+        public BinanceSocketClient socketClient { get; set; }
+        public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, decimal volume, BinanceSocketClient _socketClient, BinanceClient _client) {
+            socketClient = _socketClient;
+            client = _client;
             Symbol.Name = binanceFuturesUsdtSymbol.Name;
             Symbol.Volume = volume;
             Symbol.PropertyChanged += Symbol_PropertyChanged;
@@ -301,7 +305,6 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                BinanceSocketClient socketClient = new();
                 int socketId = 0;
                 var result = await socketClient.UsdFuturesStreams.SubscribeToBookTickerUpdatesAsync(Symbol.Name, Message =>
                 {
@@ -322,7 +325,6 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                BinanceClient client = new BinanceClient();
                 var result = await client.UsdFuturesApi.ExchangeData.GetOrderBookAsync(Symbol.Name, limit: 1000);
                 if (!result.Success) Error.WriteLog("binance", Symbol.Name, $"Failed GetOrderBookAsync: {result.Error?.Message}");
                 else
@@ -338,7 +340,6 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                BinanceSocketClient socketClient = new();
                 int socketId = 0;
                 int i = 0;
                 var result = await socketClient.UsdFuturesStreams.SubscribeToOrderBookUpdatesAsync(Symbol.Name, updateInterval: 500, Message =>

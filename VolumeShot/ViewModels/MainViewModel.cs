@@ -9,6 +9,9 @@ using Newtonsoft.Json;
 using CryptoExchange.Net.Interfaces;
 using System.Threading.Tasks;
 using Binance.Net.Objects.Models.Futures.Socket;
+using Binance.Net.Objects;
+using CryptoExchange.Net.Authentication;
+using System.Windows;
 
 namespace VolumeShot.ViewModels
 {
@@ -16,13 +19,50 @@ namespace VolumeShot.ViewModels
     {
         string errorFile = "Binance";
         public Main Main { get; set; } = new();
-        public BinanceClient client = new();
-        public BinanceSocketClient socketClient = new();
+        public BinanceClient client { get; set; }
+        public BinanceSocketClient socketClient { get; set; }
         public delegate void AccountOnOrderUpdate(BinanceFuturesStreamOrderUpdate OrderUpdate);
         public event AccountOnOrderUpdate? OnOrderUpdate;
         public MainViewModel()
         {
+            Binance("", "", true);
+            SubscribeToUserDataUpdatesAsync();
             Load();
+        }
+        private void Binance(string apiKey, string secretKey, bool isTestnet)
+        {
+            if (isTestnet)
+            {
+                // ------------- Test Api ----------------
+                BinanceClientOptions clientOption = new();
+                clientOption.UsdFuturesApiOptions.BaseAddress = "https://testnet.binancefuture.com";
+                client = new(clientOption);
+
+                BinanceSocketClientOptions socketClientOption = new BinanceSocketClientOptions();
+                socketClientOption.UsdFuturesStreamsOptions.AutoReconnect = true;
+                socketClientOption.UsdFuturesStreamsOptions.ReconnectInterval = TimeSpan.FromMinutes(1);
+                socketClientOption.UsdFuturesStreamsOptions.BaseAddress = "wss://stream.binancefuture.com";
+                socketClient = new BinanceSocketClient(socketClientOption);
+                // ------------- Test Api ----------------
+            }
+            else
+            {
+                // ------------- Real Api ----------------
+                client = new();
+                socketClient = new();
+                // ------------- Real Api ----------------
+            }
+
+            try
+            {
+                client.SetApiCredentials(new BinanceApiCredentials(apiKey, secretKey));
+                socketClient.SetApiCredentials(new BinanceApiCredentials(apiKey, secretKey));
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
         private async void SubscribeToUserDataUpdatesAsync()
         {
@@ -90,7 +130,7 @@ namespace VolumeShot.ViewModels
                             Config? config = configs.FirstOrDefault(conf => conf.Name == symbol.Name);
                             if (config != null) volume = config.Volume;
                         }
-                        SymbolViewModel symbolViewModel = new(symbol, volume);
+                        SymbolViewModel symbolViewModel = new(symbol, volume, socketClient, client);
                         OnOrderUpdate += symbolViewModel.OrderUpdate;
                         Main.Symbols.Add(symbolViewModel.Symbol);
                     }
@@ -101,7 +141,6 @@ namespace VolumeShot.ViewModels
         {
             try
             {
-                BinanceClient client = new();
                 var result = client.UsdFuturesApi.ExchangeData.GetExchangeInfoAsync().Result;
                 if (!result.Success)
                 {

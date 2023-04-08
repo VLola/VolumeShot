@@ -2,9 +2,6 @@
 using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using VolumeShot.Models;
 
@@ -13,9 +10,12 @@ namespace VolumeShot.ViewModels
     internal class ExchangeViewModel
     {
         public Exchange Exchange { get; set; }
-        public BinanceClient client { get; set; } = new();
-        public ExchangeViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol)
+        public BinanceClient client { get; set; }
+        public BinanceSocketClient socketClient { get; set; }
+        public ExchangeViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, BinanceSocketClient _socketClient, BinanceClient _client)
         {
+            socketClient = _socketClient;
+            client = _client;
             Exchange = new(binanceFuturesUsdtSymbol); 
         }
         private decimal RoundQuantity(decimal quantity)
