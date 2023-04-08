@@ -2,6 +2,7 @@
 using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using VolumeShot.Models;
 
@@ -27,6 +28,74 @@ namespace VolumeShot.ViewModels
             else if (Exchange.StepSize == 1m) quantity_final = Math.Round(quantity, 0);
             if (quantity_final < Exchange.MinQuantity) return Exchange.MinQuantity;
             return quantity_final;
+        }
+        private async void ClearOrdersToSymbolAsync()
+        {
+            await CancelAllOrdersAsync();
+            GetPositionInformationAsync();
+        }
+        private async Task CancelAllOrdersAsync()
+        {
+            await Task.Run(async() =>
+            {
+                var result = await client.UsdFuturesApi.Trading.CancelAllOrdersAsync(symbol: Exchange.Symbol);
+                if (!result.Success)
+                {
+                    Error.WriteLog("exchange", Exchange.Symbol, $"Failed CancelAllOrdersAsync: {result.Error?.Message}");
+                }
+                else
+                {
+                    Error.WriteLog("exchange", Exchange.Symbol, $"CancelAllOrdersAsync");
+                }
+            });
+        }
+        private async void GetPositionInformationAsync()
+        {
+            var result = await client.UsdFuturesApi.Account.GetPositionInformationAsync(symbol: Exchange.Symbol);
+            if (!result.Success)
+            {
+                Error.WriteLog("exchange", Exchange.Symbol, $"Failed GetPositionInformationAsync: {result.Error?.Message}");
+            }
+            else
+            {
+                Error.WriteLog("exchange", Exchange.Symbol, $"GetPositionInformationAsync:");
+                decimal quantity = result.Data.ToList()[0].Quantity;
+                if (quantity != 0m)
+                {
+                    if (quantity > 0m)
+                    {
+                        OpenOrderMarketAsync(OrderSide.Sell, quantity);
+                    }
+                    else
+                    {
+                        OpenOrderMarketAsync(OrderSide.Buy, -quantity);
+                    }
+                }
+            }
+        }
+        private async void OpenOrderMarketAsync(OrderSide side, decimal quantity)
+        {
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    Error.WriteLog("exchange", Exchange.Symbol, $"Open market order");
+                    var result = await client.UsdFuturesApi.Trading.PlaceOrderAsync(
+                        symbol: Exchange.Symbol,
+                        side: side,
+                        type: FuturesOrderType.Market,
+                        quantity: quantity,
+                        positionSide: PositionSide.Both);
+                    if (!result.Success)
+                    {
+                        Error.WriteLog("exchange", Exchange.Symbol, $"Failed OpenOrderMarketAsync: {result.Error?.Message}");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Error.WriteLog("exchange", Exchange.Symbol, $"Exception OpenOrderMarketAsync: {ex.Message}");
+            }
         }
         private async Task<long> OpenOrderTakeProfitAsync(OrderSide side, decimal price, decimal quantity)
         {
