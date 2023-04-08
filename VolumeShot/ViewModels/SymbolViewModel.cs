@@ -15,23 +15,18 @@ namespace VolumeShot.ViewModels
     internal class SymbolViewModel
     {
         public Symbol Symbol { get; set; } = new();
+        public ExchangeViewModel ExchangeViewModel { get; set; }
         public BinanceClient client { get; set; }
         public BinanceSocketClient socketClient { get; set; }
         public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, decimal volume, BinanceSocketClient _socketClient, BinanceClient _client) {
             socketClient = _socketClient;
             client = _client;
+            ExchangeViewModel = new ExchangeViewModel(binanceFuturesUsdtSymbol, _socketClient, _client);
             Symbol.Name = binanceFuturesUsdtSymbol.Name;
             Symbol.Volume = volume;
             Symbol.PropertyChanged += Symbol_PropertyChanged;
         }
 
-        public void OrderUpdate(BinanceFuturesStreamOrderUpdate OrderUpdate)
-        {
-            if (OrderUpdate.UpdateData.Symbol == Symbol.Name)
-            {
-                
-            }
-        }
 
         private void Symbol_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {

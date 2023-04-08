@@ -131,7 +131,7 @@ namespace VolumeShot.ViewModels
                             if (config != null) volume = config.Volume;
                         }
                         SymbolViewModel symbolViewModel = new(symbol, volume, socketClient, client);
-                        OnOrderUpdate += symbolViewModel.OrderUpdate;
+                        OnOrderUpdate += symbolViewModel.ExchangeViewModel.OrderUpdate;
                         Main.Symbols.Add(symbolViewModel.Symbol);
                     }
                 }

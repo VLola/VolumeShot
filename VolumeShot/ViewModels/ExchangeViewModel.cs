@@ -1,6 +1,7 @@
 ﻿using Binance.Net.Clients;
 using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
+using Binance.Net.Objects.Models.Futures.Socket;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,7 +18,31 @@ namespace VolumeShot.ViewModels
         {
             socketClient = _socketClient;
             client = _client;
-            Exchange = new(binanceFuturesUsdtSymbol); 
+            Exchange = new(binanceFuturesUsdtSymbol);
+        }
+        public void OrderUpdate(BinanceFuturesStreamOrderUpdate OrderUpdate)
+        {
+            if (OrderUpdate.UpdateData.Symbol == Exchange.Symbol)
+            {
+
+            }
+        }
+        public void SetDistance(decimal distanceLower, decimal distanceUpper, decimal price)
+        {
+            decimal openQuantity = RoundQuantity(Exchange.Usdt / price);
+
+            if (openQuantity * price < 10.5m)
+            {
+                openQuantity += Exchange.StepSize;
+            }
+
+            decimal Quantity = openQuantity;
+            decimal LowerDistance = RoundPriceDecimal(distanceLower);
+            decimal UpperDistance = RoundPriceDecimal(distanceUpper);
+        }
+        private decimal RoundPriceDecimal(decimal price)
+        {
+            return Math.Round(price, Exchange.RoundPrice);
         }
         private decimal RoundQuantity(decimal quantity)
         {
