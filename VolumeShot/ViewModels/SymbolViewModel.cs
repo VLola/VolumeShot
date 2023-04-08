@@ -149,6 +149,8 @@ namespace VolumeShot.ViewModels
                 Symbol.TakeProfit = Symbol.DistanceLower / 5;
                 bet.PriceStopLoss = Symbol.OpenLongOrderPrice - (Symbol.OpenLongOrderPrice / 100 * Symbol.StopLoss);
                 bet.PriceTakeProfit = Symbol.OpenLongOrderPrice + (Symbol.OpenLongOrderPrice / 100 * Symbol.TakeProfit);
+                bet.StopLoss = Symbol.StopLoss;
+                bet.TakeProfit = Symbol.TakeProfit;
             }
             if (Symbol.IsOpenShortOrder)
             {
@@ -156,6 +158,8 @@ namespace VolumeShot.ViewModels
                 Symbol.TakeProfit = Symbol.DistanceUpper / 5;
                 bet.PriceStopLoss = Symbol.OpenShortOrderPrice + (Symbol.OpenShortOrderPrice / 100 * Symbol.StopLoss);
                 bet.PriceTakeProfit = Symbol.OpenShortOrderPrice - (Symbol.OpenShortOrderPrice / 100 * Symbol.TakeProfit);
+                bet.StopLoss = Symbol.StopLoss;
+                bet.TakeProfit = Symbol.TakeProfit;
             }
             App.Current.Dispatcher.Invoke(new Action(() => {
                 Symbol.Bets.Add(bet);
