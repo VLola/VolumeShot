@@ -27,7 +27,7 @@ namespace VolumeShot.ViewModels
 
             }
         }
-        public void SetDistance(decimal distanceLower, decimal distanceUpper, decimal price)
+        public void SetDistances(decimal distanceLower, decimal distanceUpper, decimal price)
         {
             decimal openQuantity = RoundQuantity(Exchange.Usdt / price);
 

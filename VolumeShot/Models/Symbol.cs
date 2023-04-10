@@ -129,16 +129,7 @@ namespace VolumeShot.Models
                 OnPropertyChanged("OpenLongOrderPrice");
             }
         }
-        private bool _isOpenLongOrder { get; set; }
-        public bool IsOpenLongOrder
-        {
-            get { return _isOpenLongOrder; }
-            set
-            {
-                _isOpenLongOrder = value;
-                OnPropertyChanged("IsOpenLongOrder");
-            }
-        }
+        
         private decimal _openShortOrderPrice { get; set; }
         public decimal OpenShortOrderPrice
         {
@@ -147,16 +138,6 @@ namespace VolumeShot.Models
             {
                 _openShortOrderPrice = value;
                 OnPropertyChanged("OpenShortOrderPrice");
-            }
-        }
-        private bool _isOpenShortOrder { get; set; }
-        public bool IsOpenShortOrder
-        {
-            get { return _isOpenShortOrder; }
-            set
-            {
-                _isOpenShortOrder = value;
-                OnPropertyChanged("IsOpenShortOrder");
             }
         }
         private decimal _stopLoss { get; set; } = 0.3m;

@@ -65,5 +65,25 @@ namespace VolumeShot.Models
                 OnPropertyChanged("Usdt");
             }
         }
+        private bool _isOpenLongOrder { get; set; }
+        public bool IsOpenLongOrder
+        {
+            get { return _isOpenLongOrder; }
+            set
+            {
+                _isOpenLongOrder = value;
+                OnPropertyChanged("IsOpenLongOrder");
+            }
+        }
+        private bool _isOpenShortOrder { get; set; }
+        public bool IsOpenShortOrder
+        {
+            get { return _isOpenShortOrder; }
+            set
+            {
+                _isOpenShortOrder = value;
+                OnPropertyChanged("IsOpenShortOrder");
+            }
+        }
     }
 }

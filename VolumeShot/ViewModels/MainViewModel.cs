@@ -25,7 +25,7 @@ namespace VolumeShot.ViewModels
         public event AccountOnOrderUpdate? OnOrderUpdate;
         public MainViewModel()
         {
-            Binance("", "", true);
+            Binance("a4c675ddfa8005fdabf5580700bd87b2d0dff9108b1caa8295f5540e6cf118e5", "211c4565fb98ad121a10ce2cce9c31456890786cbce501ad426b0bbace6e1102", true);
             SubscribeToUserDataUpdatesAsync();
             Load();
         }
