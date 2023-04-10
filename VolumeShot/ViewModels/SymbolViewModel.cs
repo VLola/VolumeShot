@@ -446,14 +446,16 @@ namespace VolumeShot.ViewModels
                         // Asks
                         Symbol.OrderBook.AddAsks(Message.Data.Asks);
 
-
                         decimal maxBid = Symbol.OrderBook.MaxBid();
                         decimal percentBid = Symbol.OrderBook.GetPriceBids(Symbol.Volume);
-                        Symbol.DistanceLower = (maxBid - percentBid) / percentBid * 100;
 
                         decimal minAsk = Symbol.OrderBook.MinAsk();
                         decimal percentAsk = Symbol.OrderBook.GetPriceAsks(Symbol.Volume);
-                        Symbol.DistanceUpper = (percentAsk - minAsk) / minAsk * 100;
+                        if (percentBid > 0m && percentAsk > 0m)
+                        {
+                            Symbol.DistanceLower = (maxBid - percentBid) / percentBid * 100;
+                            Symbol.DistanceUpper = (percentAsk - minAsk) / minAsk * 100;
+                        }
                     }
                     catch (Exception ex)
                     {
