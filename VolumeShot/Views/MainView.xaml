@@ -11,6 +11,10 @@
             <ColumnDefinition Width="5*"/>
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
         <ListBox Grid.Column="0" ItemsSource="{Binding Path=Main.Symbols}" SelectedItem="{Binding Path=Main.SelectedSymbol}" HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -19,5 +23,8 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <local:SymbolInfoView Grid.Column="1"/>
+        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+            <WpfPlot  Content="{Binding Path=Main.WpfPlot}"/>
+        </Grid>
     </Grid>
 </UserControl>

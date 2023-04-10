@@ -12,11 +12,17 @@ using Binance.Net.Objects.Models.Futures.Socket;
 using Binance.Net.Objects;
 using CryptoExchange.Net.Authentication;
 using System.Windows;
+using System.Security;
+using ScottPlot.Drawing.Colormaps;
+using ScottPlot;
+using System.Drawing;
 
 namespace VolumeShot.ViewModels
 {
     internal class MainViewModel
     {
+        private const double _second10 = 0.00011574074596865103;
+        private const double _second60 = 0.0006944444394321181;
         string errorFile = "Binance";
         public Main Main { get; set; } = new();
         public BinanceClient client { get; set; }
@@ -28,6 +34,88 @@ namespace VolumeShot.ViewModels
             Binance("a4c675ddfa8005fdabf5580700bd87b2d0dff9108b1caa8295f5540e6cf118e5", "211c4565fb98ad121a10ce2cce9c31456890786cbce501ad426b0bbace6e1102", true);
             SubscribeToUserDataUpdatesAsync();
             Load();
+            LoadChart();
+            RunChart();
+        }
+        private void LoadChart()
+        {
+            App.Current.Dispatcher.Invoke((Action)delegate
+            {
+                Main.WpfPlot = new();
+                Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.bufferLower, Color.Gray, lineStyle: LineStyle.Dash);
+                Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.bufferUpper, Color.Gray, lineStyle: LineStyle.Dash);
+                Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.distanceLower, Color.Orange, lineStyle: LineStyle.Dash);
+                Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.distanceUpper, Color.Orange, lineStyle: LineStyle.Dash);
+                Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.takeProfit, Color.Green, lineStyle: LineStyle.Dash);
+                Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.stopLoss, Color.Red, lineStyle: LineStyle.Dash);
+                Main.WpfPlot.Plot.RenderLock();
+                Main.WpfPlot.Render();
+                Main.WpfPlot.Plot.RenderUnlock();
+            });
+        }
+        private async void RunChart()
+        {
+            await Task.Run(async () =>
+            {
+                while(true)
+                {
+                    await Task.Delay(100);
+                    if(Main.SelectedSymbol != null)
+                    {
+                        if (Main.SelectedSymbol.BufferLowerPrice > 0m &&
+                        Main.SelectedSymbol.BufferUpperPrice > 0m &&
+                        Main.SelectedSymbol.Exchange.DistanceLowerPrice > 0m &&
+                        Main.SelectedSymbol.Exchange.DistanceUpperPrice > 0m)
+                        {
+                            double dateTimeNew = DateTime.UtcNow.ToOADate();
+                            double dateTimeOld = DateTime.UtcNow.AddMinutes(-1).ToOADate();
+                            Main.x[0] = dateTimeOld;
+                            Main.x[1] = dateTimeNew;
+                            Main.bufferLower[0] = Main.bufferLower[1] = Decimal.ToDouble(Main.SelectedSymbol.BufferLowerPrice);
+                            Main.bufferUpper[0] = Main.bufferUpper[1] = Decimal.ToDouble(Main.SelectedSymbol.BufferUpperPrice);
+                            Main.distanceLower[0] = Main.distanceLower[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.DistanceLowerPrice);
+                            Main.distanceUpper[0] = Main.distanceUpper[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.DistanceUpperPrice);
+                            if (Main.SelectedSymbol.Exchange.IsOpenLongOrder)
+                            {
+                                Main.takeProfit[0] = Main.takeProfit[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.TakeProfitLong);
+                                Main.stopLoss[0] = Main.stopLoss[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.StopLossLong);
+                            }
+                            else if (Main.SelectedSymbol.Exchange.IsOpenShortOrder)
+                            {
+                                Main.takeProfit[0] = Main.takeProfit[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.TakeProfitShort);
+                                Main.stopLoss[0] = Main.stopLoss[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.StopLossShort);
+                            }
+                            else
+                            {
+                                Main.takeProfit[0] = Main.takeProfit[1] = 0;
+                                Main.stopLoss[0] = Main.stopLoss[1] = 0;
+                            }
+                            SetY(Main.distanceLower[0], Main.distanceUpper[0]);
+                            AutoAxisX(dateTimeNew);
+                        }
+                    }
+                }
+            });
+        }
+        private void SetY(double lowerDistance, double upperDistance)
+        {
+            Main.WpfPlot.Dispatcher.Invoke(new Action(() =>
+            {
+                Main.WpfPlot.Plot.RenderLock();
+                Main.WpfPlot.Plot.SetAxisLimitsY(yMin: lowerDistance - (lowerDistance / 300), yMax: upperDistance + (upperDistance / 300));
+                Main.WpfPlot.Render();
+                Main.WpfPlot.Plot.RenderUnlock();
+            }));
+        }
+        private void AutoAxisX(double dateTime)
+        {
+            Main.WpfPlot.Dispatcher.Invoke(new Action(() =>
+            {
+                Main.WpfPlot.Plot.RenderLock();
+                Main.WpfPlot.Plot.SetAxisLimitsX(xMin: dateTime - _second60, xMax: dateTime + _second10);
+                Main.WpfPlot.Render();
+                Main.WpfPlot.Plot.RenderUnlock();
+            }));
         }
         private void Binance(string apiKey, string secretKey, bool isTestnet)
         {

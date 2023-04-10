@@ -2,7 +2,7 @@
 
 namespace VolumeShot.Models
 {
-    internal class Exchange : Changed
+    public class Exchange : Changed
     {
         public Exchange(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol)
         {
@@ -83,6 +83,86 @@ namespace VolumeShot.Models
             {
                 _isOpenShortOrder = value;
                 OnPropertyChanged("IsOpenShortOrder");
+            }
+        }
+        private decimal _takeProfitLong { get; set; }
+        public decimal TakeProfitLong
+        {
+            get { return _takeProfitLong; }
+            set
+            {
+                _takeProfitLong = value;
+                OnPropertyChanged("TakeProfitLong");
+            }
+        }
+        private decimal _takeProfitShort { get; set; }
+        public decimal TakeProfitShort
+        {
+            get { return _takeProfitShort; }
+            set
+            {
+                _takeProfitShort = value;
+                OnPropertyChanged("TakeProfitShort");
+            }
+        }
+        private decimal _stopLossLong { get; set; }
+        public decimal StopLossLong
+        {
+            get { return _stopLossLong; }
+            set
+            {
+                _stopLossLong = value;
+                OnPropertyChanged("StopLossLong");
+            }
+        }
+        private decimal _stopLossShort { get; set; }
+        public decimal StopLossShort
+        {
+            get { return _stopLossShort; }
+            set
+            {
+                _stopLossShort = value;
+                OnPropertyChanged("StopLossShort");
+            }
+        }
+        private decimal _distanceUpper { get; set; }
+        public decimal DistanceUpper
+        {
+            get { return _distanceUpper; }
+            set
+            {
+                _distanceUpper = value;
+                OnPropertyChanged("DistanceUpper");
+            }
+        }
+        private decimal _distanceLower { get; set; }
+        public decimal DistanceLower
+        {
+            get { return _distanceLower; }
+            set
+            {
+                _distanceLower = value;
+                OnPropertyChanged("DistanceLower");
+            }
+        }
+        private decimal _distanceUpperPrice { get; set; }
+        public decimal DistanceUpperPrice
+        {
+            get { return _distanceUpperPrice; }
+            set
+            {
+                _distanceUpperPrice = value;
+                OnPropertyChanged("DistanceUpperPrice");
+            }
+        }
+        private decimal _distanceLowerPrice { get; set; }
+        public decimal DistanceLowerPrice
+        {
+            get { return _distanceLowerPrice; }
+            set
+            {
+                _distanceLowerPrice = value;
+                OnPropertyChanged("DistanceLowerPrice");
             }
         }
     }

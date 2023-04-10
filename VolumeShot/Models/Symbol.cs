@@ -1,4 +1,4 @@
-﻿using Binance.Net.Objects.Models;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -6,6 +6,7 @@ namespace VolumeShot.Models
 {
     public class Symbol : Changed
     {
+        public Exchange Exchange { get; set; }
         public ObservableCollection<Bet> Bets { get; set; } = new();
         public List<Order> Orders { get; set; } = new();
         public OrderBook OrderBook = new();
@@ -59,6 +60,16 @@ namespace VolumeShot.Models
                 OnPropertyChanged("BestBidPrice");
             }
         }
+        private DateTime _dateTime { get; set; }
+        public DateTime DateTime
+        {
+            get { return _dateTime; }
+            set
+            {
+                _dateTime = value;
+                OnPropertyChanged("DateTime");
+            }
+        }
         private decimal _bestAskPriceLast { get; set; }
         public decimal BestAskPriceLast
         {
@@ -79,7 +90,7 @@ namespace VolumeShot.Models
                 OnPropertyChanged("BestBidPriceLast");
             }
         }
-        private decimal _distanceUpper { get; set; } = 0.3m;
+        private decimal _distanceUpper { get; set; }
         public decimal DistanceUpper
         {
             get { return _distanceUpper; }
@@ -89,7 +100,7 @@ namespace VolumeShot.Models
                 OnPropertyChanged("DistanceUpper");
             }
         }
-        private decimal _distanceLower { get; set; } = 0.3m;
+        private decimal _distanceLower { get; set; }
         public decimal DistanceLower
         {
             get { return _distanceLower; }
@@ -99,7 +110,7 @@ namespace VolumeShot.Models
                 OnPropertyChanged("DistanceLower");
             }
         }
-        private decimal _bufferUpper { get; set; } = 0.15m;
+        private decimal _bufferUpper { get; set; }
         public decimal BufferUpper
         {
             get { return _bufferUpper; }
@@ -109,7 +120,7 @@ namespace VolumeShot.Models
                 OnPropertyChanged("BufferUpper");
             }
         }
-        private decimal _bufferLower { get; set; } = 0.15m;
+        private decimal _bufferLower { get; set; }
         public decimal BufferLower
         {
             get { return _bufferLower; }
@@ -117,6 +128,26 @@ namespace VolumeShot.Models
             {
                 _bufferLower = value;
                 OnPropertyChanged("BufferLower");
+            }
+        }
+        private decimal _bufferUpperPrice { get; set; }
+        public decimal BufferUpperPrice
+        {
+            get { return _bufferUpperPrice; }
+            set
+            {
+                _bufferUpperPrice = value;
+                OnPropertyChanged("BufferUpperPrice");
+            }
+        }
+        private decimal _bufferLowerPrice { get; set; }
+        public decimal BufferLowerPrice
+        {
+            get { return _bufferLowerPrice; }
+            set
+            {
+                _bufferLowerPrice = value;
+                OnPropertyChanged("BufferLowerPrice");
             }
         }
         private decimal _openLongOrderPrice { get; set; }

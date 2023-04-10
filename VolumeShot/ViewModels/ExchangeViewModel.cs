@@ -2,6 +2,7 @@
 using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
 using Binance.Net.Objects.Models.Futures.Socket;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,26 +20,108 @@ namespace VolumeShot.ViewModels
             socketClient = _socketClient;
             client = _client;
             Exchange = new(binanceFuturesUsdtSymbol);
+            Exchange.PropertyChanged += Exchange_PropertyChanged;
         }
+
+        private void Exchange_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == "IsOpenShortOrder")
+            {
+
+            }
+            else if (e.PropertyName == "IsOpenLongOrder")
+            {
+
+            }
+        }
+
         public void OrderUpdate(BinanceFuturesStreamOrderUpdate OrderUpdate)
         {
             if (OrderUpdate.UpdateData.Symbol == Exchange.Symbol)
             {
-
+                if (OrderUpdate.UpdateData.Status == OrderStatus.Filled)
+                {
+                    if (OrderUpdate.UpdateData.Type == FuturesOrderType.Limit)
+                    {
+                        if(!Exchange.IsOpenLongOrder && !Exchange.IsOpenLongOrder)
+                        {
+                            if (OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Long)
+                            {
+                                Exchange.IsOpenLongOrder = true;
+                                OpenOrder(OrderUpdate.UpdateData.OrderId, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Side, OrderUpdate.UpdateData.Quantity, OrderUpdate.UpdateData.UpdateTime);
+                            }
+                            else if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
+                            {
+                                Exchange.IsOpenShortOrder = true;
+                                OpenOrder(OrderUpdate.UpdateData.OrderId, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Side, OrderUpdate.UpdateData.Quantity, OrderUpdate.UpdateData.UpdateTime);
+                            }
+                        }
+                        else if(Exchange.IsOpenLongOrder || Exchange.IsOpenLongOrder)
+                        {
+                            if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
+                            {
+                                Error.WriteLog("exchange", Exchange.Symbol, "Clear orders 1:");
+                                ClearOrdersToSymbolAsync();
+                            }
+                        }
+                    }
+                    else if (OrderUpdate.UpdateData.Type == FuturesOrderType.Market)
+                    {
+                        if (Exchange.IsOpenLongOrder || Exchange.IsOpenLongOrder)
+                        {
+                            if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
+                            {
+                                Error.WriteLog("exchange", Exchange.Symbol, "Clear orders 2:");
+                                ClearOrdersToSymbolAsync();
+                            }
+                        }
+                    }
+                }
+                // Write log
+                string json = JsonConvert.SerializeObject(OrderUpdate.UpdateData);
+                Error.WriteLog("exchange", Exchange.Symbol, json);
             }
         }
-        public void SetDistances(decimal distanceLower, decimal distanceUpper, decimal price)
+        private async void OpenOrder(long orderId, decimal price, OrderSide side, decimal quantity, DateTime time)
         {
-            decimal openQuantity = RoundQuantity(Exchange.Usdt / price);
+            Error.WriteLog("exchange", Exchange.Symbol, "Open take profit order:");
+            if (side == OrderSide.Buy)
+            {
+                await CancelAllOrdersAsync();
+                OpenOrderTakeProfitAsync(PositionSide.Long, OrderSide.Sell, Exchange.TakeProfitLong, quantity);
+            }
+            else
+            {
+                await CancelAllOrdersAsync();
+                OpenOrderTakeProfitAsync(PositionSide.Short, OrderSide.Buy, Exchange.TakeProfitShort, quantity);
+            }
+        }
+        public async Task SetDistances(decimal distanceUpper, decimal distanceLower, decimal askPrice, decimal bidPrice)
+        {
+            decimal openQuantity = RoundQuantity(Exchange.Usdt / askPrice);
 
-            if (openQuantity * price < 10.5m)
+            if (openQuantity * askPrice < 10.5m)
             {
                 openQuantity += Exchange.StepSize;
             }
 
-            decimal Quantity = openQuantity;
-            decimal LowerDistance = RoundPriceDecimal(distanceLower);
-            decimal UpperDistance = RoundPriceDecimal(distanceUpper);
+            decimal priceDistanceLower = RoundPriceDecimal(bidPrice - (bidPrice / 100 * distanceLower));
+            Exchange.DistanceLowerPrice = priceDistanceLower;
+            Exchange.DistanceLower = distanceLower;
+            Exchange.TakeProfitLong = RoundPriceDecimal(priceDistanceLower + (priceDistanceLower / 100 * distanceLower / 5));
+            Exchange.StopLossLong = RoundPriceDecimal(priceDistanceLower - (priceDistanceLower / 100 * distanceLower / 2));
+
+            decimal priceDistanceUpper = RoundPriceDecimal(askPrice + (askPrice / 100 * distanceUpper));
+            Exchange.DistanceUpperPrice = priceDistanceUpper;
+            Exchange.DistanceUpper = distanceUpper;
+            Exchange.TakeProfitShort = RoundPriceDecimal(priceDistanceUpper - (priceDistanceUpper / 100 * distanceUpper / 5));
+            Exchange.StopLossShort = RoundPriceDecimal(priceDistanceUpper + (priceDistanceUpper / 100 * distanceUpper / 2));
+
+            Error.WriteLog("exchange", Exchange.Symbol, "Cancel orders:");
+            await CancelAllOrdersAsync();
+            Error.WriteLog("exchange", Exchange.Symbol, "Set distance:");
+            await OpenOrderLimitAsync(PositionSide.Long, OrderSide.Buy, priceDistanceLower, openQuantity);
+            await OpenOrderLimitAsync(PositionSide.Short, OrderSide.Sell, priceDistanceUpper, openQuantity);
         }
         private decimal RoundPriceDecimal(decimal price)
         {
@@ -54,10 +137,13 @@ namespace VolumeShot.ViewModels
             if (quantity_final < Exchange.MinQuantity) return Exchange.MinQuantity;
             return quantity_final;
         }
-        private async void ClearOrdersToSymbolAsync()
+        public async void ClearOrdersToSymbolAsync()
         {
+            Error.WriteLog("exchange", Exchange.Symbol, "Close orders:");
             await CancelAllOrdersAsync();
             GetPositionInformationAsync();
+            Exchange.IsOpenLongOrder = false;
+            Exchange.IsOpenShortOrder = false;
         }
         private async Task CancelAllOrdersAsync()
         {
@@ -84,21 +170,24 @@ namespace VolumeShot.ViewModels
             else
             {
                 Error.WriteLog("exchange", Exchange.Symbol, $"GetPositionInformationAsync:");
-                decimal quantity = result.Data.ToList()[0].Quantity;
-                if (quantity != 0m)
+                Error.WriteLog("exchange", Exchange.Symbol, JsonConvert.SerializeObject(result.Data.ToList()));
+                foreach (var item in result.Data.ToList())
                 {
-                    if (quantity > 0m)
+                    if (item.Quantity != 0m)
                     {
-                        OpenOrderMarketAsync(OrderSide.Sell, quantity);
-                    }
-                    else
-                    {
-                        OpenOrderMarketAsync(OrderSide.Buy, -quantity);
+                        if (item.Quantity > 0m)
+                        {
+                            OpenOrderMarketAsync(item.PositionSide, OrderSide.Sell, item.Quantity);
+                        }
+                        else
+                        {
+                            OpenOrderMarketAsync(item.PositionSide, OrderSide.Buy, -item.Quantity);
+                        }
                     }
                 }
             }
         }
-        private async void OpenOrderMarketAsync(OrderSide side, decimal quantity)
+        private async void OpenOrderMarketAsync(PositionSide positionSide, OrderSide side, decimal quantity)
         {
             try
             {
@@ -110,7 +199,7 @@ namespace VolumeShot.ViewModels
                         side: side,
                         type: FuturesOrderType.Market,
                         quantity: quantity,
-                        positionSide: PositionSide.Both);
+                        positionSide: positionSide);
                     if (!result.Success)
                     {
                         Error.WriteLog("exchange", Exchange.Symbol, $"Failed OpenOrderMarketAsync: {result.Error?.Message}");
@@ -122,7 +211,7 @@ namespace VolumeShot.ViewModels
                 Error.WriteLog("exchange", Exchange.Symbol, $"Exception OpenOrderMarketAsync: {ex.Message}");
             }
         }
-        private async Task<long> OpenOrderTakeProfitAsync(OrderSide side, decimal price, decimal quantity)
+        private async Task<long> OpenOrderTakeProfitAsync(PositionSide positionSide, OrderSide side, decimal price, decimal quantity)
         {
             Error.WriteLog("exchange", Exchange.Symbol, $"Open take profit order");
             var result = await client.UsdFuturesApi.Trading.PlaceOrderAsync(
@@ -131,7 +220,7 @@ namespace VolumeShot.ViewModels
                     type: FuturesOrderType.Limit,
                     price: price,
                     quantity: quantity,
-                    positionSide: PositionSide.Both,
+                    positionSide: positionSide,
                     timeInForce: TimeInForce.GoodTillCanceled);
             if (!result.Success)
             {
@@ -143,7 +232,7 @@ namespace VolumeShot.ViewModels
                 return result.Data.Id;
             }
         }
-        private async Task<long> OpenOrderLimitAsync(OrderSide side, decimal price, decimal quantity)
+        private async Task<long> OpenOrderLimitAsync(PositionSide positionSide, OrderSide side, decimal price, decimal quantity)
         {
             var result = await client.UsdFuturesApi.Trading.PlaceOrderAsync(
                     symbol: Exchange.Symbol,
@@ -151,7 +240,7 @@ namespace VolumeShot.ViewModels
                     type: FuturesOrderType.Limit,
                     price: price,
                     quantity: quantity,
-                    positionSide: PositionSide.Both,
+                    positionSide: positionSide,
                     timeInForce: TimeInForce.GoodTillCanceled);
             if (!result.Success)
             {
