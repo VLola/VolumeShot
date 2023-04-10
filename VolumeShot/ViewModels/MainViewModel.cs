@@ -6,14 +6,10 @@ using VolumeShot.Models;
 using Binance.Net.Objects.Models.Futures;
 using System.IO;
 using Newtonsoft.Json;
-using CryptoExchange.Net.Interfaces;
 using System.Threading.Tasks;
 using Binance.Net.Objects.Models.Futures.Socket;
 using Binance.Net.Objects;
-using CryptoExchange.Net.Authentication;
 using System.Windows;
-using System.Security;
-using ScottPlot.Drawing.Colormaps;
 using ScottPlot;
 using System.Drawing;
 
@@ -21,9 +17,10 @@ namespace VolumeShot.ViewModels
 {
     internal class MainViewModel
     {
+        private string path = $"{Directory.GetCurrentDirectory()}/log/";
         private const double _second10 = 0.00011574074596865103;
         private const double _second60 = 0.0006944444394321181;
-        string errorFile = "Binance";
+        string errorFile = "Main";
         public Main Main { get; set; } = new();
         public BinanceClient client { get; set; }
         public BinanceSocketClient socketClient { get; set; }
@@ -31,6 +28,7 @@ namespace VolumeShot.ViewModels
         public event AccountOnOrderUpdate? OnOrderUpdate;
         public MainViewModel()
         {
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             Binance("a4c675ddfa8005fdabf5580700bd87b2d0dff9108b1caa8295f5540e6cf118e5", "211c4565fb98ad121a10ce2cce9c31456890786cbce501ad426b0bbace6e1102", true);
             //Binance("L1YfcwRDUtoaAChO3OMLMWICx33zAZyj6hqWhjAfqAoIE9uAPHq9zYtlns4m7kFJ", "Ja5eBLb3yIFzivc2N5kbofPE2RTolMIyEBjZJsr51aCV3X98yGMhSpTeUGh75n0H", false);
             SubscribeToUserDataUpdatesAsync();
@@ -158,12 +156,12 @@ namespace VolumeShot.ViewModels
             var listenKey = await client.UsdFuturesApi.Account.StartUserStreamAsync();
             if (!listenKey.Success)
             {
-                Error.WriteLog("", errorFile, $"Failed to start user stream: listenKey");
+                Error.WriteLog(path, errorFile, $"Failed to start user stream: listenKey");
             }
             else
             {
                 KeepAliveUserStreamAsync(listenKey.Data);
-                Error.WriteLog("", errorFile, $"Listen Key Created");
+                Error.WriteLog(path, errorFile, $"Listen Key Created");
                 var result = await socketClient.UsdFuturesStreams.SubscribeToUserDataUpdatesAsync(listenKey: listenKey.Data,
                     onLeverageUpdate => { },
                     onMarginUpdate => { },
@@ -177,7 +175,7 @@ namespace VolumeShot.ViewModels
                     onGridUpdate => { });
                 if (!result.Success)
                 {
-                    Error.WriteLog("", errorFile, $"Failed UserDataUpdates: {result.Error?.Message}");
+                    Error.WriteLog(path, errorFile, $"Failed UserDataUpdates: {result.Error?.Message}");
                 }
             }
         }
@@ -188,10 +186,10 @@ namespace VolumeShot.ViewModels
                 while (true)
                 {
                     var result = await client.UsdFuturesApi.Account.KeepAliveUserStreamAsync(listenKey);
-                    if (!result.Success) Error.WriteLog("", errorFile, $"Failed KeepAliveUserStreamAsync: {result.Error?.Message}");
+                    if (!result.Success) Error.WriteLog(path, errorFile, $"Failed KeepAliveUserStreamAsync: {result.Error?.Message}");
                     else
                     {
-                        Error.WriteLog("", errorFile, "Success KeepAliveUserStreamAsync");
+                        Error.WriteLog(path, errorFile, "Success KeepAliveUserStreamAsync");
                     }
                     await Task.Delay(900000);
                 }
@@ -233,7 +231,7 @@ namespace VolumeShot.ViewModels
                 var result = client.UsdFuturesApi.ExchangeData.GetExchangeInfoAsync().Result;
                 if (!result.Success)
                 {
-                    Error.WriteLog("", errorFile, $"Failed ListSymbols {result.Error?.Message}");
+                    Error.WriteLog(path, errorFile, $"Failed ListSymbols {result.Error?.Message}");
                     return new();
                 }
                 return result.Data.Symbols.ToList();
@@ -241,7 +239,7 @@ namespace VolumeShot.ViewModels
             }
             catch (Exception ex)
             {
-                Error.WriteLog("", errorFile, $"Exception ListSymbols: {ex.Message}");
+                Error.WriteLog(path, errorFile, $"Exception ListSymbols: {ex.Message}");
                 return new();
             }
         }

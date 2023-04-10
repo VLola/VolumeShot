@@ -4,6 +4,7 @@ using Binance.Net.Objects.Models.Futures;
 using Binance.Net.Objects.Models.Futures.Socket;
 using Newtonsoft.Json;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using VolumeShot.Models;
@@ -12,11 +13,13 @@ namespace VolumeShot.ViewModels
 {
     internal class ExchangeViewModel
     {
+        private string path = $"{Directory.GetCurrentDirectory()}/log/exchange/";
         public Exchange Exchange { get; set; }
         public BinanceClient client { get; set; }
         public BinanceSocketClient socketClient { get; set; }
         public ExchangeViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, BinanceSocketClient _socketClient, BinanceClient _client)
         {
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             socketClient = _socketClient;
             client = _client;
             Exchange = new(binanceFuturesUsdtSymbol);
@@ -60,7 +63,7 @@ namespace VolumeShot.ViewModels
                         {
                             if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                             {
-                                Error.WriteLog("exchange", Exchange.Symbol, "Clear orders 1:");
+                                Error.WriteLog(path, Exchange.Symbol, "Clear orders 1:");
                                 ClearOrdersToSymbolAsync();
                             }
                         }
@@ -71,7 +74,7 @@ namespace VolumeShot.ViewModels
                         {
                             if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                             {
-                                Error.WriteLog("exchange", Exchange.Symbol, "Clear orders 2:");
+                                Error.WriteLog(path, Exchange.Symbol, "Clear orders 2:");
                                 ClearOrdersToSymbolAsync();
                             }
                         }
@@ -79,12 +82,12 @@ namespace VolumeShot.ViewModels
                 }
                 // Write log
                 string json = JsonConvert.SerializeObject(OrderUpdate.UpdateData);
-                Error.WriteLog("exchange", Exchange.Symbol, json);
+                Error.WriteLog(path, Exchange.Symbol, json);
             }
         }
         private async void OpenOrder(long orderId, decimal price, OrderSide side, decimal quantity, DateTime time)
         {
-            Error.WriteLog("exchange", Exchange.Symbol, "Open take profit order:");
+            Error.WriteLog(path, Exchange.Symbol, "Open take profit order:");
             if (side == OrderSide.Buy)
             {
                 await CancelAllOrdersAsync();
@@ -117,9 +120,9 @@ namespace VolumeShot.ViewModels
             Exchange.TakeProfitShort = RoundPriceDecimal(priceDistanceUpper - (priceDistanceUpper / 100 * distanceUpper / 5));
             Exchange.StopLossShort = RoundPriceDecimal(priceDistanceUpper + (priceDistanceUpper / 100 * distanceUpper / 2));
 
-            Error.WriteLog("exchange", Exchange.Symbol, "Cancel orders:");
+            Error.WriteLog(path, Exchange.Symbol, "Cancel orders:");
             await CancelAllOrdersAsync();
-            Error.WriteLog("exchange", Exchange.Symbol, "Set distance:");
+            Error.WriteLog(path, Exchange.Symbol, "Set distance:");
             await OpenOrderLimitAsync(PositionSide.Long, OrderSide.Buy, priceDistanceLower, openQuantity);
             await OpenOrderLimitAsync(PositionSide.Short, OrderSide.Sell, priceDistanceUpper, openQuantity);
         }
@@ -139,7 +142,7 @@ namespace VolumeShot.ViewModels
         }
         public async void ClearOrdersToSymbolAsync()
         {
-            Error.WriteLog("exchange", Exchange.Symbol, "Close orders:");
+            Error.WriteLog(path, Exchange.Symbol, "Close orders:");
             await CancelAllOrdersAsync();
             GetPositionInformationAsync();
             Exchange.IsOpenLongOrder = false;
@@ -152,11 +155,11 @@ namespace VolumeShot.ViewModels
                 var result = await client.UsdFuturesApi.Trading.CancelAllOrdersAsync(symbol: Exchange.Symbol);
                 if (!result.Success)
                 {
-                    Error.WriteLog("exchange", Exchange.Symbol, $"Failed CancelAllOrdersAsync: {result.Error?.Message}");
+                    Error.WriteLog(path, Exchange.Symbol, $"Failed CancelAllOrdersAsync: {result.Error?.Message}");
                 }
                 else
                 {
-                    Error.WriteLog("exchange", Exchange.Symbol, $"CancelAllOrdersAsync");
+                    Error.WriteLog(path, Exchange.Symbol, $"CancelAllOrdersAsync");
                 }
             });
         }
@@ -165,12 +168,12 @@ namespace VolumeShot.ViewModels
             var result = await client.UsdFuturesApi.Account.GetPositionInformationAsync(symbol: Exchange.Symbol);
             if (!result.Success)
             {
-                Error.WriteLog("exchange", Exchange.Symbol, $"Failed GetPositionInformationAsync: {result.Error?.Message}");
+                Error.WriteLog(path, Exchange.Symbol, $"Failed GetPositionInformationAsync: {result.Error?.Message}");
             }
             else
             {
-                Error.WriteLog("exchange", Exchange.Symbol, $"GetPositionInformationAsync:");
-                Error.WriteLog("exchange", Exchange.Symbol, JsonConvert.SerializeObject(result.Data.ToList()));
+                Error.WriteLog(path, Exchange.Symbol, $"GetPositionInformationAsync:");
+                Error.WriteLog(path, Exchange.Symbol, JsonConvert.SerializeObject(result.Data.ToList()));
                 foreach (var item in result.Data.ToList())
                 {
                     if (item.Quantity != 0m)
@@ -193,7 +196,7 @@ namespace VolumeShot.ViewModels
             {
                 await Task.Run(async () =>
                 {
-                    Error.WriteLog("exchange", Exchange.Symbol, $"Open market order");
+                    Error.WriteLog(path, Exchange.Symbol, $"Open market order");
                     var result = await client.UsdFuturesApi.Trading.PlaceOrderAsync(
                         symbol: Exchange.Symbol,
                         side: side,
@@ -202,18 +205,18 @@ namespace VolumeShot.ViewModels
                         positionSide: positionSide);
                     if (!result.Success)
                     {
-                        Error.WriteLog("exchange", Exchange.Symbol, $"Failed OpenOrderMarketAsync: {result.Error?.Message}");
+                        Error.WriteLog(path, Exchange.Symbol, $"Failed OpenOrderMarketAsync: {result.Error?.Message}");
                     }
                 });
             }
             catch (Exception ex)
             {
-                Error.WriteLog("exchange", Exchange.Symbol, $"Exception OpenOrderMarketAsync: {ex.Message}");
+                Error.WriteLog(path, Exchange.Symbol, $"Exception OpenOrderMarketAsync: {ex.Message}");
             }
         }
         private async Task<long> OpenOrderTakeProfitAsync(PositionSide positionSide, OrderSide side, decimal price, decimal quantity)
         {
-            Error.WriteLog("exchange", Exchange.Symbol, $"Open take profit order");
+            Error.WriteLog(path, Exchange.Symbol, $"Open take profit order");
             var result = await client.UsdFuturesApi.Trading.PlaceOrderAsync(
                     symbol: Exchange.Symbol,
                     side: side,
@@ -224,7 +227,7 @@ namespace VolumeShot.ViewModels
                     timeInForce: TimeInForce.GoodTillCanceled);
             if (!result.Success)
             {
-                Error.WriteLog("exchange", Exchange.Symbol, $"Failed OpenOrderTakeProfitAsync: {result.Error?.Message}");
+                Error.WriteLog(path, Exchange.Symbol, $"Failed OpenOrderTakeProfitAsync: {result.Error?.Message}");
                 return 0;
             }
             else
@@ -244,7 +247,7 @@ namespace VolumeShot.ViewModels
                     timeInForce: TimeInForce.GoodTillCanceled);
             if (!result.Success)
             {
-                Error.WriteLog("exchange", Exchange.Symbol, $"Failed OpenOrderLimitAsync: {result.Error?.Message}");
+                Error.WriteLog(path, Exchange.Symbol, $"Failed OpenOrderLimitAsync: {result.Error?.Message}");
                 return 0;
             }
             else
@@ -257,7 +260,7 @@ namespace VolumeShot.ViewModels
             var result = await client.UsdFuturesApi.Trading.GetOrderAsync(Exchange.Symbol, orderId);
             if (!result.Success)
             {
-                Error.WriteLog("exchange", Exchange.Symbol, $"Failed OrderInfoAsync: {result.Error?.Message}");
+                Error.WriteLog(path, Exchange.Symbol, $"Failed OrderInfoAsync: {result.Error?.Message}");
                 return 0m;
             }
             else
@@ -270,7 +273,7 @@ namespace VolumeShot.ViewModels
             var result = await client.UsdFuturesApi.Trading.CancelOrderAsync(symbol: Exchange.Symbol, orderId: orderId);
             if (!result.Success)
             {
-                Error.WriteLog("exchange", Exchange.Symbol, $"Failed CancelLimitOrderAsync: {result.Error?.Message}");
+                Error.WriteLog(path, Exchange.Symbol, $"Failed CancelLimitOrderAsync: {result.Error?.Message}");
                 return false;
             }
             else

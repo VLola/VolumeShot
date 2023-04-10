@@ -12,11 +12,15 @@ namespace VolumeShot.ViewModels
 {
     internal class SymbolViewModel
     {
+        private string path = "binance";
+        private string directory = $"{Directory.GetCurrentDirectory()}/log/";
         public Symbol Symbol { get; set; } = new();
         public ExchangeViewModel ExchangeViewModel { get; set; }
         public BinanceClient client { get; set; }
         public BinanceSocketClient socketClient { get; set; }
         public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, decimal volume, BinanceSocketClient _socketClient, BinanceClient _client) {
+
+            if (!Directory.Exists(directory + path)) Directory.CreateDirectory(directory + path);
             socketClient = _socketClient;
             client = _client;
             ExchangeViewModel = new ExchangeViewModel(binanceFuturesUsdtSymbol, _socketClient, _client);
@@ -379,7 +383,7 @@ namespace VolumeShot.ViewModels
             }
             catch (Exception ex)
             {
-                Error.WriteLog("binance", Symbol.Name, $"Exception SubscribeAsync {ex.Message}");
+                Error.WriteLog(path, Symbol.Name, $"Exception SubscribeAsync {ex.Message}");
             }
         }
         private async Task SubscribeToBookTickerUpdatesAsync()
@@ -399,7 +403,7 @@ namespace VolumeShot.ViewModels
                     if(Message.Data.TransactionTime != null) Symbol.DateTime = (DateTime)Message.Data.TransactionTime;
                     Symbol.Orders.Add(new Order() { BestAskPrice = Message.Data.BestAskPrice, BestBidPrice = Message.Data.BestBidPrice, DateTime = DateTime.UtcNow });
                 });
-                if (!result.Success) Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeToBookTickerUpdatesAsync: {result.Error?.Message}");
+                if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToBookTickerUpdatesAsync: {result.Error?.Message}");
                 else socketId = result.Data.Id;
             });
         }
@@ -408,7 +412,7 @@ namespace VolumeShot.ViewModels
             await Task.Run(async () =>
             {
                 var result = await client.UsdFuturesApi.ExchangeData.GetOrderBookAsync(Symbol.Name, limit: 1000);
-                if (!result.Success) Error.WriteLog("binance", Symbol.Name, $"Failed GetOrderBookAsync: {result.Error?.Message}");
+                if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed GetOrderBookAsync: {result.Error?.Message}");
                 else
                 {
                     Symbol.OrderBook.Bids.Clear();
@@ -453,11 +457,11 @@ namespace VolumeShot.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeToOrderBookUpdatesAsync: {ex.Message}");
+                        Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToOrderBookUpdatesAsync: {ex.Message}");
                     }
 
                 });
-                if (!result.Success) Error.WriteLog("binance", Symbol.Name, $"Failed SubscribeToOrderBookUpdatesAsync: {result.Error?.Message}");
+                if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToOrderBookUpdatesAsync: {result.Error?.Message}");
                 else socketId = result.Data.Id;
             });
         }
