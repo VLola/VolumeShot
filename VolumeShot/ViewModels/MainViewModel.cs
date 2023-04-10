@@ -32,6 +32,7 @@ namespace VolumeShot.ViewModels
         public MainViewModel()
         {
             Binance("a4c675ddfa8005fdabf5580700bd87b2d0dff9108b1caa8295f5540e6cf118e5", "211c4565fb98ad121a10ce2cce9c31456890786cbce501ad426b0bbace6e1102", true);
+            //Binance("L1YfcwRDUtoaAChO3OMLMWICx33zAZyj6hqWhjAfqAoIE9uAPHq9zYtlns4m7kFJ", "Ja5eBLb3yIFzivc2N5kbofPE2RTolMIyEBjZJsr51aCV3X98yGMhSpTeUGh75n0H", false);
             SubscribeToUserDataUpdatesAsync();
             Load();
             LoadChart();
