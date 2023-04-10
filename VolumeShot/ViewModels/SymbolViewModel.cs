@@ -430,31 +430,42 @@ namespace VolumeShot.ViewModels
                 int i = 0;
                 var result = await socketClient.UsdFuturesStreams.SubscribeToOrderBookUpdatesAsync(Symbol.Name, updateInterval: 500, Message =>
                 {
-                    if (!Symbol.IsRun)
-                    {
-                        socketClient.UnsubscribeAsync(socketId);
-                        Symbol.OrderBook.Bids.Clear();
-                        Symbol.OrderBook.Asks.Clear();
-                    }
-
                     try
                     {
-
+                        if (!Symbol.IsRun)
+                        {
+                            socketClient.UnsubscribeAsync(socketId);
+                            Symbol.OrderBook.Bids.Clear();
+                            Symbol.OrderBook.Asks.Clear();
+                        }
                         // Bids
                         Symbol.OrderBook.AddBids(Message.Data.Bids);
 
                         // Asks
                         Symbol.OrderBook.AddAsks(Message.Data.Asks);
 
+
                         decimal maxBid = Symbol.OrderBook.MaxBid();
                         decimal percentBid = Symbol.OrderBook.GetPriceBids(Symbol.Volume);
 
                         decimal minAsk = Symbol.OrderBook.MinAsk();
                         decimal percentAsk = Symbol.OrderBook.GetPriceAsks(Symbol.Volume);
-                        if (percentBid > 0m && percentAsk > 0m)
+
+                        if (percentBid > 0m)
                         {
                             Symbol.DistanceLower = (maxBid - percentBid) / percentBid * 100;
+                        }
+                        else
+                        {
+                            Symbol.DistanceLower = 0.01m;
+                        }
+                        if (percentAsk > 0m)
+                        {
                             Symbol.DistanceUpper = (percentAsk - minAsk) / minAsk * 100;
+                        }
+                        else
+                        {
+                            Symbol.DistanceUpper = 0.01m;
                         }
                     }
                     catch (Exception ex)
