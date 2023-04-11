@@ -271,5 +271,35 @@ namespace VolumeShot.Models
                 OnPropertyChanged("DenominatorStopLoss");
             }
         }
+        private decimal _fee { get; set; }
+        public decimal Fee
+        {
+            get { return _fee; }
+            set
+            {
+                _fee = value;
+                OnPropertyChanged("Fee");
+            }
+        }
+        private decimal _profit { get; set; }
+        public decimal Profit
+        {
+            get { return _profit; }
+            set
+            {
+                _profit = value;
+                OnPropertyChanged("Profit");
+            }
+        }
+        private decimal _volume { get; set; }
+        public decimal Volume
+        {
+            get { return _volume; }
+            set
+            {
+                _volume = value;
+                OnPropertyChanged("Volume");
+            }
+        }
     }
 }

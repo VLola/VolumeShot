@@ -57,6 +57,7 @@ namespace VolumeShot.ViewModels
             if (e.PropertyName == "Volume")
             {
                 SaveVolumeAsync();
+                ReDistanceChengeVolumeAsync();
             }
             else if (e.PropertyName == "IsRun")
             {
@@ -78,7 +79,7 @@ namespace VolumeShot.ViewModels
                 // Stop loss
                 if (ExchangeViewModel.Exchange.IsOpenShortOrder && Symbol.BestBidPrice >= ExchangeViewModel.Exchange.StopLossShortPrice || ExchangeViewModel.Exchange.IsOpenLongOrder && Symbol.BestAskPrice <= ExchangeViewModel.Exchange.StopLossLongPrice)
                 {
-                    ExchangeViewModel.ClearOrdersToSymbolAsync();
+                    ExchangeViewModel.ClosePositionsAsync();
                 }
             }
         }
@@ -122,6 +123,11 @@ namespace VolumeShot.ViewModels
                 await ReDistanceAsync();
             });
         }
+        private async void ReDistanceChengeVolumeAsync()
+        {
+            ReBuffers();
+            await ExchangeViewModel.SetDistances(distanceUpper: Symbol.DistanceUpper, distanceLower: Symbol.DistanceLower, askPrice: Symbol.BestAskPrice, bidPrice: Symbol.BestBidPrice, bufferUpper: Symbol.BufferUpper, bufferLower: Symbol.BufferLower, bufferUpperPrice: Symbol.BufferUpperPrice, bufferLowerPrice: Symbol.BufferLowerPrice, volume: Symbol.Volume);
+        }
         private async Task ReDistanceAsync()
         {
             if (!ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder && Symbol.DistanceLower > 0m && Symbol.DistanceUpper > 0m && Symbol.BestAskPrice > 0m && Symbol.BestBidPrice > 0m)
@@ -129,7 +135,7 @@ namespace VolumeShot.ViewModels
                 if (Symbol.BufferLowerPrice >= Symbol.BestAskPrice || Symbol.BufferUpperPrice <= Symbol.BestBidPrice)
                 {
                     ReBuffers();
-                    await ExchangeViewModel.SetDistances(distanceUpper: Symbol.DistanceUpper, distanceLower: Symbol.DistanceLower, askPrice: Symbol.BestAskPrice, bidPrice: Symbol.BestBidPrice, bufferUpper: Symbol.BufferUpper, bufferLower: Symbol.BufferLower, bufferUpperPrice: Symbol.BufferUpperPrice, bufferLowerPrice: Symbol.BufferLowerPrice);
+                    await ExchangeViewModel.SetDistances(distanceUpper: Symbol.DistanceUpper, distanceLower: Symbol.DistanceLower, askPrice: Symbol.BestAskPrice, bidPrice: Symbol.BestBidPrice, bufferUpper: Symbol.BufferUpper, bufferLower: Symbol.BufferLower, bufferUpperPrice: Symbol.BufferUpperPrice, bufferLowerPrice: Symbol.BufferLowerPrice, volume: Symbol.Volume);
                 }
             }
             else if (!ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder)

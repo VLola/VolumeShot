@@ -24,6 +24,14 @@ namespace VolumeShot.Models
         public DateTime CloseTime { get; set; }
         public decimal OpenPrice { get; set; }
         public decimal ClosePrice { get; set; }
+        public decimal Fee { get; set; }
+        public decimal Profit { get; set; }
+        public decimal Total { get; set; }
+        public decimal Volume { get; set; }
+        public decimal Quantity { get; set; }
+        public decimal Usdt { get; set; }
+        public string Position { get; set; }
+        public bool IsPositive { get; set; }
 
         private RelayCommand? _showCommand;
         public RelayCommand ShowCommand

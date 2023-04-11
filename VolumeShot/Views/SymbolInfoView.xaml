@@ -6,20 +6,57 @@
              xmlns:local="clr-namespace:VolumeShot.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Style TargetType="TextBlock" x:Key="stylePosition">
+            <Setter Property="Foreground" Value="Green"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Position}" Value="Short">
+                    <Setter Property="Foreground" Value="Red"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="TextBlock" x:Key="styleTotal">
+            <Setter Property="Foreground" Value="Red"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsPositive}" Value="True">
+                    <Setter Property="Foreground" Value="Green"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
     <Grid>
         <ListView ItemsSource="{Binding Path=Main.SelectedSymbol.Exchange.Bets}">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Open time" DisplayMemberBinding="{Binding Path=OpenTime}" Width="130"/>
-                    <GridViewColumn Header="Close time" DisplayMemberBinding="{Binding Path=CloseTime}" Width="130"/>
-                    <GridViewColumn Header="Open price" DisplayMemberBinding="{Binding Path=OpenPrice}" Width="80"/>
-                    <GridViewColumn Header="Close price" DisplayMemberBinding="{Binding Path=ClosePrice}" Width="80"/>
+                    <GridViewColumn Header="Open time" DisplayMemberBinding="{Binding Path=OpenTime}" Width="Auto"/>
+                    <GridViewColumn Header="Close time" DisplayMemberBinding="{Binding Path=CloseTime}" Width="Auto"/>
+                    <GridViewColumn Header="Open price" DisplayMemberBinding="{Binding Path=OpenPrice}" Width="Auto"/>
+                    <GridViewColumn Header="Close price" DisplayMemberBinding="{Binding Path=ClosePrice}" Width="Auto"/>
                     <GridViewColumn Header="Buffer ▼" DisplayMemberBinding="{Binding Path=BufferLower, StringFormat={}     {0:N2}}" Width="70"/>
                     <GridViewColumn Header="Distance ▼" DisplayMemberBinding="{Binding Path=DistanceLower, StringFormat={}     {0:N2}}" Width="70"/>
                     <GridViewColumn Header="Buffer ▲" DisplayMemberBinding="{Binding Path=BufferUpper, StringFormat={}     {0:N2}}" Width="70"/>
                     <GridViewColumn Header="Distance ▲" DisplayMemberBinding="{Binding Path=DistanceUpper, StringFormat={}     {0:N2}}" Width="70"/>
                     <GridViewColumn Header="Take profit" DisplayMemberBinding="{Binding Path=TakeProfit, StringFormat={}     {0:N2}}" Width="70"/>
                     <GridViewColumn Header="Stop loss" DisplayMemberBinding="{Binding Path=StopLoss, StringFormat={}     {0:N2}}" Width="70"/>
+                    <GridViewColumn Header="Fee" DisplayMemberBinding="{Binding Path=Fee, StringFormat={} {0:N3}}" Width="Auto"/>
+                    <GridViewColumn Header="Profit" DisplayMemberBinding="{Binding Path=Profit, StringFormat={}{0:N3}}" Width="Auto"/>
+                    <GridViewColumn Header="Total" Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=Total, StringFormat={}{0:N3}}" Style="{StaticResource styleTotal}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Position" Width="60">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=Position, StringFormat={}  {0}}" Style="{StaticResource stylePosition}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Volume" DisplayMemberBinding="{Binding Path=Volume, StringFormat={} {0:N0}}" Width="Auto"/>
+                    <GridViewColumn Header="Quantity" DisplayMemberBinding="{Binding Path=Quantity, StringFormat={}  {0}}" Width="60"/>
+                    <GridViewColumn Header="Usdt" DisplayMemberBinding="{Binding Path=Usdt, StringFormat={} {0:N2}}" Width="Auto"/>
                     
                     <GridViewColumn Header="Show">
                         <GridViewColumn.CellTemplate>
