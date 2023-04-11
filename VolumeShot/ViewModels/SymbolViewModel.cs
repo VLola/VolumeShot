@@ -12,41 +12,21 @@ namespace VolumeShot.ViewModels
 {
     internal class SymbolViewModel
     {
-        private string path = "binance";
-        private string directory = $"{Directory.GetCurrentDirectory()}/log/";
+        private string path = $"{Directory.GetCurrentDirectory()}/log/binance/";
         public Symbol Symbol { get; set; } = new();
         public ExchangeViewModel ExchangeViewModel { get; set; }
         public BinanceClient client { get; set; }
         public BinanceSocketClient socketClient { get; set; }
         public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, decimal volume, BinanceSocketClient _socketClient, BinanceClient _client) {
 
-            if (!Directory.Exists(directory + path)) Directory.CreateDirectory(directory + path);
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             socketClient = _socketClient;
             client = _client;
             ExchangeViewModel = new ExchangeViewModel(binanceFuturesUsdtSymbol, _socketClient, _client);
             Symbol.Exchange = ExchangeViewModel.Exchange;
-            Symbol.Exchange.PropertyChanged += Exchange_PropertyChanged;
             Symbol.Name = binanceFuturesUsdtSymbol.Name;
             Symbol.Volume = volume;
             Symbol.PropertyChanged += Symbol_PropertyChanged;
-        }
-
-        private void Exchange_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == "IsOpenShortOrder")
-            {
-                if (Symbol.Exchange.IsOpenShortOrder)
-                {
-                    Symbol.Exchange.Bets[0].Orders = Symbol.Orders.ToList();
-                }
-            }
-            else if (e.PropertyName == "IsOpenLongOrder")
-            {
-                if (Symbol.Exchange.IsOpenLongOrder)
-                {
-                    Symbol.Exchange.Bets[0].Orders = Symbol.Orders.ToList();
-                }
-            }
         }
 
         private async void Run()
@@ -68,7 +48,7 @@ namespace VolumeShot.ViewModels
                 {
                     Order order = (Order)sender;
                     order.PropertyChanged -= Order_PropertyChanged;
-                    Symbol.Orders.Remove(order);
+                    Symbol.Exchange.Orders.Remove(order);
                 }
             }
         }
@@ -99,13 +79,6 @@ namespace VolumeShot.ViewModels
                 if (ExchangeViewModel.Exchange.IsOpenShortOrder && Symbol.BestBidPrice >= ExchangeViewModel.Exchange.StopLossShortPrice || ExchangeViewModel.Exchange.IsOpenLongOrder && Symbol.BestAskPrice <= ExchangeViewModel.Exchange.StopLossLongPrice)
                 {
                     ExchangeViewModel.ClearOrdersToSymbolAsync();
-                }
-            }
-            if (e.PropertyName == "DateTime")
-            {
-                if (Symbol.Exchange.IsOpenLongOrder || Symbol.Exchange.IsOpenShortOrder)
-                {
-                    Symbol.Exchange.Bets[0].Orders.Add(new Order(Symbol.BestAskPrice, Symbol.BestBidPrice, Symbol.DateTime));
                 }
             }
         }
@@ -437,7 +410,7 @@ namespace VolumeShot.ViewModels
                     if (!Symbol.IsRun)
                     {
                         socketClient.UnsubscribeAsync(socketId);
-                        Symbol.Orders.Clear();
+                        Symbol.Exchange.Orders.Clear();
                     }
                     Symbol.BestAskPrice = Message.Data.BestAskPrice;
                     Symbol.BestBidPrice = Message.Data.BestBidPrice;
@@ -446,7 +419,11 @@ namespace VolumeShot.ViewModels
                         Symbol.DateTime = (DateTime)Message.Data.TransactionTime;
                         Order order = new Order(Symbol.BestAskPrice, Symbol.BestBidPrice, Symbol.DateTime);
                         order.PropertyChanged += Order_PropertyChanged;
-                        Symbol.Orders.Add(order);
+                        Symbol.Exchange.Orders.Add(order);
+                        if (Symbol.Exchange.IsOpenLongOrder || Symbol.Exchange.IsOpenShortOrder)
+                        {
+                            Symbol.Exchange.OpenBetOrders.Add(order);
+                        }
                     }
                 });
                 if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToBookTickerUpdatesAsync: {result.Error?.Message}");

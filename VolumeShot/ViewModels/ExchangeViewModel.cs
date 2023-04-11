@@ -46,7 +46,7 @@ namespace VolumeShot.ViewModels
                 {
                     if (OrderUpdate.UpdateData.Type == FuturesOrderType.Limit)
                     {
-                        if(!Exchange.IsOpenLongOrder && !Exchange.IsOpenLongOrder)
+                        if(!Exchange.IsOpenLongOrder && !Exchange.IsOpenShortOrder)
                         {
                             if (OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Long)
                             {
@@ -61,7 +61,7 @@ namespace VolumeShot.ViewModels
                                 OpenOrder(OrderUpdate.UpdateData.OrderId, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Side, OrderUpdate.UpdateData.Quantity, OrderUpdate.UpdateData.UpdateTime);
                             }
                         }
-                        else if(Exchange.IsOpenLongOrder || Exchange.IsOpenLongOrder)
+                        else if(Exchange.IsOpenLongOrder || Exchange.IsOpenShortOrder)
                         {
                             if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                             {
@@ -72,7 +72,7 @@ namespace VolumeShot.ViewModels
                     }
                     else if (OrderUpdate.UpdateData.Type == FuturesOrderType.Market)
                     {
-                        if (Exchange.IsOpenLongOrder || Exchange.IsOpenLongOrder)
+                        if (Exchange.IsOpenLongOrder || Exchange.IsOpenShortOrder)
                         {
                             if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                             {
@@ -89,7 +89,9 @@ namespace VolumeShot.ViewModels
         }
         private void OpenBet(PositionSide positionSide, DateTime openTime, decimal openPrice)
         {
+            Exchange.OpenBetOrders.Clear();
             Bet bet = new Bet();
+            bet.Orders = Exchange.Orders.ToList();
             bet.OpenTime = openTime;
             bet.OpenPrice = openPrice;
             if(positionSide == PositionSide.Long)
@@ -114,10 +116,13 @@ namespace VolumeShot.ViewModels
             bet.DistanceUpper = Exchange.DistanceUpper;
             bet.PriceDistanceLower = Exchange.DistanceLowerPrice; 
             bet.PriceDistanceUpper = Exchange.DistanceUpperPrice;
-            Exchange.Bets.Insert(0, bet);
+            App.Current.Dispatcher.BeginInvoke(new Action(() => {
+                Exchange.Bets.Insert(0, bet);
+            }));
         }
         private void CloseBet(DateTime closeTime, decimal closePrice)
         {
+            Exchange.Bets[0].Orders.AddRange(Exchange.OpenBetOrders);
             Exchange.Bets[0].CloseTime = closeTime;
             Exchange.Bets[0].ClosePrice = closePrice;
         }

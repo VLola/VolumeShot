@@ -15,6 +15,7 @@ namespace VolumeShot.Models
             TickSize = binanceFuturesUsdtSymbol.PriceFilter.TickSize;
         }
         public ObservableCollection<Bet> Bets { get; set; } = new();
+        public List<Order> OpenBetOrders { get; set; } = new();
         public List<Order> Orders { get; set; } = new();
         public string Symbol { get; set; }
         private decimal _minQuantity { get; set; }

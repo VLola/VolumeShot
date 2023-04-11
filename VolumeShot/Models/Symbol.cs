@@ -7,7 +7,6 @@ namespace VolumeShot.Models
     public class Symbol : Changed
     {
         public Exchange Exchange { get; set; }
-        public List<Order> Orders { get; set; } = new();
         public OrderBook OrderBook = new();
         private string _name { get; set; }
         public string Name

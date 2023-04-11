@@ -21,9 +21,9 @@ namespace VolumeShot.Views
                 double distanceUpper = Decimal.ToDouble(bet.PriceDistanceUpper);
                 double takeProfit = Decimal.ToDouble(bet.PriceTakeProfit);
                 double stopLoss = Decimal.ToDouble(bet.PriceStopLoss);
-                double[] xPrice = bet.Orders.Select(order => order.DateTime.ToOADate()).ToArray();
-                double[] asks = bet.Orders.Select(order => Decimal.ToDouble(order.BestAskPrice)).ToArray();
-                double[] bids = bet.Orders.Select(order => Decimal.ToDouble(order.BestBidPrice)).ToArray();
+                double[] xPrice = bet.Orders.Where(order=>order != null).Select(order => order.DateTime.ToOADate()).ToArray();
+                double[] asks = bet.Orders.Where(order => order != null).Select(order => Decimal.ToDouble(order.BestAskPrice)).ToArray();
+                double[] bids = bet.Orders.Where(order => order != null).Select(order => Decimal.ToDouble(order.BestBidPrice)).ToArray();
 
                 double[] xBuffer = { bet.Orders.ToList()[0].DateTime.ToOADate(), bet.OpenTime.ToOADate() };
                 double[] xDictance = { bet.OpenTime.ToOADate(), bet.CloseTime.ToOADate() };
