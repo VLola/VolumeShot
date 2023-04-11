@@ -39,8 +39,21 @@ namespace VolumeShot.ViewModels
                     await CheckBufferAsync();
                 }
             });
-        } 
+        }
 
+        public List<Order> Orders { get; set; } = new();
+        private void Order_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == "IsRemove")
+            {
+                if(sender != null)
+                {
+                    Order order = (Order)sender;
+                    order.PropertyChanged -= Order_PropertyChanged;
+                    Orders.Remove(order);
+                }
+            }
+        }
         private void Symbol_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "Volume")
@@ -70,6 +83,8 @@ namespace VolumeShot.ViewModels
                 }
             }
         }
+
+
         private async void SaveVolumeAsync()
         {
             await Task.Run(() =>
@@ -401,7 +416,6 @@ namespace VolumeShot.ViewModels
                     Symbol.BestAskPrice = Message.Data.BestAskPrice;
                     Symbol.BestBidPrice = Message.Data.BestBidPrice;
                     if(Message.Data.TransactionTime != null) Symbol.DateTime = (DateTime)Message.Data.TransactionTime;
-                    Symbol.Orders.Add(new Order() { BestAskPrice = Message.Data.BestAskPrice, BestBidPrice = Message.Data.BestBidPrice, DateTime = DateTime.UtcNow });
                 });
                 if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToBookTickerUpdatesAsync: {result.Error?.Message}");
                 else socketId = result.Data.Id;

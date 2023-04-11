@@ -108,14 +108,14 @@ namespace VolumeShot.ViewModels
             decimal priceDistanceLower = RoundPriceDecimal(bidPrice - (bidPrice / 100 * distanceLower));
             Exchange.DistanceLowerPrice = priceDistanceLower;
             Exchange.DistanceLower = distanceLower;
-            Exchange.TakeProfitLong = RoundPriceDecimal(priceDistanceLower + (priceDistanceLower / 100 * distanceLower / 5));
-            Exchange.StopLossLong = RoundPriceDecimal(priceDistanceLower - (priceDistanceLower / 100 * distanceLower / 2));
+            Exchange.TakeProfitLong = RoundPriceDecimal(priceDistanceLower + (priceDistanceLower / 100 * distanceLower / Exchange.DenominatorTakeProfit));
+            Exchange.StopLossLong = RoundPriceDecimal(priceDistanceLower - (priceDistanceLower / 100 * distanceLower / Exchange.DenominatorStopLoss));
 
             decimal priceDistanceUpper = RoundPriceDecimal(askPrice + (askPrice / 100 * distanceUpper));
             Exchange.DistanceUpperPrice = priceDistanceUpper;
             Exchange.DistanceUpper = distanceUpper;
-            Exchange.TakeProfitShort = RoundPriceDecimal(priceDistanceUpper - (priceDistanceUpper / 100 * distanceUpper / 5));
-            Exchange.StopLossShort = RoundPriceDecimal(priceDistanceUpper + (priceDistanceUpper / 100 * distanceUpper / 2));
+            Exchange.TakeProfitShort = RoundPriceDecimal(priceDistanceUpper - (priceDistanceUpper / 100 * distanceUpper / Exchange.DenominatorTakeProfit));
+            Exchange.StopLossShort = RoundPriceDecimal(priceDistanceUpper + (priceDistanceUpper / 100 * distanceUpper / Exchange.DenominatorStopLoss));
 
             await CancelAllOrdersAsync();
             await OpenOrderLimitAsync(PositionSide.Long, OrderSide.Buy, priceDistanceLower, openQuantity);

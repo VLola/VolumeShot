@@ -1,4 +1,6 @@
 ﻿using Binance.Net.Objects.Models.Futures;
+using System.Collections.Generic;
+using System.Windows.Documents;
 
 namespace VolumeShot.Models
 {
@@ -11,6 +13,7 @@ namespace VolumeShot.Models
             StepSize = binanceFuturesUsdtSymbol.LotSizeFilter.StepSize;
             TickSize = binanceFuturesUsdtSymbol.PriceFilter.TickSize;
         }
+        public List<Order> Orders { get; set; } = new();
         public string Symbol { get; set; }
         private decimal _minQuantity { get; set; }
         public decimal MinQuantity
@@ -163,6 +166,26 @@ namespace VolumeShot.Models
             {
                 _distanceLowerPrice = value;
                 OnPropertyChanged("DistanceLowerPrice");
+            }
+        }
+        private decimal _denominatorTakeProfit { get; set; } = 3m;
+        public decimal DenominatorTakeProfit
+        {
+            get { return _denominatorTakeProfit; }
+            set
+            {
+                _denominatorTakeProfit = value;
+                OnPropertyChanged("DenominatorTakeProfit");
+            }
+        }
+        private decimal _denominatorStopLoss { get; set; } = 2m;
+        public decimal DenominatorStopLoss
+        {
+            get { return _denominatorStopLoss; }
+            set
+            {
+                _denominatorStopLoss = value;
+                OnPropertyChanged("DenominatorStopLoss");
             }
         }
     }
