@@ -7,24 +7,22 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="5*"/>
-            <ColumnDefinition Width="2*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <ListBox Grid.Column="0" ItemsSource="{Binding Path=Main.Symbols}" SelectedItem="{Binding Path=Main.SelectedSymbol}" HorizontalContentAlignment="Stretch">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <local:SymbolView/>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <local:SymbolInfoView Grid.Column="1"/>
-        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
-            <WpfPlot  Content="{Binding Path=Main.WpfPlot}"/>
-        </Grid>
+        <TabControl>
+            <TabItem Header="Main">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <local:SymbolView Grid.Row="0"/>
+                    <Grid Grid.Row="1">
+                        <WpfPlot  Content="{Binding Path=Main.WpfPlot}"/>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="History">
+                <local:SymbolInfoView/>
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>

@@ -7,16 +7,29 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <ListBox ItemsSource="{Binding Path=Main.SelectedSymbol.Exchange.Bets}" HorizontalContentAlignment="Stretch">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel>
-                        <TextBlock Text="{Binding Path=OpenTime}"/>
-                        <TextBlock Text="{Binding Path=CloseTime}"/>
-                        <Button Content="Show" Command="{Binding Path=ShowCommand}"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <ListView ItemsSource="{Binding Path=Main.SelectedSymbol.Exchange.Bets}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Open time" DisplayMemberBinding="{Binding Path=OpenTime}" Width="130"/>
+                    <GridViewColumn Header="Close time" DisplayMemberBinding="{Binding Path=CloseTime}" Width="130"/>
+                    <GridViewColumn Header="Open price" DisplayMemberBinding="{Binding Path=OpenPrice}" Width="80"/>
+                    <GridViewColumn Header="Close price" DisplayMemberBinding="{Binding Path=ClosePrice}" Width="80"/>
+                    <GridViewColumn Header="Buffer ▼" DisplayMemberBinding="{Binding Path=BufferLower, StringFormat={}     {0:N2}}" Width="70"/>
+                    <GridViewColumn Header="Distance ▼" DisplayMemberBinding="{Binding Path=DistanceLower, StringFormat={}     {0:N2}}" Width="70"/>
+                    <GridViewColumn Header="Buffer ▲" DisplayMemberBinding="{Binding Path=BufferUpper, StringFormat={}     {0:N2}}" Width="70"/>
+                    <GridViewColumn Header="Distance ▲" DisplayMemberBinding="{Binding Path=DistanceUpper, StringFormat={}     {0:N2}}" Width="70"/>
+                    <GridViewColumn Header="Take profit" DisplayMemberBinding="{Binding Path=TakeProfit, StringFormat={}     {0:N2}}" Width="70"/>
+                    <GridViewColumn Header="Stop loss" DisplayMemberBinding="{Binding Path=StopLoss, StringFormat={}     {0:N2}}" Width="70"/>
+                    
+                    <GridViewColumn Header="Show">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Show" Command="{Binding Path=ShowCommand}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 </UserControl>

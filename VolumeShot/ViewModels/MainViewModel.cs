@@ -90,28 +90,18 @@ namespace VolumeShot.ViewModels
                                 Main.takeProfit[0] = Main.takeProfit[1] = 0;
                                 Main.stopLoss[0] = Main.stopLoss[1] = 0;
                             }
-                            SetY(Main.distanceLower[0], Main.distanceUpper[0]);
-                            AutoAxisX(dateTimeNew);
+                            AutoAxis(dateTimeNew, Main.distanceLower[0], Main.distanceUpper[0]);
                         }
                     }
                 }
             });
         }
-        private void SetY(double lowerDistance, double upperDistance)
+        private void AutoAxis(double dateTime, double lowerDistance, double upperDistance)
         {
             Main.WpfPlot.Dispatcher.Invoke(new Action(() =>
             {
                 Main.WpfPlot.Plot.RenderLock();
                 Main.WpfPlot.Plot.SetAxisLimitsY(yMin: lowerDistance - (lowerDistance / 300), yMax: upperDistance + (upperDistance / 300));
-                Main.WpfPlot.Render();
-                Main.WpfPlot.Plot.RenderUnlock();
-            }));
-        }
-        private void AutoAxisX(double dateTime)
-        {
-            Main.WpfPlot.Dispatcher.Invoke(new Action(() =>
-            {
-                Main.WpfPlot.Plot.RenderLock();
                 Main.WpfPlot.Plot.SetAxisLimitsX(xMin: dateTime - _second60, xMax: dateTime + _second10);
                 Main.WpfPlot.Render();
                 Main.WpfPlot.Plot.RenderUnlock();

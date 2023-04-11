@@ -4,6 +4,8 @@ using Binance.Net.Objects.Models.Futures;
 using Binance.Net.Objects.Models.Futures.Socket;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,17 +16,33 @@ namespace VolumeShot.ViewModels
     internal class ExchangeViewModel
     {
         private string path = $"{Directory.GetCurrentDirectory()}/log/exchange/";
+        private string pathHistory = $"{Directory.GetCurrentDirectory()}/history/";
         public Exchange Exchange { get; set; }
         public BinanceClient client { get; set; }
         public BinanceSocketClient socketClient { get; set; }
         public ExchangeViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, BinanceSocketClient _socketClient, BinanceClient _client)
         {
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+            if (!Directory.Exists(pathHistory)) Directory.CreateDirectory(pathHistory);
             socketClient = _socketClient;
             client = _client;
             Exchange = new(binanceFuturesUsdtSymbol);
+            LoadHistoryAsync();
         }
-
+        private async void LoadHistoryAsync()
+        {
+            await Task.Run(()=>{
+                if (File.Exists(pathHistory + Exchange.Symbol))
+                {
+                    string json = File.ReadAllText(pathHistory + Exchange.Symbol);
+                    ObservableCollection<Bet>? bets = JsonConvert.DeserializeObject<ObservableCollection<Bet>>(json);
+                    if(bets != null && bets.Count > 0)
+                    {
+                        Exchange.Bets = bets;
+                    }
+                }
+            });
+        }
 
         public void OrderUpdate(BinanceFuturesStreamOrderUpdate OrderUpdate)
         {
@@ -113,6 +131,15 @@ namespace VolumeShot.ViewModels
             Exchange.Bets[0].Orders.AddRange(Exchange.OpenBetOrders);
             Exchange.Bets[0].CloseTime = closeTime;
             Exchange.Bets[0].ClosePrice = closePrice;
+            SaveHistoryAsync();
+        }
+        private async void SaveHistoryAsync()
+        {
+            await Task.Run(() =>
+            {
+                string json = JsonConvert.SerializeObject(Exchange.Bets);
+                File.WriteAllText(pathHistory + Exchange.Symbol, json);
+            });
         }
         private async void OpenOrder(long orderId, decimal price, OrderSide side, decimal quantity, DateTime time)
         {

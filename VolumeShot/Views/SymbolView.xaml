@@ -7,30 +7,50 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="2*"/>
-        </Grid.ColumnDefinitions>
-        <TextBlock Grid.Column="0" Text="{Binding Path=Name}"/>
-        <CheckBox Grid.Column="1" IsChecked="{Binding Path=IsRun}" Content="Run"/>
-        <TextBox Grid.Column="2" Text="{Binding Path=Volume}"/>
-        <TextBlock Grid.Column="3" Text="{Binding Path=BestAskPrice, StringFormat=Ask: {0}}"/>
-        <TextBlock Grid.Column="4" Text="{Binding Path=DistanceUpper, StringFormat={}{0:N2}}"/>
-        <TextBlock Grid.Column="5" Text="{Binding Path=BestBidPrice, StringFormat=Bid: {0}}"/>
-        <TextBlock Grid.Column="6" Text="{Binding Path=DistanceLower, StringFormat={}{0:N2}}"/>
-        <TextBlock Grid.Column="7" Text="{Binding Path=ShortPlus, StringFormat=ShortPlus: {0}}"/>
-        <TextBlock Grid.Column="8" Text="{Binding Path=ShortMinus, StringFormat=ShortMinus: {0}}"/>
-        <TextBlock Grid.Column="9" Text="{Binding Path=LongPlus, StringFormat=LongPlus: {0}}"/>
-        <TextBlock Grid.Column="10" Text="{Binding Path=LongMinus, StringFormat=LongMinus: {0}}"/>
+        <ListView ItemsSource="{Binding Path=Main.Symbols}" SelectedItem="{Binding Path=Main.SelectedSymbol}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Symbol" DisplayMemberBinding="{Binding Path=Name}" Width="120"/>
+                    <GridViewColumn Header="Run" Width="50">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding Path=IsRun}" Margin="10 0"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Volume" Width="100">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Path=Volume}" Width="85"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Take profit" Width="120">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="10 0">
+                                    <TextBlock Text="Distance / "/>
+                                    <TextBox Text="{Binding Path=Exchange.DenominatorTakeProfit}" Width="30"/>
+                                </DockPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="StopLoss" Width="120">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="10 0">
+                                    <TextBlock Text="Distance / "/>
+                                    <TextBox Text="{Binding Path=Exchange.DenominatorStopLoss}" Width="30"/>
+                                </DockPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn Header="Distance ▲" DisplayMemberBinding="{Binding Path=DistanceUpper, StringFormat={}      {0:N2}}" Width="80"/>
+                    <GridViewColumn Header="Distance ▼" DisplayMemberBinding="{Binding Path=DistanceLower, StringFormat={}      {0:N2}}" Width="80"/>
+                    <GridViewColumn Header="History" DisplayMemberBinding="{Binding Path=Exchange.Bets.Count, StringFormat={}      {0}}" Width="70"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 </UserControl>
