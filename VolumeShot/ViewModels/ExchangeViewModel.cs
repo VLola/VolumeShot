@@ -50,11 +50,13 @@ namespace VolumeShot.ViewModels
                         {
                             if (OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Long)
                             {
+                                OpenBet(OrderUpdate.UpdateData.PositionSide, OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice);
                                 Exchange.IsOpenLongOrder = true;
                                 OpenOrder(OrderUpdate.UpdateData.OrderId, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Side, OrderUpdate.UpdateData.Quantity, OrderUpdate.UpdateData.UpdateTime);
                             }
                             else if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                             {
+                                OpenBet(OrderUpdate.UpdateData.PositionSide, OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice);
                                 Exchange.IsOpenShortOrder = true;
                                 OpenOrder(OrderUpdate.UpdateData.OrderId, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Side, OrderUpdate.UpdateData.Quantity, OrderUpdate.UpdateData.UpdateTime);
                             }
@@ -63,6 +65,7 @@ namespace VolumeShot.ViewModels
                         {
                             if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                             {
+                                CloseBet(OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice);
                                 ClearOrdersToSymbolAsync();
                             }
                         }
@@ -73,6 +76,7 @@ namespace VolumeShot.ViewModels
                         {
                             if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                             {
+                                CloseBet(OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice);
                                 ClearOrdersToSymbolAsync();
                             }
                         }
@@ -83,25 +87,54 @@ namespace VolumeShot.ViewModels
                 Error.WriteLog(path, Exchange.Symbol, json);
             }
         }
-        private void AddBet()
+        private void OpenBet(PositionSide positionSide, DateTime openTime, decimal openPrice)
         {
             Bet bet = new Bet();
+            bet.OpenTime = openTime;
+            bet.OpenPrice = openPrice;
+            if(positionSide == PositionSide.Long)
+            {
+                bet.PriceTakeProfit = Exchange.TakeProfitLongPrice;
+                bet.TakeProfit = Exchange.TakeProfitLong;
+                bet.PriceStopLoss = Exchange.StopLossLongPrice;
+                bet.StopLoss = Exchange.StopLossLong;
+            }
+            else if (positionSide == PositionSide.Short)
+            {
+                bet.PriceTakeProfit = Exchange.TakeProfitShortPrice;
+                bet.TakeProfit = Exchange.TakeProfitShort;
+                bet.PriceStopLoss = Exchange.StopLossShortPrice;
+                bet.StopLoss = Exchange.StopLossShort;
+            }
+            bet.BufferLower = Exchange.BufferLower;
+            bet.BufferUpper = Exchange.BufferUpper;
+            bet.PriceBufferLower = Exchange.BufferLowerPrice;
+            bet.PriceBufferUpper = Exchange.BufferUpperPrice;
+            bet.DistanceLower = Exchange.DistanceLower;
+            bet.DistanceUpper = Exchange.DistanceUpper;
+            bet.PriceDistanceLower = Exchange.DistanceLowerPrice; 
+            bet.PriceDistanceUpper = Exchange.DistanceUpperPrice;
             Exchange.Bets.Insert(0, bet);
+        }
+        private void CloseBet(DateTime closeTime, decimal closePrice)
+        {
+            Exchange.Bets[0].CloseTime = closeTime;
+            Exchange.Bets[0].ClosePrice = closePrice;
         }
         private async void OpenOrder(long orderId, decimal price, OrderSide side, decimal quantity, DateTime time)
         {
             if (side == OrderSide.Buy)
             {
                 await CancelAllOrdersAsync();
-                OpenOrderTakeProfitAsync(PositionSide.Long, OrderSide.Sell, Exchange.TakeProfitLong, quantity);
+                OpenOrderTakeProfitAsync(PositionSide.Long, OrderSide.Sell, Exchange.TakeProfitLongPrice, quantity);
             }
             else
             {
                 await CancelAllOrdersAsync();
-                OpenOrderTakeProfitAsync(PositionSide.Short, OrderSide.Buy, Exchange.TakeProfitShort, quantity);
+                OpenOrderTakeProfitAsync(PositionSide.Short, OrderSide.Buy, Exchange.TakeProfitShortPrice, quantity);
             }
         }
-        public async Task SetDistances(decimal distanceUpper, decimal distanceLower, decimal askPrice, decimal bidPrice)
+        public async Task SetDistances(decimal distanceUpper, decimal distanceLower, decimal askPrice, decimal bidPrice, decimal bufferUpper, decimal bufferLower, decimal bufferUpperPrice, decimal bufferLowerPrice)
         {
             decimal openQuantity = RoundQuantity(Exchange.Usdt / askPrice);
 
@@ -113,14 +146,23 @@ namespace VolumeShot.ViewModels
             decimal priceDistanceLower = RoundPriceDecimal(bidPrice - (bidPrice / 100 * distanceLower));
             Exchange.DistanceLowerPrice = priceDistanceLower;
             Exchange.DistanceLower = distanceLower;
-            Exchange.TakeProfitLong = RoundPriceDecimal(priceDistanceLower + (priceDistanceLower / 100 * distanceLower / Exchange.DenominatorTakeProfit));
-            Exchange.StopLossLong = RoundPriceDecimal(priceDistanceLower - (priceDistanceLower / 100 * distanceLower / Exchange.DenominatorStopLoss));
+            Exchange.TakeProfitLong = distanceLower / Exchange.DenominatorTakeProfit;
+            Exchange.StopLossLong = distanceLower / Exchange.DenominatorStopLoss;
+            Exchange.TakeProfitLongPrice = RoundPriceDecimal(priceDistanceLower + (priceDistanceLower / 100 * distanceLower / Exchange.DenominatorTakeProfit));
+            Exchange.StopLossLongPrice = RoundPriceDecimal(priceDistanceLower - (priceDistanceLower / 100 * distanceLower / Exchange.DenominatorStopLoss));
 
             decimal priceDistanceUpper = RoundPriceDecimal(askPrice + (askPrice / 100 * distanceUpper));
             Exchange.DistanceUpperPrice = priceDistanceUpper;
             Exchange.DistanceUpper = distanceUpper;
-            Exchange.TakeProfitShort = RoundPriceDecimal(priceDistanceUpper - (priceDistanceUpper / 100 * distanceUpper / Exchange.DenominatorTakeProfit));
-            Exchange.StopLossShort = RoundPriceDecimal(priceDistanceUpper + (priceDistanceUpper / 100 * distanceUpper / Exchange.DenominatorStopLoss));
+            Exchange.TakeProfitShort = distanceUpper / Exchange.DenominatorTakeProfit;
+            Exchange.StopLossShort = distanceUpper / Exchange.DenominatorStopLoss;
+            Exchange.TakeProfitShortPrice = RoundPriceDecimal(priceDistanceUpper - (priceDistanceUpper / 100 * distanceUpper / Exchange.DenominatorTakeProfit));
+            Exchange.StopLossShortPrice = RoundPriceDecimal(priceDistanceUpper + (priceDistanceUpper / 100 * distanceUpper / Exchange.DenominatorStopLoss));
+            // Buffers
+            Exchange.BufferLowerPrice = bufferLowerPrice;
+            Exchange.BufferUpperPrice = bufferUpperPrice;
+            Exchange.BufferLower = bufferLower;
+            Exchange.BufferUpper = bufferUpper;
 
             await CancelAllOrdersAsync();
             await OpenOrderLimitAsync(PositionSide.Long, OrderSide.Buy, priceDistanceLower, openQuantity);

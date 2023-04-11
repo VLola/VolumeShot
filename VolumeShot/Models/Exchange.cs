@@ -130,6 +130,46 @@ namespace VolumeShot.Models
                 OnPropertyChanged("StopLossShort");
             }
         }
+        private decimal _takeProfitLongPrice { get; set; }
+        public decimal TakeProfitLongPrice
+        {
+            get { return _takeProfitLongPrice; }
+            set
+            {
+                _takeProfitLongPrice = value;
+                OnPropertyChanged("TakeProfitLongPrice");
+            }
+        }
+        private decimal _takeProfitShortPrice { get; set; }
+        public decimal TakeProfitShortPrice
+        {
+            get { return _takeProfitShortPrice; }
+            set
+            {
+                _takeProfitShortPrice = value;
+                OnPropertyChanged("TakeProfitShortPrice");
+            }
+        }
+        private decimal _stopLossLongPrice { get; set; }
+        public decimal StopLossLongPrice
+        {
+            get { return _stopLossLongPrice; }
+            set
+            {
+                _stopLossLongPrice = value;
+                OnPropertyChanged("StopLossLongPrice");
+            }
+        }
+        private decimal _stopLossShortPrice { get; set; }
+        public decimal StopLossShortPrice
+        {
+            get { return _stopLossShortPrice; }
+            set
+            {
+                _stopLossShortPrice = value;
+                OnPropertyChanged("StopLossShortPrice");
+            }
+        }
         private decimal _distanceUpper { get; set; }
         public decimal DistanceUpper
         {
@@ -168,6 +208,46 @@ namespace VolumeShot.Models
             {
                 _distanceLowerPrice = value;
                 OnPropertyChanged("DistanceLowerPrice");
+            }
+        }
+        private decimal _bufferUpper { get; set; }
+        public decimal BufferUpper
+        {
+            get { return _bufferUpper; }
+            set
+            {
+                _bufferUpper = value;
+                OnPropertyChanged("BufferUpper");
+            }
+        }
+        private decimal _bufferLower { get; set; }
+        public decimal BufferLower
+        {
+            get { return _bufferLower; }
+            set
+            {
+                _bufferLower = value;
+                OnPropertyChanged("BufferLower");
+            }
+        }
+        private decimal _bufferUpperPrice { get; set; }
+        public decimal BufferUpperPrice
+        {
+            get { return _bufferUpperPrice; }
+            set
+            {
+                _bufferUpperPrice = value;
+                OnPropertyChanged("BufferUpperPrice");
+            }
+        }
+        private decimal _bufferLowerPrice { get; set; }
+        public decimal BufferLowerPrice
+        {
+            get { return _bufferLowerPrice; }
+            set
+            {
+                _bufferLowerPrice = value;
+                OnPropertyChanged("BufferLowerPrice");
             }
         }
         private decimal _denominatorTakeProfit { get; set; } = 3m;
