@@ -26,7 +26,7 @@ namespace VolumeShot.Views
                 double[] bids = bet.Orders.Where(order => order != null).Select(order => Decimal.ToDouble(order.BestBidPrice)).ToArray();
 
                 double[] xBuffer = { bet.Orders.ToList()[0].DateTime.ToOADate(), bet.OpenTime.ToOADate() };
-                double[] xDictance = { bet.OpenTime.ToOADate(), bet.CloseTime.ToOADate() };
+                double[] xDictance = { bet.OpenTime.ToOADate(), bet.CloseTime.AddSeconds(10).ToOADate() };
                 plt.Dispatcher.Invoke(() =>
                 {
                     plt.Plot.AddScatter(xPrice, asks, color: Color.Red, lineWidth: 0, markerSize: 3);

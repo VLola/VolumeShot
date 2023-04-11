@@ -23,20 +23,8 @@ namespace VolumeShot.ViewModels
             socketClient = _socketClient;
             client = _client;
             Exchange = new(binanceFuturesUsdtSymbol);
-            Exchange.PropertyChanged += Exchange_PropertyChanged;
         }
 
-        private void Exchange_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if(e.PropertyName == "IsOpenShortOrder")
-            {
-
-            }
-            else if (e.PropertyName == "IsOpenLongOrder")
-            {
-
-            }
-        }
 
         public void OrderUpdate(BinanceFuturesStreamOrderUpdate OrderUpdate)
         {
