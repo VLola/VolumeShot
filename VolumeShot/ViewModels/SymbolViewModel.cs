@@ -25,10 +25,30 @@ namespace VolumeShot.ViewModels
             client = _client;
             ExchangeViewModel = new ExchangeViewModel(binanceFuturesUsdtSymbol, _socketClient, _client);
             Symbol.Exchange = ExchangeViewModel.Exchange;
+            Symbol.Exchange.PropertyChanged += Exchange_PropertyChanged;
             Symbol.Name = binanceFuturesUsdtSymbol.Name;
             Symbol.Volume = volume;
             Symbol.PropertyChanged += Symbol_PropertyChanged;
         }
+
+        private void Exchange_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "IsOpenShortOrder")
+            {
+                if (Symbol.Exchange.IsOpenShortOrder)
+                {
+                    Symbol.Exchange.Bets[0].Orders = Symbol.Orders.ToList();
+                }
+            }
+            else if (e.PropertyName == "IsOpenLongOrder")
+            {
+                if (Symbol.Exchange.IsOpenLongOrder)
+                {
+                    Symbol.Exchange.Bets[0].Orders = Symbol.Orders.ToList();
+                }
+            }
+        }
+
         private async void Run()
         {
             await Task.Run(async () =>
@@ -40,8 +60,6 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
-
-        public List<Order> Orders { get; set; } = new();
         private void Order_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if(e.PropertyName == "IsRemove")
@@ -50,7 +68,7 @@ namespace VolumeShot.ViewModels
                 {
                     Order order = (Order)sender;
                     order.PropertyChanged -= Order_PropertyChanged;
-                    Orders.Remove(order);
+                    Symbol.Orders.Remove(order);
                 }
             }
         }
@@ -77,9 +95,17 @@ namespace VolumeShot.ViewModels
             }
             if(e.PropertyName == "BestBidPrice"/* || e.PropertyName == "BestAskPrice"*/)
             {
+                // Stop loss
                 if (ExchangeViewModel.Exchange.IsOpenShortOrder && Symbol.BestBidPrice >= ExchangeViewModel.Exchange.StopLossShort || ExchangeViewModel.Exchange.IsOpenLongOrder && Symbol.BestAskPrice <= ExchangeViewModel.Exchange.StopLossLong)
                 {
                     ExchangeViewModel.ClearOrdersToSymbolAsync();
+                }
+            }
+            if (e.PropertyName == "DateTime")
+            {
+                if (Symbol.Exchange.IsOpenLongOrder || Symbol.Exchange.IsOpenShortOrder)
+                {
+                    Symbol.Exchange.Bets[0].Orders.Add(new Order(Symbol.BestAskPrice, Symbol.BestBidPrice, Symbol.DateTime));
                 }
             }
         }
@@ -415,7 +441,13 @@ namespace VolumeShot.ViewModels
                     }
                     Symbol.BestAskPrice = Message.Data.BestAskPrice;
                     Symbol.BestBidPrice = Message.Data.BestBidPrice;
-                    if(Message.Data.TransactionTime != null) Symbol.DateTime = (DateTime)Message.Data.TransactionTime;
+                    if(Message.Data.TransactionTime != null)
+                    {
+                        Symbol.DateTime = (DateTime)Message.Data.TransactionTime;
+                        Order order = new Order(Symbol.BestAskPrice, Symbol.BestBidPrice, Symbol.DateTime);
+                        order.PropertyChanged += Order_PropertyChanged;
+                        Symbol.Orders.Add(order);
+                    }
                 });
                 if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToBookTickerUpdatesAsync: {result.Error?.Message}");
                 else socketId = result.Data.Id;
