@@ -90,19 +90,6 @@ namespace VolumeShot.ViewModels
                 Main.WpfPlot.Render();
                 Main.WpfPlot.Plot.RenderUnlock();
             }));
-            //App.Current.Dispatcher.Invoke((Action)delegate
-            //{
-            //    Main.WpfPlot = new();
-            //    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.bufferLower, Color.Gray, lineStyle: LineStyle.Dash);
-            //    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.bufferUpper, Color.Gray, lineStyle: LineStyle.Dash);
-            //    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.distanceLower, Color.Orange, lineStyle: LineStyle.Dash);
-            //    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.distanceUpper, Color.Orange, lineStyle: LineStyle.Dash);
-            //    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.takeProfit, Color.Green, lineStyle: LineStyle.Dash);
-            //    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.stopLoss, Color.Red, lineStyle: LineStyle.Dash);
-            //    Main.WpfPlot.Plot.RenderLock();
-            //    Main.WpfPlot.Render();
-            //    Main.WpfPlot.Plot.RenderUnlock();
-            //});
         }
         private async void RunChartAsync()
         {
@@ -114,9 +101,7 @@ namespace VolumeShot.ViewModels
                     if(Main.SelectedSymbol != null)
                     {
                         if (Main.SelectedSymbol.BufferLowerPrice > 0m &&
-                        Main.SelectedSymbol.BufferUpperPrice > 0m &&
-                        Main.SelectedSymbol.Exchange.DistanceLowerPrice > 0m &&
-                        Main.SelectedSymbol.Exchange.DistanceUpperPrice > 0m)
+                            Main.SelectedSymbol.BufferUpperPrice > 0m)
                         {
                             double dateTimeNew = System.DateTime.UtcNow.ToOADate();
                             double dateTimeOld = System.DateTime.UtcNow.AddMinutes(-1).ToOADate();
@@ -124,24 +109,34 @@ namespace VolumeShot.ViewModels
                             Main.x[1] = dateTimeNew;
                             Main.bufferLower[0] = Main.bufferLower[1] = Decimal.ToDouble(Main.SelectedSymbol.BufferLowerPrice);
                             Main.bufferUpper[0] = Main.bufferUpper[1] = Decimal.ToDouble(Main.SelectedSymbol.BufferUpperPrice);
-                            Main.distanceLower[0] = Main.distanceLower[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.DistanceLowerPrice);
-                            Main.distanceUpper[0] = Main.distanceUpper[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.DistanceUpperPrice);
-                            if (Main.SelectedSymbol.Exchange.IsOpenLongOrder)
+
+                            if (Main.SelectedSymbol.Exchange.DistanceLowerPrice > 0m &&
+                                Main.SelectedSymbol.Exchange.DistanceUpperPrice > 0m)
                             {
-                                Main.takeProfit[0] = Main.takeProfit[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.TakeProfitLongPrice);
-                                Main.stopLoss[0] = Main.stopLoss[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.StopLossLongPrice);
-                            }
-                            else if (Main.SelectedSymbol.Exchange.IsOpenShortOrder)
-                            {
-                                Main.takeProfit[0] = Main.takeProfit[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.TakeProfitShortPrice);
-                                Main.stopLoss[0] = Main.stopLoss[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.StopLossShortPrice);
+                                Main.distanceLower[0] = Main.distanceLower[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.DistanceLowerPrice);
+                                Main.distanceUpper[0] = Main.distanceUpper[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.DistanceUpperPrice);
+                                if (Main.SelectedSymbol.Exchange.IsOpenLongOrder)
+                                {
+                                    Main.takeProfit[0] = Main.takeProfit[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.TakeProfitLongPrice);
+                                    Main.stopLoss[0] = Main.stopLoss[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.StopLossLongPrice);
+                                }
+                                else if (Main.SelectedSymbol.Exchange.IsOpenShortOrder)
+                                {
+                                    Main.takeProfit[0] = Main.takeProfit[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.TakeProfitShortPrice);
+                                    Main.stopLoss[0] = Main.stopLoss[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.StopLossShortPrice);
+                                }
+                                else
+                                {
+                                    Main.takeProfit[0] = Main.takeProfit[1] = 0;
+                                    Main.stopLoss[0] = Main.stopLoss[1] = 0;
+                                }
+                                AutoAxis(dateTimeNew, Main.distanceLower[0], Main.distanceUpper[0]);
                             }
                             else
                             {
-                                Main.takeProfit[0] = Main.takeProfit[1] = 0;
-                                Main.stopLoss[0] = Main.stopLoss[1] = 0;
+
+                                AutoAxis(dateTimeNew, Main.bufferLower[0], Main.bufferUpper[0]);
                             }
-                            AutoAxis(dateTimeNew, Main.distanceLower[0], Main.distanceUpper[0]);
                         }
                     }
                 }
