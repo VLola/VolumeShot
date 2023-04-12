@@ -8,7 +8,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
         <Style TargetType="Grid" x:Key="styleLogin">
-            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Margin" Value="0 10"/>
             <Setter Property="Visibility" Value="Visible"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=LoginViewModel.Login.IsRegisteration}" Value="True">
@@ -17,7 +17,7 @@
             </Style.Triggers>
         </Style>
         <Style TargetType="Grid" x:Key="styleRegistration">
-            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Margin" Value="0 10"/>
             <Setter Property="Visibility" Value="Hidden"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=LoginViewModel.Login.IsRegisteration}" Value="True">
@@ -26,6 +26,9 @@
             </Style.Triggers>
         </Style>
         <Style TargetType="Button" x:Key="styleButtonLogin" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Margin" Value="0 10"/>
+            <Setter Property="Padding" Value="0 10"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="IsEnabled" Value="True"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=LoginViewModel.Login.IsLoading}" Value="True">
@@ -33,10 +36,36 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="2 10"/>
+        </Style>
+        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Width" Value="150"/>
+            <Setter Property="Height" Value="Auto"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="2 10"/>
+        </Style>
+        <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0 10"/>
+        </Style>
+        <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+            <Setter Property="Margin" Value="10"/>
+        </Style>
+        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Margin" Value="0 10"/>
+            <Setter Property="Padding" Value="0 10"/>
+        </Style>
+        <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+            <Setter Property="Margin" Value="0 10"/>
+        </Style>
     </UserControl.Resources>
     <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
         <StackPanel>
-            <DockPanel>
+            <DockPanel HorizontalAlignment="Center">
                 <RadioButton Content="Registration" IsChecked="{Binding Path=LoginViewModel.Login.IsRegisteration}"/>
                 <RadioButton Content="Login" IsChecked="True"/>
             </DockPanel>
@@ -65,7 +94,11 @@
                     </Grid>
                 </Grid>
                 <Grid Style="{StaticResource styleLogin}">
-                    <StackPanel>
+                    <Grid VerticalAlignment="Stretch">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
                         <ComboBox ItemsSource="{Binding Path=LoginViewModel.Login.Users}" SelectedItem="{Binding Path=LoginViewModel.Login.SelectedUser}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
@@ -73,8 +106,8 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <Button Content="Login" Command="{Binding Path=LoginViewModel.AuthorizeCommand}" Style="{StaticResource styleButtonLogin}"/>
-                    </StackPanel>
+                        <Button Grid.Row="1" Content="Login" Command="{Binding Path=LoginViewModel.AuthorizeCommand}" Style="{StaticResource styleButtonLogin}"/>
+                    </Grid>
                 </Grid>
             </Grid>
         </StackPanel>

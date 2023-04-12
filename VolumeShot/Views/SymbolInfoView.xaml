@@ -58,10 +58,10 @@
                     <GridViewColumn Header="Quantity" DisplayMemberBinding="{Binding Path=Quantity, StringFormat={}  {0}}" Width="60"/>
                     <GridViewColumn Header="Usdt" DisplayMemberBinding="{Binding Path=Usdt, StringFormat={} {0:N2}}" Width="Auto"/>
                     
-                    <GridViewColumn Header="Show">
+                    <GridViewColumn Header="Show" Width="55">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Content="Show" Command="{Binding Path=ShowCommand}"/>
+                                <Button Content="Show" Command="{Binding Path=ShowCommand}" Padding="5 0"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>

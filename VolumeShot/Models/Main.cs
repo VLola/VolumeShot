@@ -9,7 +9,7 @@ namespace VolumeShot.Models
 {
     public class Main : Changed
     {
-        public WpfPlot WpfPlot { get; set; }
+        public WpfPlot WpfPlot { get; set; } = new();
         public ObservableCollection<Symbol> Symbols { get; set; } = new();
         private Symbol _selectedSymbol { get; set; }
         public Symbol SelectedSymbol

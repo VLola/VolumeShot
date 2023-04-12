@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Binance.Net.Objects.Models.Futures.Socket;
 using ScottPlot;
 using System.Drawing;
+using static ScottPlot.Generate;
 
 namespace VolumeShot.ViewModels
 {
@@ -53,9 +54,32 @@ namespace VolumeShot.ViewModels
 
         private void LoadChart()
         {
-            App.Current.Dispatcher.Invoke((Action)delegate
+            Main.WpfPlot.Dispatcher.Invoke(new Action(() =>
             {
-                Main.WpfPlot = new();
+                // Style
+                Main.WpfPlot.Plot.Layout(padding: 12);
+                Main.WpfPlot.Plot.Style(figureBackground: Color.Black, dataBackground: Color.Black);
+                Main.WpfPlot.Plot.Frameless();
+                Main.WpfPlot.Plot.XAxis.TickLabelStyle(color: Color.White);
+                Main.WpfPlot.Plot.XAxis.TickMarkColor(ColorTranslator.FromHtml("#333333"));
+                Main.WpfPlot.Plot.XAxis.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
+
+                Main.WpfPlot.Plot.YAxis.Ticks(false);
+                Main.WpfPlot.Plot.YAxis.Grid(false);
+                Main.WpfPlot.Plot.YAxis2.Ticks(true);
+                Main.WpfPlot.Plot.YAxis2.Grid(true);
+                Main.WpfPlot.Plot.YAxis2.TickLabelStyle(color: ColorTranslator.FromHtml("#00FF00"));
+                Main.WpfPlot.Plot.YAxis2.TickMarkColor(ColorTranslator.FromHtml("#333333"));
+                Main.WpfPlot.Plot.YAxis2.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
+
+                var legend = Main.WpfPlot.Plot.Legend();
+                legend.FillColor = Color.Transparent;
+                legend.OutlineColor = Color.Transparent;
+                legend.Font.Color = Color.White;
+                legend.Font.Bold = true;
+
+                // Lines
+
                 Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.bufferLower, Color.Gray, lineStyle: LineStyle.Dash);
                 Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.bufferUpper, Color.Gray, lineStyle: LineStyle.Dash);
                 Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.distanceLower, Color.Orange, lineStyle: LineStyle.Dash);
@@ -65,7 +89,20 @@ namespace VolumeShot.ViewModels
                 Main.WpfPlot.Plot.RenderLock();
                 Main.WpfPlot.Render();
                 Main.WpfPlot.Plot.RenderUnlock();
-            });
+            }));
+            //App.Current.Dispatcher.Invoke((Action)delegate
+            //{
+            //    Main.WpfPlot = new();
+            //    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.bufferLower, Color.Gray, lineStyle: LineStyle.Dash);
+            //    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.bufferUpper, Color.Gray, lineStyle: LineStyle.Dash);
+            //    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.distanceLower, Color.Orange, lineStyle: LineStyle.Dash);
+            //    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.distanceUpper, Color.Orange, lineStyle: LineStyle.Dash);
+            //    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.takeProfit, Color.Green, lineStyle: LineStyle.Dash);
+            //    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.stopLoss, Color.Red, lineStyle: LineStyle.Dash);
+            //    Main.WpfPlot.Plot.RenderLock();
+            //    Main.WpfPlot.Render();
+            //    Main.WpfPlot.Plot.RenderUnlock();
+            //});
         }
         private async void RunChartAsync()
         {
@@ -81,8 +118,8 @@ namespace VolumeShot.ViewModels
                         Main.SelectedSymbol.Exchange.DistanceLowerPrice > 0m &&
                         Main.SelectedSymbol.Exchange.DistanceUpperPrice > 0m)
                         {
-                            double dateTimeNew = DateTime.UtcNow.ToOADate();
-                            double dateTimeOld = DateTime.UtcNow.AddMinutes(-1).ToOADate();
+                            double dateTimeNew = System.DateTime.UtcNow.ToOADate();
+                            double dateTimeOld = System.DateTime.UtcNow.AddMinutes(-1).ToOADate();
                             Main.x[0] = dateTimeOld;
                             Main.x[1] = dateTimeNew;
                             Main.bufferLower[0] = Main.bufferLower[1] = Decimal.ToDouble(Main.SelectedSymbol.BufferLowerPrice);
