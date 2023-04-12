@@ -8,8 +8,6 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using Binance.Net.Objects.Models.Futures.Socket;
-using Binance.Net.Objects;
-using System.Windows;
 using ScottPlot;
 using System.Drawing;
 
@@ -21,6 +19,7 @@ namespace VolumeShot.ViewModels
         private const double _second10 = 0.00011574074596865103;
         private const double _second60 = 0.0006944444394321181;
         string errorFile = "Main";
+        public LoginViewModel LoginViewModel { get; set; } = new();
         public Main Main { get; set; } = new();
         public BinanceClient client { get; set; }
         public BinanceSocketClient socketClient { get; set; }
@@ -29,14 +28,29 @@ namespace VolumeShot.ViewModels
         public MainViewModel()
         {
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-            Binance("a4c675ddfa8005fdabf5580700bd87b2d0dff9108b1caa8295f5540e6cf118e5", "211c4565fb98ad121a10ce2cce9c31456890786cbce501ad426b0bbace6e1102", true);
-            // Akif
-            //Binance("L1YfcwRDUtoaAChO3OMLMWICx33zAZyj6hqWhjAfqAoIE9uAPHq9zYtlns4m7kFJ", "Ja5eBLb3yIFzivc2N5kbofPE2RTolMIyEBjZJsr51aCV3X98yGMhSpTeUGh75n0H", false);
-            SubscribeToUserDataUpdatesAsync();
-            Load();
-            LoadChart();
-            RunChart();
+            LoginViewModel.Login.PropertyChanged += Login_PropertyChanged;
         }
+
+        private void Login_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == "IsLogin")
+            {
+                if (LoginViewModel.Login.IsLogin)
+                {
+                    LoadMain();
+                }
+            }
+        }
+        private void LoadMain()
+        {
+            client = LoginViewModel.Client;
+            socketClient = LoginViewModel.SocketClient;
+            SubscribeToUserDataUpdatesAsync();
+            LoadSymbols();
+            LoadChart();
+            RunChartAsync();
+        }
+
         private void LoadChart()
         {
             App.Current.Dispatcher.Invoke((Action)delegate
@@ -53,7 +67,7 @@ namespace VolumeShot.ViewModels
                 Main.WpfPlot.Plot.RenderUnlock();
             });
         }
-        private async void RunChart()
+        private async void RunChartAsync()
         {
             await Task.Run(async () =>
             {
@@ -107,41 +121,6 @@ namespace VolumeShot.ViewModels
                 Main.WpfPlot.Plot.RenderUnlock();
             }));
         }
-        private void Binance(string apiKey, string secretKey, bool isTestnet)
-        {
-            if (isTestnet)
-            {
-                // ------------- Test Api ----------------
-                BinanceClientOptions clientOption = new();
-                clientOption.UsdFuturesApiOptions.BaseAddress = "https://testnet.binancefuture.com";
-                client = new(clientOption);
-
-                BinanceSocketClientOptions socketClientOption = new BinanceSocketClientOptions();
-                socketClientOption.UsdFuturesStreamsOptions.AutoReconnect = true;
-                socketClientOption.UsdFuturesStreamsOptions.ReconnectInterval = TimeSpan.FromMinutes(1);
-                socketClientOption.UsdFuturesStreamsOptions.BaseAddress = "wss://stream.binancefuture.com";
-                socketClient = new BinanceSocketClient(socketClientOption);
-                // ------------- Test Api ----------------
-            }
-            else
-            {
-                // ------------- Real Api ----------------
-                client = new();
-                socketClient = new();
-                // ------------- Real Api ----------------
-            }
-
-            try
-            {
-                client.SetApiCredentials(new BinanceApiCredentials(apiKey, secretKey));
-                socketClient.SetApiCredentials(new BinanceApiCredentials(apiKey, secretKey));
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
         private async void SubscribeToUserDataUpdatesAsync()
         {
             var listenKey = await client.UsdFuturesApi.Account.StartUserStreamAsync();
@@ -186,7 +165,7 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
-        private void Load()
+        private void LoadSymbols()
         {
             List<BinanceFuturesUsdtSymbol> list = ListSymbols();
             if (list.Count > 0)
@@ -210,7 +189,9 @@ namespace VolumeShot.ViewModels
                         }
                         SymbolViewModel symbolViewModel = new(symbol, volume, socketClient, client);
                         OnOrderUpdate += symbolViewModel.ExchangeViewModel.OrderUpdate;
-                        Main.Symbols.Add(symbolViewModel.Symbol);
+                        App.Current.Dispatcher.BeginInvoke(new Action(() => { 
+                            Main.Symbols.Add(symbolViewModel.Symbol);
+                        }));
                     }
                 }
             }

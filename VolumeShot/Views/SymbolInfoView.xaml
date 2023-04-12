@@ -8,18 +8,18 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
         <Style TargetType="TextBlock" x:Key="stylePosition">
-            <Setter Property="Foreground" Value="Green"/>
+            <Setter Property="Foreground" Value="LightGreen"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=Position}" Value="Short">
-                    <Setter Property="Foreground" Value="Red"/>
+                    <Setter Property="Foreground" Value="Pink"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
         <Style TargetType="TextBlock" x:Key="styleTotal">
-            <Setter Property="Foreground" Value="Red"/>
+            <Setter Property="Foreground" Value="Pink"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=IsPositive}" Value="True">
-                    <Setter Property="Foreground" Value="Green"/>
+                    <Setter Property="Foreground" Value="LightGreen"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>

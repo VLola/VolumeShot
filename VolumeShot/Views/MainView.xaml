@@ -6,23 +6,46 @@
              xmlns:local="clr-namespace:VolumeShot.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Style TargetType="Grid" x:Key="styleLogin">
+            <Setter Property="Visibility" Value="Visible"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=LoginViewModel.Login.IsLogin}" Value="True">
+                    <Setter Property="Visibility" Value="Hidden"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="Grid" x:Key="styleMain">
+            <Setter Property="Visibility" Value="Hidden"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=LoginViewModel.Login.IsLogin}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
     <Grid>
-        <TabControl>
-            <TabItem Header="Main">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <local:SymbolView Grid.Row="0"/>
-                    <Grid Grid.Row="1">
-                        <WpfPlot  Content="{Binding Path=Main.WpfPlot}"/>
+        <Grid Style="{StaticResource styleLogin}">
+            <local:LoginView/>
+        </Grid>
+        <Grid Style="{StaticResource styleMain}">
+            <TabControl>
+                <TabItem Header="Main">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <local:SymbolView Grid.Row="0"/>
+                        <Grid Grid.Row="1">
+                            <WpfPlot  Content="{Binding Path=Main.WpfPlot}"/>
+                        </Grid>
                     </Grid>
-                </Grid>
-            </TabItem>
-            <TabItem Header="History">
-                <local:SymbolInfoView/>
-            </TabItem>
-        </TabControl>
+                </TabItem>
+                <TabItem Header="History">
+                    <local:SymbolInfoView/>
+                </TabItem>
+            </TabControl>
+        </Grid>
     </Grid>
 </UserControl>

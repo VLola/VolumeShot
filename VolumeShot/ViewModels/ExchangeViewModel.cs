@@ -38,7 +38,11 @@ namespace VolumeShot.ViewModels
                     ObservableCollection<Bet>? bets = JsonConvert.DeserializeObject<ObservableCollection<Bet>>(json);
                     if(bets != null && bets.Count > 0)
                     {
-                        Exchange.Bets = bets;
+                        foreach (var item in bets)
+                        {
+                            Exchange.Bets.Add(item);
+                        }
+                        //Exchange.Bets = bets;
                     }
                 }
             });
