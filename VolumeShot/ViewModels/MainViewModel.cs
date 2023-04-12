@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Binance.Net.Objects.Models.Futures.Socket;
 using ScottPlot;
 using System.Drawing;
-using static ScottPlot.Generate;
 
 namespace VolumeShot.ViewModels
 {
