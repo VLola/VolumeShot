@@ -15,12 +15,21 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <Style TargetType="TextBlock" x:Key="stylePnl">
+            <Setter Property="Foreground" Value="LightGreen"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsPositive}" Value="False">
+                    <Setter Property="Foreground" Value="Pink"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
     <Grid>
         <ListView ItemsSource="{Binding Path=Main.Positions}">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Symbol" DisplayMemberBinding="{Binding Path=Symbol}" Width="130"/>
+                    <GridViewColumn Header="Open" DisplayMemberBinding="{Binding Path=OpenTime,StringFormat={}{0:HH:mm:ss}}" Width="Auto"/>
+                    <GridViewColumn Header="Symbol" DisplayMemberBinding="{Binding Path=Symbol}" Width="Auto"/>
                     <GridViewColumn Header="Quantity" DisplayMemberBinding="{Binding Path=Quantity}" Width="Auto"/>
                     <GridViewColumn Header="Price" DisplayMemberBinding="{Binding Path=Price}" Width="Auto"/>
                     <GridViewColumn Header="Position" Width="60">
@@ -31,10 +40,24 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
                     <GridViewColumn Header="Usdt" DisplayMemberBinding="{Binding Path=Usdt, StringFormat={} {0:N2}}" Width="70"/>
-                    <GridViewColumn Header="Close" Width="60">
+                    <GridViewColumn Header="Pnl" Width="60">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Content="Market" Command="{Binding Path=ClosePositionCommand}"/>
+                                <TextBlock Text="{Binding Path=Pnl, StringFormat={} {0:N2}}" Style="{StaticResource stylePnl}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Pnl (%)" Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=PnlPercent, StringFormat={} {0:N2}}" Style="{StaticResource stylePnl}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Close" Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Market" Command="{Binding Path=ClosePositionCommand}" Padding="5 0"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>

@@ -205,11 +205,14 @@ namespace VolumeShot.ViewModels
                     }
                     else
                     {
-                        Position positionNew = new Position(item, client);
-                        positionNew.PropertyChanged += PositionNew_PropertyChanged;
-                        App.Current.Dispatcher.Invoke(() => {
-                            Main.Positions.Add(positionNew);
-                        });
+                        if(item.Quantity != 0m)
+                        {
+                            Position positionNew = new Position(item, client, socketClient);
+                            positionNew.PropertyChanged += PositionNew_PropertyChanged;
+                            App.Current.Dispatcher.Invoke(() => {
+                                Main.Positions.Add(positionNew);
+                            });
+                        }
                     }
                 }
             });
