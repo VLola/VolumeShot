@@ -293,41 +293,51 @@ namespace VolumeShot.ViewModels
                             Symbol.OrderBook.Bids.Clear();
                             Symbol.OrderBook.Asks.Clear();
                         }
-                        // Bids
-                        Symbol.OrderBook.AddBids(Message.Data.Bids);
-
-                        // Asks
-                        Symbol.OrderBook.AddAsks(Message.Data.Asks);
-
-
-                        decimal maxBid = Symbol.OrderBook.MaxBid();
-                        decimal priceBid = Symbol.OrderBook.GetPriceBids(Symbol.Volume);
-
-                        decimal minAsk = Symbol.OrderBook.MinAsk();
-                        decimal priceAsk = Symbol.OrderBook.GetPriceAsks(Symbol.Volume);
-
-                        // Lower
-
-                        decimal percentBid = (maxBid - priceBid) / priceBid * 100;
-                        if (!Symbol.IsTestnet)
+                        else
                         {
-                            if (percentBid >= 0.5m) Symbol.DistanceLower = percentBid;
-                            else if (priceBid > 0m) Symbol.DistanceLower = 0.5m;
-                            else Symbol.DistanceLower = 1m;
+                            // Bids
+                            Symbol.OrderBook.AddBids(Message.Data.Bids);
+
+                            // Asks
+                            Symbol.OrderBook.AddAsks(Message.Data.Asks);
+
+
+                            decimal maxBid = Symbol.OrderBook.MaxBid();
+                            decimal priceBid = Symbol.OrderBook.GetPriceBids(Symbol.Volume);
+
+                            decimal minAsk = Symbol.OrderBook.MinAsk();
+                            decimal priceAsk = Symbol.OrderBook.GetPriceAsks(Symbol.Volume);
+
+                            // Lower
+                            if (priceBid != 0m)
+                            {
+                                decimal percentBid = (maxBid - priceBid) / priceBid * 100;
+                                if (!Symbol.IsTestnet)
+                                {
+                                    if (percentBid >= 0.5m) Symbol.DistanceLower = percentBid;
+                                    else Symbol.DistanceLower = 0.5m;
+                                }
+                                else
+                                {
+                                    Symbol.DistanceLower = percentBid;
+                                }
+                            }
+
+                            // Upper
+                            if (minAsk != 0m)
+                            {
+                                decimal percentAsk = (priceAsk - minAsk) / minAsk * 100;
+                                if (!Symbol.IsTestnet)
+                                {
+                                    if (percentAsk >= 0.5m) Symbol.DistanceUpper = percentAsk;
+                                    else Symbol.DistanceUpper = 0.5m;
+                                }
+                                else
+                                {
+                                    Symbol.DistanceUpper = percentAsk;
+                                }
+                            }
                         }
-                        else Symbol.DistanceLower = percentBid;
-
-                        // Upper
-
-                        decimal percentAsk = (priceAsk - minAsk) / minAsk * 100;
-                        if (!Symbol.IsTestnet)
-                        {
-                            if (percentAsk >= 0.5m) Symbol.DistanceUpper = percentAsk;
-                            else if (priceAsk > 0m) Symbol.DistanceUpper = 0.5m;
-                            else Symbol.DistanceUpper = 1m;
-                        }
-                        else Symbol.DistanceUpper = percentAsk;
-
                     }
                     catch (Exception ex)
                     {
