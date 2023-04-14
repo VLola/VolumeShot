@@ -226,7 +226,7 @@ namespace VolumeShot.ViewModels
                             Config? config = configs.FirstOrDefault(conf => conf.Name == symbol.Name);
                             if (config != null) volume = config.Volume;
                         }
-                        SymbolViewModel symbolViewModel = new(symbol, volume, socketClient, client);
+                        SymbolViewModel symbolViewModel = new(symbol, volume, socketClient, client, LoginViewModel.Login.SelectedUser.IsTestnet);
                         OnOrderUpdate += symbolViewModel.ExchangeViewModel.OrderUpdate;
                         OnAccountUpdate += symbolViewModel.ExchangeViewModel.AccountUpdate;
                         App.Current.Dispatcher.BeginInvoke(new Action(() => { 

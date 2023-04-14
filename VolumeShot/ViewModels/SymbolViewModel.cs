@@ -17,13 +17,13 @@ namespace VolumeShot.ViewModels
         public ExchangeViewModel ExchangeViewModel { get; set; }
         public BinanceClient client { get; set; }
         public BinanceSocketClient socketClient { get; set; }
-        public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, decimal volume, BinanceSocketClient _socketClient, BinanceClient _client) {
-
+        public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, decimal volume, BinanceSocketClient _socketClient, BinanceClient _client, bool isTestnet) {
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             socketClient = _socketClient;
             client = _client;
             ExchangeViewModel = new ExchangeViewModel(binanceFuturesUsdtSymbol, _socketClient, _client);
             Symbol.Exchange = ExchangeViewModel.Exchange;
+            Symbol.IsTestnet = isTestnet;
             Symbol.Name = binanceFuturesUsdtSymbol.Name;
             Symbol.Volume = volume;
             Symbol.PropertyChanged += Symbol_PropertyChanged;
@@ -285,22 +285,32 @@ namespace VolumeShot.ViewModels
 
 
                         decimal maxBid = Symbol.OrderBook.MaxBid();
-                        decimal percentBid = Symbol.OrderBook.GetPriceBids(Symbol.Volume);
+                        decimal priceBid = Symbol.OrderBook.GetPriceBids(Symbol.Volume);
 
                         decimal minAsk = Symbol.OrderBook.MinAsk();
-                        decimal percentAsk = Symbol.OrderBook.GetPriceAsks(Symbol.Volume);
+                        decimal priceAsk = Symbol.OrderBook.GetPriceAsks(Symbol.Volume);
 
                         // Lower
 
-                        if (percentBid >= 0.5m) Symbol.DistanceLower = (maxBid - percentBid) / percentBid * 100;
-                        else if (percentBid > 0m) Symbol.DistanceLower = 0.5m;
-                        else Symbol.DistanceLower = 1m;
+                        decimal percentBid = (maxBid - priceBid) / priceBid * 100;
+                        if (!Symbol.IsTestnet)
+                        {
+                            if (percentBid >= 0.5m) Symbol.DistanceLower = percentBid;
+                            else if (priceBid > 0m) Symbol.DistanceLower = 0.5m;
+                            else Symbol.DistanceLower = 1m;
+                        }
+                        else Symbol.DistanceLower = percentBid;
 
                         // Upper
 
-                        if (percentAsk >= 0.5m) Symbol.DistanceUpper = (percentAsk - minAsk) / minAsk * 100;
-                        else if(percentAsk > 0m) Symbol.DistanceUpper = 0.5m;
-                        else Symbol.DistanceUpper = 1m;
+                        decimal percentAsk = (priceAsk - minAsk) / minAsk * 100;
+                        if (!Symbol.IsTestnet)
+                        {
+                            if (percentAsk >= 0.5m) Symbol.DistanceUpper = percentAsk;
+                            else if (priceAsk > 0m) Symbol.DistanceUpper = 0.5m;
+                            else Symbol.DistanceUpper = 1m;
+                        }
+                        else Symbol.DistanceUpper = percentAsk;
 
                     }
                     catch (Exception ex)

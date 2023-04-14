@@ -238,5 +238,15 @@ namespace VolumeShot.Models
                 OnPropertyChanged("LongMinus");
             }
         }
+        private bool _isTestnet { get; set; }
+        public bool IsTestnet
+        {
+            get { return _isTestnet; }
+            set
+            {
+                _isTestnet = value;
+                OnPropertyChanged("IsTestnet");
+            }
+        }
     }
 }
