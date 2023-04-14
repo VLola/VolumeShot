@@ -25,6 +25,8 @@ namespace VolumeShot.ViewModels
         public BinanceSocketClient socketClient { get; set; }
         public delegate void AccountOnOrderUpdate(BinanceFuturesStreamOrderUpdate OrderUpdate);
         public event AccountOnOrderUpdate? OnOrderUpdate;
+        public delegate void AccountOnAccountUpdate(BinanceFuturesStreamAccountUpdate AccountUpdate, string[] Symbols);
+        public event AccountOnAccountUpdate? OnAccountUpdate;
         public MainViewModel()
         {
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
@@ -166,7 +168,13 @@ namespace VolumeShot.ViewModels
                 var result = await socketClient.UsdFuturesStreams.SubscribeToUserDataUpdatesAsync(listenKey: listenKey.Data,
                     onLeverageUpdate => { },
                     onMarginUpdate => { },
-                    onAccountUpdate => { },
+                    onAccountUpdate => {
+                        if (onAccountUpdate.Data.UpdateData.Reason == Binance.Net.Enums.AccountUpdateReason.Order)
+                        {
+                            string[] symbols = onAccountUpdate.Data.UpdateData.Positions.Select(pos => pos.Symbol).ToArray();
+                            OnAccountUpdate?.Invoke(onAccountUpdate.Data, symbols);
+                        }
+                    },
                     onOrderUpdate =>
                     {
                         OnOrderUpdate?.Invoke(onOrderUpdate.Data);
@@ -220,6 +228,7 @@ namespace VolumeShot.ViewModels
                         }
                         SymbolViewModel symbolViewModel = new(symbol, volume, socketClient, client);
                         OnOrderUpdate += symbolViewModel.ExchangeViewModel.OrderUpdate;
+                        OnAccountUpdate += symbolViewModel.ExchangeViewModel.AccountUpdate;
                         App.Current.Dispatcher.BeginInvoke(new Action(() => { 
                             Main.Symbols.Add(symbolViewModel.Symbol);
                         }));

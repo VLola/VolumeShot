@@ -91,6 +91,16 @@ namespace VolumeShot.Models
                 OnPropertyChanged("IsOpenShortOrder");
             }
         }
+        private bool _isWorkedStopLoss { get; set; }
+        public bool IsWorkedStopLoss
+        {
+            get { return _isWorkedStopLoss; }
+            set
+            {
+                _isWorkedStopLoss = value;
+                OnPropertyChanged("IsWorkedStopLoss");
+            }
+        }
         private decimal _takeProfitLong { get; set; }
         public decimal TakeProfitLong
         {

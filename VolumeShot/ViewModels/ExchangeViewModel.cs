@@ -47,7 +47,27 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
-
+        public void AccountUpdate(BinanceFuturesStreamAccountUpdate AccountUpdate, string[] Symbols)
+        {
+            if (Symbols.Contains(Exchange.Symbol)) {
+                foreach (var item in AccountUpdate.UpdateData.Positions)
+                {
+                    if(item.Symbol == Exchange.Symbol)
+                    {
+                        if (item.Quantity == 0m)
+                        {
+                            if(item.PositionSide == PositionSide.Long) Exchange.IsOpenLongOrder = false;
+                            else if(item.PositionSide == PositionSide.Short) Exchange.IsOpenShortOrder = false;
+                        }
+                        else
+                        {
+                            if (item.PositionSide == PositionSide.Long) Exchange.IsOpenLongOrder = true;
+                            else if (item.PositionSide == PositionSide.Short) Exchange.IsOpenShortOrder = true;
+                        }
+                    }
+                }
+            }
+        }
         public void OrderUpdate(BinanceFuturesStreamOrderUpdate OrderUpdate)
         {
             if (OrderUpdate.UpdateData.Symbol == Exchange.Symbol)
@@ -56,39 +76,23 @@ namespace VolumeShot.ViewModels
                 {
                     if (OrderUpdate.UpdateData.Type == FuturesOrderType.Limit)
                     {
-                        if(!Exchange.IsOpenLongOrder && !Exchange.IsOpenShortOrder)
+                        if (OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                         {
-                            if (OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Long)
-                            {
-                                OpenBet(OrderUpdate.UpdateData.PositionSide, OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice);
-                                Exchange.IsOpenLongOrder = true;
-                                OpenOrder(OrderUpdate.UpdateData.OrderId, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Side, OrderUpdate.UpdateData.Quantity, OrderUpdate.UpdateData.UpdateTime);
-                            }
-                            else if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
-                            {
-                                OpenBet(OrderUpdate.UpdateData.PositionSide, OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice);
-                                Exchange.IsOpenShortOrder = true;
-                                OpenOrder(OrderUpdate.UpdateData.OrderId, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Side, OrderUpdate.UpdateData.Quantity, OrderUpdate.UpdateData.UpdateTime);
-                            }
+                            OpenBet(OrderUpdate.UpdateData.PositionSide, OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice);
+                            OpenOrder(OrderUpdate.UpdateData.OrderId, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Side, OrderUpdate.UpdateData.Quantity, OrderUpdate.UpdateData.UpdateTime);
                         }
-                        else if(Exchange.IsOpenLongOrder || Exchange.IsOpenShortOrder)
+                        else if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                         {
-                            if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
-                            {
-                                CloseBet(OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Quantity);
-                                ClearOrdersToSymbolAsync();
-                            }
+                            CloseBet(OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Quantity);
+                            ClearOrdersToSymbolAsync();
                         }
                     }
                     else if (OrderUpdate.UpdateData.Type == FuturesOrderType.Market)
                     {
-                        if (Exchange.IsOpenLongOrder || Exchange.IsOpenShortOrder)
+                        if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                         {
-                            if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
-                            {
-                                CloseBet(OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Quantity);
-                                ClearOrdersToSymbolAsync();
-                            }
+                            CloseBet(OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Quantity);
+                            ClearOrdersToSymbolAsync();
                         }
                     }
                 }
@@ -225,15 +229,22 @@ namespace VolumeShot.ViewModels
         }
         public async void ClosePositionsAsync()
         {
+            StopLossAsync();
             await CancelAllOrdersAsync();
             GetPositionInformationAsync();
         } 
+        private async void StopLossAsync()
+        {
+            await Task.Run(async () => {
+                Exchange.IsWorkedStopLoss = true;
+                await Task.Delay(1000);
+                Exchange.IsWorkedStopLoss = false;
+            });
+        }
         private async void ClearOrdersToSymbolAsync()
         {
             await CancelAllOrdersAsync();
             GetPositionInformationAsync();
-            Exchange.IsOpenLongOrder = false;
-            Exchange.IsOpenShortOrder = false;
         }
         private async Task CancelAllOrdersAsync()
         {
@@ -256,6 +267,34 @@ namespace VolumeShot.ViewModels
                     Error.WriteLog(path, Exchange.Symbol, $"Exception CancelAllOrdersAsync: {ex.Message}");
                 }
             });
+        }
+        private async Task<bool> CheckOpenPositionAsync()
+        {
+            try
+            {
+                var result = await client.UsdFuturesApi.Account.GetPositionInformationAsync(symbol: Exchange.Symbol);
+                if (!result.Success)
+                {
+                    Error.WriteLog(path, Exchange.Symbol, $"Failed GetPositionInformationAsync: {result.Error?.Message}");
+                    return true;
+                }
+                else
+                {
+                    foreach (var item in result.Data.ToList())
+                    {
+                        if (item.Quantity != 0m)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Error.WriteLog(path, Exchange.Symbol, $"Exception GetPositionInformationAsync: {ex.Message}");
+                return true;
+            }
         }
         private async void GetPositionInformationAsync()
         {

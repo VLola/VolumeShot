@@ -88,9 +88,12 @@ namespace VolumeShot.ViewModels
             if(e.PropertyName == "BestBidPrice"/* || e.PropertyName == "BestAskPrice"*/)
             {
                 // Stop loss
-                if (ExchangeViewModel.Exchange.IsOpenShortOrder && Symbol.BestBidPrice >= ExchangeViewModel.Exchange.StopLossShortPrice || ExchangeViewModel.Exchange.IsOpenLongOrder && Symbol.BestAskPrice <= ExchangeViewModel.Exchange.StopLossLongPrice)
+                if (!ExchangeViewModel.Exchange.IsWorkedStopLoss)
                 {
-                    ExchangeViewModel.ClosePositionsAsync();
+                    if (ExchangeViewModel.Exchange.IsOpenShortOrder && Symbol.BestBidPrice >= ExchangeViewModel.Exchange.StopLossShortPrice || ExchangeViewModel.Exchange.IsOpenLongOrder && Symbol.BestAskPrice <= ExchangeViewModel.Exchange.StopLossLongPrice)
+                    {
+                        ExchangeViewModel.ClosePositionsAsync();
+                    }
                 }
             }
         }
@@ -266,22 +269,18 @@ namespace VolumeShot.ViewModels
                         decimal minAsk = Symbol.OrderBook.MinAsk();
                         decimal percentAsk = Symbol.OrderBook.GetPriceAsks(Symbol.Volume);
 
-                        if (percentBid > 0m)
-                        {
-                            Symbol.DistanceLower = (maxBid - percentBid) / percentBid * 100;
-                        }
-                        else
-                        {
-                            Symbol.DistanceLower = 1m;
-                        }
-                        if (percentAsk > 0m)
-                        {
-                            Symbol.DistanceUpper = (percentAsk - minAsk) / minAsk * 100;
-                        }
-                        else
-                        {
-                            Symbol.DistanceUpper = 1m;
-                        }
+                        // Lower
+
+                        if (percentBid >= 0.5m) Symbol.DistanceLower = (maxBid - percentBid) / percentBid * 100;
+                        else if (percentBid > 0m) Symbol.DistanceLower = 0.5m;
+                        else Symbol.DistanceLower = 1m;
+
+                        // Upper
+
+                        if (percentAsk >= 0.5m) Symbol.DistanceUpper = (percentAsk - minAsk) / minAsk * 100;
+                        else if(percentAsk > 0m) Symbol.DistanceUpper = 0.5m;
+                        else Symbol.DistanceUpper = 1m;
+
                     }
                     catch (Exception ex)
                     {
