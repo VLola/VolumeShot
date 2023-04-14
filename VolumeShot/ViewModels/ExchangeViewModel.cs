@@ -56,8 +56,9 @@ namespace VolumeShot.ViewModels
                     {
                         if (item.Quantity == 0m)
                         {
-                            if(item.PositionSide == PositionSide.Long) Exchange.IsOpenLongOrder = false;
-                            else if(item.PositionSide == PositionSide.Short) Exchange.IsOpenShortOrder = false;
+                            Exchange.IsWait = true;
+                            if (item.PositionSide == PositionSide.Long) Exchange.IsOpenLongOrder = false;
+                            else if (item.PositionSide == PositionSide.Short) Exchange.IsOpenShortOrder = false;
                         }
                         else
                         {

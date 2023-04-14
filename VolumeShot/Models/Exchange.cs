@@ -101,6 +101,16 @@ namespace VolumeShot.Models
                 OnPropertyChanged("IsWorkedStopLoss");
             }
         }
+        private bool _isWait { get; set; }
+        public bool IsWait
+        {
+            get { return _isWait; }
+            set
+            {
+                _isWait = value;
+                OnPropertyChanged("IsWait");
+            }
+        }
         private decimal _takeProfitLong { get; set; }
         public decimal TakeProfitLong
         {
