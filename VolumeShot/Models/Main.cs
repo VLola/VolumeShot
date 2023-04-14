@@ -26,22 +26,22 @@ namespace VolumeShot.Models
 
         private void Value_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "BestAskPrice")
+            if (e.PropertyName == "Price")
             {
                 if (sender != null)
                 {
                     Symbol symbol = (Symbol)sender;
-                    AddPoint(symbol.DateTime.ToOADate(), Decimal.ToDouble(symbol.BestAskPrice), Decimal.ToDouble(symbol.BestBidPrice));
+                    if(symbol.BuyerIsMaker) AddPoint(symbol.TradeTime.ToOADate(), Decimal.ToDouble(symbol.Price), Color.Red);
+                    else AddPoint(symbol.TradeTime.ToOADate(), Decimal.ToDouble(symbol.Price), Color.Green);
                 }
             }
         }
-        public void AddPoint(double time, double priceAsk, double priceBid)
+        public void AddPoint(double time, double price, Color color)
         {
             WpfPlot.Dispatcher.Invoke(new Action(() =>
             {
                 WpfPlot.Plot.RenderLock();
-                WpfPlot.Plot.AddPoint(x: time, y: priceAsk, color: Color.Red, size: 4);
-                WpfPlot.Plot.AddPoint(x: time, y: priceBid, color: Color.Green, size: 4);
+                WpfPlot.Plot.AddPoint(x: time, y: price, color: color, size: 4);
                 WpfPlot.Plot.RenderUnlock();
             }));
         }

@@ -207,6 +207,7 @@ namespace VolumeShot.ViewModels
         {
             try
             {
+                await SubscribeToAggregatedTradeUpdatesAsync();
                 await SubscribeToBookTickerUpdatesAsync();
                 await GetOrderBookAsync();
                 await SubscribeToOrderBookUpdatesAsync();
@@ -215,6 +216,33 @@ namespace VolumeShot.ViewModels
             {
                 Error.WriteLog(path, Symbol.Name, $"Exception SubscribeAsync {ex.Message}");
             }
+        }
+        private async Task SubscribeToAggregatedTradeUpdatesAsync()
+        {
+            await Task.Run(async () =>
+            {
+                int socketId = 0;
+                var result = await socketClient.UsdFuturesStreams.SubscribeToAggregatedTradeUpdatesAsync(Symbol.Name, Message =>
+                {
+                    if (!Symbol.IsRun)
+                    {
+                        socketClient.UnsubscribeAsync(socketId);
+                        Symbol.Exchange.Orders.Clear();
+                    }
+                    Symbol.BuyerIsMaker = Message.Data.BuyerIsMaker;
+                    Symbol.TradeTime = Message.Data.TradeTime;
+                    Symbol.Price = Message.Data.Price;
+                    Order order = new Order(Message.Data.Price, Message.Data.BuyerIsMaker, Message.Data.TradeTime);
+                    order.PropertyChanged += Order_PropertyChanged;
+                    Symbol.Exchange.Orders.Add(order);
+                    if (Symbol.Exchange.IsOpenLongOrder || Symbol.Exchange.IsOpenShortOrder)
+                    {
+                        Symbol.Exchange.OpenBetOrders.Add(order);
+                    }
+                });
+                if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToAggregatedTradeUpdatesAsync: {result.Error?.Message}");
+                else socketId = result.Data.Id;
+            });
         }
         private async Task SubscribeToBookTickerUpdatesAsync()
         {
@@ -226,21 +254,9 @@ namespace VolumeShot.ViewModels
                     if (!Symbol.IsRun)
                     {
                         socketClient.UnsubscribeAsync(socketId);
-                        Symbol.Exchange.Orders.Clear();
                     }
                     Symbol.BestAskPrice = Message.Data.BestAskPrice;
                     Symbol.BestBidPrice = Message.Data.BestBidPrice;
-                    if(Message.Data.TransactionTime != null)
-                    {
-                        Symbol.DateTime = (DateTime)Message.Data.TransactionTime;
-                        Order order = new Order(Symbol.BestAskPrice, Symbol.BestBidPrice, Symbol.DateTime);
-                        order.PropertyChanged += Order_PropertyChanged;
-                        Symbol.Exchange.Orders.Add(order);
-                        if (Symbol.Exchange.IsOpenLongOrder || Symbol.Exchange.IsOpenShortOrder)
-                        {
-                            Symbol.Exchange.OpenBetOrders.Add(order);
-                        }
-                    }
                 });
                 if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToBookTickerUpdatesAsync: {result.Error?.Message}");
                 else socketId = result.Data.Id;

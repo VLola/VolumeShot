@@ -4,6 +4,7 @@ using VolumeShot.Models;
 using System.Drawing;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace VolumeShot.Views
 {
@@ -21,16 +22,19 @@ namespace VolumeShot.Views
                 double distanceUpper = Decimal.ToDouble(bet.PriceDistanceUpper);
                 double takeProfit = Decimal.ToDouble(bet.PriceTakeProfit);
                 double stopLoss = Decimal.ToDouble(bet.PriceStopLoss);
-                double[] xPrice = bet.Orders.Where(order=>order != null).Select(order => order.DateTime.ToOADate()).ToArray();
-                double[] asks = bet.Orders.Where(order => order != null).Select(order => Decimal.ToDouble(order.BestAskPrice)).ToArray();
-                double[] bids = bet.Orders.Where(order => order != null).Select(order => Decimal.ToDouble(order.BestBidPrice)).ToArray();
+                IEnumerable<Order> buyers =  bet.Orders.Where(order => order.BuyerIsMaker == false);
+                IEnumerable<Order> makers =  bet.Orders.Where(order => order.BuyerIsMaker == true);
+                double[] buyersX = buyers.Select(order => order.DateTime.ToOADate()).ToArray();
+                double[] buyersY = buyers.Select(order => Decimal.ToDouble(order.Price)).ToArray();
+                double[] makersX = makers.Select(order => order.DateTime.ToOADate()).ToArray();
+                double[] makersY = makers.Select(order => Decimal.ToDouble(order.Price)).ToArray();
 
                 double[] xBuffer = { bet.Orders.ToList()[0].DateTime.ToOADate(), bet.OpenTime.ToOADate() };
                 double[] xDictance = { bet.OpenTime.ToOADate(), bet.CloseTime.AddSeconds(20).ToOADate() };
                 plt.Dispatcher.Invoke(() =>
                 {
-                    plt.Plot.AddScatter(xPrice, asks, color: Color.Red, lineWidth: 0, markerSize: 3);
-                    plt.Plot.AddScatter(xPrice, bids, color: Color.Green, lineWidth: 0, markerSize: 3);
+                    plt.Plot.AddScatter(buyersX, buyersY, color: Color.Green, lineWidth: 0, markerSize: 3);
+                    plt.Plot.AddScatter(makersX, makersY, color: Color.Red, lineWidth: 0, markerSize: 3);
                     plt.Plot.AddScatterLines(xDictance, new double[] { distanceUpper, distanceUpper }, Color.Orange, lineStyle: LineStyle.Dash, label: $"D ▲ : {Math.Round(bet.DistanceUpper, 2)}");
                     plt.Plot.AddScatterLines(xBuffer, new double[] { bufferUpper, bufferUpper }, Color.Gray, lineStyle: LineStyle.Dash, label: $"B ▲: {Math.Round(bet.BufferUpper, 2)}");
                     plt.Plot.AddScatterLines(xBuffer, new double[] { bufferLower, bufferLower }, Color.Gray, lineStyle: LineStyle.Dash, label: $"B ▼ : {Math.Round(bet.BufferLower, 2)}");

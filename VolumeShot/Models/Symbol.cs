@@ -46,6 +46,36 @@ namespace VolumeShot.Models
                 OnPropertyChanged("Volume");
             }
         }
+        private decimal _price { get; set; }
+        public decimal Price
+        {
+            get { return _price; }
+            set
+            {
+                _price = value;
+                OnPropertyChanged("Price");
+            }
+        }
+        private bool _buyerIsMaker { get; set; }
+        public bool BuyerIsMaker
+        {
+            get { return _buyerIsMaker; }
+            set
+            {
+                _buyerIsMaker = value;
+                OnPropertyChanged("BuyerIsMaker");
+            }
+        }
+        private DateTime _tradeTime { get; set; }
+        public DateTime TradeTime
+        {
+            get { return _tradeTime; }
+            set
+            {
+                _tradeTime = value;
+                OnPropertyChanged("TradeTime");
+            }
+        }
         private decimal _bestAskPrice { get; set; }
         public decimal BestAskPrice
         {

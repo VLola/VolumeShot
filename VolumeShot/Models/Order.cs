@@ -5,8 +5,8 @@ namespace VolumeShot.Models
 {
     public class Order : Changed
     {
-        public decimal BestAskPrice { get; set; }
-        public decimal BestBidPrice { get; set; }
+        public decimal Price { get; set; }
+        public bool BuyerIsMaker { get; set; }
         public DateTime DateTime { get; set; }
         private bool _isRemove { get; set; }
         public bool IsRemove
@@ -18,10 +18,10 @@ namespace VolumeShot.Models
                 OnPropertyChanged("IsRemove");
             }
         }
-        public Order(decimal bestAskPrice, decimal bestBidPrice, DateTime dateTime)
+        public Order(decimal price, bool buyerIsMaker, DateTime dateTime)
         {
-            BestAskPrice = bestAskPrice;
-            BestBidPrice = bestBidPrice;
+            Price = price;
+            BuyerIsMaker = buyerIsMaker;
             DateTime = dateTime;
             RunAsync();
         }
