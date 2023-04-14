@@ -45,6 +45,12 @@
                 <TabItem Header="History">
                     <local:SymbolInfoView/>
                 </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <TextBlock Text="{Binding Path=Main.Positions.Count, StringFormat=Positions: {0}}"/>
+                    </TabItem.Header>
+                    <local:PositionsView/>
+                </TabItem>
             </TabControl>
         </Grid>
     </Grid>

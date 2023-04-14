@@ -16,6 +16,7 @@ namespace VolumeShot.ViewModels
     internal class MainViewModel
     {
         private string path = $"{Directory.GetCurrentDirectory()}/log/";
+        string pathPositions = Directory.GetCurrentDirectory() + "/log/positions/";
         private const double _second10 = 0.00011574074596865103;
         private const double _second60 = 0.0006944444394321181;
         string errorFile = "Main";
@@ -29,6 +30,7 @@ namespace VolumeShot.ViewModels
         public event AccountOnAccountUpdate? OnAccountUpdate;
         public MainViewModel()
         {
+            if (!Directory.Exists(pathPositions)) Directory.CreateDirectory(pathPositions);
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             LoginViewModel.Login.PropertyChanged += Login_PropertyChanged;
         }
@@ -173,6 +175,7 @@ namespace VolumeShot.ViewModels
                         {
                             string[] symbols = onAccountUpdate.Data.UpdateData.Positions.Select(pos => pos.Symbol).ToArray();
                             OnAccountUpdate?.Invoke(onAccountUpdate.Data, symbols);
+                            AddPositionsAsync(onAccountUpdate.Data.UpdateData.Positions);
                         }
                     },
                     onOrderUpdate =>
@@ -188,6 +191,47 @@ namespace VolumeShot.ViewModels
                 }
             }
         }
+        private async void AddPositionsAsync(IEnumerable<BinanceFuturesStreamPosition> positions)
+        {
+            await Task.Run(() =>
+            {
+                foreach (var item in positions)
+                {
+                    Position? position = Main.Positions.FirstOrDefault(position => position.Symbol == item.Symbol && position.PositionSide == item.PositionSide);
+                    if (position != null)
+                    {
+                        position.Quantity = item.Quantity;
+                        position.Price = item.EntryPrice;
+                    }
+                    else
+                    {
+                        Position positionNew = new Position(item, client);
+                        positionNew.PropertyChanged += PositionNew_PropertyChanged;
+                        App.Current.Dispatcher.Invoke(() => {
+                            Main.Positions.Add(positionNew);
+                        });
+                    }
+                }
+            });
+        }
+
+        private void PositionNew_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == "Quantity")
+            {
+                Position? position = sender as Position;
+                if (position != null)
+                {
+                    if (position.Quantity == 0m)
+                    {
+                        App.Current.Dispatcher.Invoke(() => {
+                            Main.Positions.Remove(position);
+                        });
+                    }
+                }
+            }
+        }
+
         private async void KeepAliveUserStreamAsync(string listenKey)
         {
             await Task.Run(async () =>

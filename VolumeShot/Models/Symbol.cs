@@ -32,8 +32,19 @@ namespace VolumeShot.Models
             get { return _isTrading; }
             set
             {
-                _isTrading = value;
-                OnPropertyChanged("IsTrading");
+                if (value)
+                {
+                    if(DistanceLower > 0m && DistanceUpper > 0m && BestAskPrice > 0m && BestBidPrice > 0m)
+                    {
+                        _isTrading = value;
+                        OnPropertyChanged("IsTrading");
+                    }
+                }
+                else
+                {
+                    _isTrading = value;
+                    OnPropertyChanged("IsTrading");
+                }
             }
         }
         private decimal _volume { get; set; }

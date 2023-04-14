@@ -1,9 +1,9 @@
-﻿using ScottPlot;
+﻿using Binance.Net.Objects.Models.Futures.Socket;
+using ScottPlot;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
-using System.Windows.Documents;
 
 namespace VolumeShot.Models
 {
@@ -11,6 +11,8 @@ namespace VolumeShot.Models
     {
         public WpfPlot WpfPlot { get; set; } = new();
         public ObservableCollection<Symbol> Symbols { get; set; } = new();
+        public ObservableCollection<Position> Positions { get; set; } = new();
+        
         private Symbol _selectedSymbol { get; set; }
         public Symbol SelectedSymbol
         {
