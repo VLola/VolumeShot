@@ -4,7 +4,6 @@ using Binance.Net.Objects.Models.Futures;
 using Binance.Net.Objects.Models.Futures.Socket;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -57,13 +56,42 @@ namespace VolumeShot.ViewModels
                         if (item.Quantity == 0m)
                         {
                             Exchange.IsWait = true;
-                            if (item.PositionSide == PositionSide.Long) Exchange.IsOpenLongOrder = false;
-                            else if (item.PositionSide == PositionSide.Short) Exchange.IsOpenShortOrder = false;
+                            if (item.PositionSide == PositionSide.Long)
+                            {
+                                if (Exchange.IsOpenLongOrder) 
+                                {
+                                    CloseBet(DateTime.UtcNow); 
+                                }
+                                Exchange.IsOpenLongOrder = false;
+                            }
+                            else if (item.PositionSide == PositionSide.Short)
+                            {
+                                if (Exchange.IsOpenShortOrder)
+                                {
+                                    CloseBet(DateTime.UtcNow);
+                                }
+                                Exchange.IsOpenShortOrder = false;
+                            }
                         }
                         else
                         {
-                            if (item.PositionSide == PositionSide.Long) Exchange.IsOpenLongOrder = true;
-                            else if (item.PositionSide == PositionSide.Short) Exchange.IsOpenShortOrder = true;
+                            if (item.PositionSide == PositionSide.Long)
+                            {
+                                if (!Exchange.IsOpenLongOrder)
+                                {
+                                    OpenBet(item.PositionSide, DateTime.UtcNow, item.EntryPrice);
+                                }
+                                Exchange.IsOpenLongOrder = true;
+                            }
+                            else if (item.PositionSide == PositionSide.Short) 
+                            {
+                                if (!Exchange.IsOpenShortOrder)
+                                {
+                                    OpenBet(item.PositionSide, DateTime.UtcNow, item.EntryPrice);
+                                }
+                                Exchange.IsOpenShortOrder = true;
+                            }
+
                         }
                     }
                 }
@@ -79,12 +107,12 @@ namespace VolumeShot.ViewModels
                     {
                         if (OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                         {
-                            OpenBet(OrderUpdate.UpdateData.PositionSide, OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice);
                             OpenOrder(OrderUpdate.UpdateData.OrderId, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Side, OrderUpdate.UpdateData.Quantity, OrderUpdate.UpdateData.UpdateTime);
                         }
                         else if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                         {
-                            CloseBet(OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Quantity);
+                            Exchange.Quantity += OrderUpdate.UpdateData.Quantity;
+                            Exchange.ClosePrice = OrderUpdate.UpdateData.AveragePrice;
                             ClearOrdersToSymbolAsync();
                         }
                     }
@@ -92,7 +120,8 @@ namespace VolumeShot.ViewModels
                     {
                         if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                         {
-                            CloseBet(OrderUpdate.UpdateData.UpdateTime, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Quantity);
+                            Exchange.Quantity += OrderUpdate.UpdateData.Quantity;
+                            Exchange.ClosePrice = OrderUpdate.UpdateData.AveragePrice;
                             ClearOrdersToSymbolAsync();
                         }
                     }
@@ -140,20 +169,24 @@ namespace VolumeShot.ViewModels
                 Exchange.Bets.Insert(0, bet);
             }));
         }
-        private void CloseBet(DateTime closeTime, decimal closePrice, decimal quantity)
+        private async void CloseBet(DateTime closeTime)
         {
-            Exchange.Bets[0].SymbolPrices.AddRange(Exchange.OpenBetSymbolPrices);
-            Exchange.Bets[0].CloseTime = closeTime;
-            Exchange.Bets[0].ClosePrice = closePrice;
-            Exchange.Bets[0].Quantity = quantity;
-            Exchange.Bets[0].Usdt = quantity * closePrice;
-            Exchange.Bets[0].Fee = Exchange.Fee;
-            Exchange.Bets[0].Profit = Exchange.Profit;
-            Exchange.Bets[0].Total = Exchange.Profit - Exchange.Fee;
-            if((Exchange.Profit - Exchange.Fee) < 0m) Exchange.Bets[0].IsPositive = false;
-            else Exchange.Bets[0].IsPositive = true;
+            await Task.Run(async () =>
+            {
+                await Task.Delay(1000);
+                Exchange.Bets[0].SymbolPrices.AddRange(Exchange.OpenBetSymbolPrices);
+                Exchange.Bets[0].CloseTime = closeTime;
+                Exchange.Bets[0].ClosePrice = Exchange.ClosePrice;
+                Exchange.Bets[0].Quantity = Exchange.Quantity;
+                Exchange.Bets[0].Usdt = Exchange.Quantity * Exchange.ClosePrice;
+                Exchange.Bets[0].Fee = Exchange.Fee;
+                Exchange.Bets[0].Profit = Exchange.Profit;
+                Exchange.Bets[0].Total = Exchange.Profit - Exchange.Fee;
+                if ((Exchange.Profit - Exchange.Fee) < 0m) Exchange.Bets[0].IsPositive = false;
+                else Exchange.Bets[0].IsPositive = true;
 
-            SaveHistoryAsync();
+                SaveHistoryAsync();
+            });
         }
         private async void SaveHistoryAsync()
         {
@@ -209,6 +242,7 @@ namespace VolumeShot.ViewModels
             Exchange.Volume = volume;
             Exchange.Fee = 0m;
             Exchange.Profit = 0m;
+            Exchange.Quantity = 0m;
 
             await CancelAllOrdersAsync();
             await OpenOrderLimitAsync(PositionSide.Long, OrderSide.Buy, priceDistanceLower, openQuantity);

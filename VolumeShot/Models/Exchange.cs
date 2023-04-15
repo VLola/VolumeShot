@@ -321,5 +321,25 @@ namespace VolumeShot.Models
                 OnPropertyChanged("Volume");
             }
         }
+        private decimal _quantity { get; set; }
+        public decimal Quantity
+        {
+            get { return _quantity; }
+            set
+            {
+                _quantity = value;
+                OnPropertyChanged("Quantity");
+            }
+        }
+        private decimal _closePrice { get; set; }
+        public decimal ClosePrice
+        {
+            get { return _closePrice; }
+            set
+            {
+                _closePrice = value;
+                OnPropertyChanged("ClosePrice");
+            }
+        }
     }
 }
