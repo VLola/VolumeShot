@@ -85,42 +85,50 @@ namespace VolumeShot.ViewModels
 
         private void LoadChart()
         {
-            Main.WpfPlot.Dispatcher.Invoke(new Action(() =>
+            try
             {
-                // Style
-                Main.WpfPlot.Plot.Layout(padding: 12);
-                Main.WpfPlot.Plot.Style(figureBackground: Color.Black, dataBackground: Color.Black);
-                Main.WpfPlot.Plot.Frameless();
-                Main.WpfPlot.Plot.XAxis.TickLabelStyle(color: Color.White);
-                Main.WpfPlot.Plot.XAxis.TickMarkColor(ColorTranslator.FromHtml("#333333"));
-                Main.WpfPlot.Plot.XAxis.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
+                Main.WpfPlot.Dispatcher.Invoke(new Action(() =>
+                {
+                    // Style
+                    Main.WpfPlot.Plot.Layout(padding: 12);
+                    Main.WpfPlot.Plot.Style(figureBackground: Color.Black, dataBackground: Color.Black);
+                    Main.WpfPlot.Plot.Frameless();
+                    Main.WpfPlot.Plot.XAxis.TickLabelStyle(color: Color.White);
+                    Main.WpfPlot.Plot.XAxis.TickMarkColor(ColorTranslator.FromHtml("#333333"));
+                    Main.WpfPlot.Plot.XAxis.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
 
-                Main.WpfPlot.Plot.YAxis.Ticks(false);
-                Main.WpfPlot.Plot.YAxis.Grid(false);
-                Main.WpfPlot.Plot.YAxis2.Ticks(true);
-                Main.WpfPlot.Plot.YAxis2.Grid(true);
-                Main.WpfPlot.Plot.YAxis2.TickLabelStyle(color: ColorTranslator.FromHtml("#00FF00"));
-                Main.WpfPlot.Plot.YAxis2.TickMarkColor(ColorTranslator.FromHtml("#333333"));
-                Main.WpfPlot.Plot.YAxis2.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
+                    Main.WpfPlot.Plot.YAxis.Ticks(false);
+                    Main.WpfPlot.Plot.YAxis.Grid(false);
+                    Main.WpfPlot.Plot.YAxis2.Ticks(true);
+                    Main.WpfPlot.Plot.YAxis2.Grid(true);
+                    Main.WpfPlot.Plot.YAxis2.TickLabelStyle(color: ColorTranslator.FromHtml("#00FF00"));
+                    Main.WpfPlot.Plot.YAxis2.TickMarkColor(ColorTranslator.FromHtml("#333333"));
+                    Main.WpfPlot.Plot.YAxis2.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
 
-                var legend = Main.WpfPlot.Plot.Legend();
-                legend.FillColor = Color.Transparent;
-                legend.OutlineColor = Color.Transparent;
-                legend.Font.Color = Color.White;
-                legend.Font.Bold = true;
+                    var legend = Main.WpfPlot.Plot.Legend();
+                    legend.FillColor = Color.Transparent;
+                    legend.OutlineColor = Color.Transparent;
+                    legend.Font.Color = Color.White;
+                    legend.Font.Bold = true;
 
-                // Lines
+                    // Lines
 
-                Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.bufferLower, Color.Gray, lineStyle: LineStyle.Dash);
-                Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.bufferUpper, Color.Gray, lineStyle: LineStyle.Dash);
-                Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.distanceLower, Color.Orange, lineStyle: LineStyle.Dash);
-                Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.distanceUpper, Color.Orange, lineStyle: LineStyle.Dash);
-                Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.takeProfit, Color.Green, lineStyle: LineStyle.Dash);
-                Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.stopLoss, Color.Red, lineStyle: LineStyle.Dash);
-                Main.WpfPlot.Plot.RenderLock();
-                Main.WpfPlot.Render();
-                Main.WpfPlot.Plot.RenderUnlock();
-            }));
+                    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.bufferLower, Color.Gray, lineStyle: LineStyle.Dash);
+                    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.bufferUpper, Color.Gray, lineStyle: LineStyle.Dash);
+                    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.distanceLower, Color.Orange, lineStyle: LineStyle.Dash);
+                    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.distanceUpper, Color.Orange, lineStyle: LineStyle.Dash);
+                    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.takeProfit, Color.Green, lineStyle: LineStyle.Dash);
+                    Main.WpfPlot.Plot.AddScatterLines(Main.x, Main.stopLoss, Color.Red, lineStyle: LineStyle.Dash);
+                    Main.WpfPlot.Plot.RenderLock();
+                    Main.WpfPlot.Render();
+                    Main.WpfPlot.Plot.RenderUnlock();
+                }));
+
+            }
+            catch (Exception ex)
+            {
+                Error.WriteLog(path, errorFile, $"Exception LoadChart: {ex?.Message}");
+            }
         }
         private async void RunChartAsync()
         {
@@ -131,43 +139,51 @@ namespace VolumeShot.ViewModels
                     await Task.Delay(100);
                     if(Main.SelectedSymbol != null && Main.IsVisibleChart)
                     {
-                        if (Main.SelectedSymbol.BufferLowerPrice > 0m &&
-                            Main.SelectedSymbol.BufferUpperPrice > 0m)
+                        try
                         {
-                            double dateTimeNew = System.DateTime.UtcNow.ToOADate();
-                            double dateTimeOld = System.DateTime.UtcNow.AddMinutes(-1).ToOADate();
-                            Main.x[0] = dateTimeOld;
-                            Main.x[1] = dateTimeNew;
-                            Main.bufferLower[0] = Main.bufferLower[1] = Decimal.ToDouble(Main.SelectedSymbol.BufferLowerPrice);
-                            Main.bufferUpper[0] = Main.bufferUpper[1] = Decimal.ToDouble(Main.SelectedSymbol.BufferUpperPrice);
 
-                            if (Main.SelectedSymbol.Exchange.DistanceLowerPrice > 0m &&
-                                Main.SelectedSymbol.Exchange.DistanceUpperPrice > 0m)
+                            if (Main.SelectedSymbol.BufferLowerPrice > 0m &&
+                                Main.SelectedSymbol.BufferUpperPrice > 0m)
                             {
-                                Main.distanceLower[0] = Main.distanceLower[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.DistanceLowerPrice);
-                                Main.distanceUpper[0] = Main.distanceUpper[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.DistanceUpperPrice);
-                                if (Main.SelectedSymbol.Exchange.IsOpenLongOrder)
+                                double dateTimeNew = System.DateTime.UtcNow.ToOADate();
+                                double dateTimeOld = System.DateTime.UtcNow.AddMinutes(-1).ToOADate();
+                                Main.x[0] = dateTimeOld;
+                                Main.x[1] = dateTimeNew;
+                                Main.bufferLower[0] = Main.bufferLower[1] = Decimal.ToDouble(Main.SelectedSymbol.BufferLowerPrice);
+                                Main.bufferUpper[0] = Main.bufferUpper[1] = Decimal.ToDouble(Main.SelectedSymbol.BufferUpperPrice);
+
+                                if (Main.SelectedSymbol.Exchange.DistanceLowerPrice > 0m &&
+                                    Main.SelectedSymbol.Exchange.DistanceUpperPrice > 0m)
                                 {
-                                    Main.takeProfit[0] = Main.takeProfit[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.TakeProfitLongPrice);
-                                    Main.stopLoss[0] = Main.stopLoss[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.StopLossLongPrice);
-                                }
-                                else if (Main.SelectedSymbol.Exchange.IsOpenShortOrder)
-                                {
-                                    Main.takeProfit[0] = Main.takeProfit[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.TakeProfitShortPrice);
-                                    Main.stopLoss[0] = Main.stopLoss[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.StopLossShortPrice);
+                                    Main.distanceLower[0] = Main.distanceLower[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.DistanceLowerPrice);
+                                    Main.distanceUpper[0] = Main.distanceUpper[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.DistanceUpperPrice);
+                                    if (Main.SelectedSymbol.Exchange.IsOpenLongOrder)
+                                    {
+                                        Main.takeProfit[0] = Main.takeProfit[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.TakeProfitLongPrice);
+                                        Main.stopLoss[0] = Main.stopLoss[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.StopLossLongPrice);
+                                    }
+                                    else if (Main.SelectedSymbol.Exchange.IsOpenShortOrder)
+                                    {
+                                        Main.takeProfit[0] = Main.takeProfit[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.TakeProfitShortPrice);
+                                        Main.stopLoss[0] = Main.stopLoss[1] = Decimal.ToDouble(Main.SelectedSymbol.Exchange.StopLossShortPrice);
+                                    }
+                                    else
+                                    {
+                                        Main.takeProfit[0] = Main.takeProfit[1] = 0;
+                                        Main.stopLoss[0] = Main.stopLoss[1] = 0;
+                                    }
+                                    AutoAxis(dateTimeNew, Main.distanceLower[0], Main.distanceUpper[0]);
                                 }
                                 else
                                 {
-                                    Main.takeProfit[0] = Main.takeProfit[1] = 0;
-                                    Main.stopLoss[0] = Main.stopLoss[1] = 0;
-                                }
-                                AutoAxis(dateTimeNew, Main.distanceLower[0], Main.distanceUpper[0]);
-                            }
-                            else
-                            {
 
-                                AutoAxis(dateTimeNew, Main.bufferLower[0], Main.bufferUpper[0]);
+                                    AutoAxis(dateTimeNew, Main.bufferLower[0], Main.bufferUpper[0]);
+                                }
                             }
+                        }
+                        catch (Exception ex)
+                        {
+                            Error.WriteLog(path, errorFile, $"Exception RunChartAsync: {ex?.Message}");
                         }
                     }
                 }
@@ -208,62 +224,83 @@ namespace VolumeShot.ViewModels
         }
         private async void GetOpenOrdersAsync()
         {
-            var result = await client.UsdFuturesApi.Trading.GetOpenOrdersAsync();
-            if (!result.Success)
+            try
             {
-                Error.WriteLog(path, errorFile, $"Failed GetOpenOrdersAsync: {result.Error?.Message}");
+                var result = await client.UsdFuturesApi.Trading.GetOpenOrdersAsync();
+                if (!result.Success)
+                {
+                    Error.WriteLog(path, errorFile, $"Failed GetOpenOrdersAsync: {result.Error?.Message}");
+                }
+                else
+                {
+                    AddAllOrdersAsync(result.Data);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                AddAllOrdersAsync(result.Data);
+                Error.WriteLog(path, errorFile, $"Exception GetOpenOrdersAsync: {ex?.Message}");
             }
         }
         private async void GetPositionInformationAsync()
         {
-            var result = await client.UsdFuturesApi.Account.GetPositionInformationAsync();
-            if (!result.Success)
+            try
             {
-                Error.WriteLog(path, errorFile, $"Failed GetPositionInformationAsync: {result.Error?.Message}");
+                var result = await client.UsdFuturesApi.Account.GetPositionInformationAsync();
+                if (!result.Success)
+                {
+                    Error.WriteLog(path, errorFile, $"Failed GetPositionInformationAsync: {result.Error?.Message}");
+                }
+                else
+                {
+                    AddAllPositionsAsync(result.Data);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                AddAllPositionsAsync(result.Data);
+                Error.WriteLog(path, errorFile, $"Exception GetPositionInformationAsync: {ex?.Message}");
             }
         }
         private async void SubscribeToUserDataUpdatesAsync()
         {
-            var listenKey = await client.UsdFuturesApi.Account.StartUserStreamAsync();
-            if (!listenKey.Success)
+            try
             {
-                Error.WriteLog(path, errorFile, $"Failed to start user stream: listenKey");
-            }
-            else
-            {
-                KeepAliveUserStreamAsync(listenKey.Data);
-                Error.WriteLog(path, errorFile, $"Listen Key Created");
-                var result = await socketClient.UsdFuturesStreams.SubscribeToUserDataUpdatesAsync(listenKey: listenKey.Data,
-                    onLeverageUpdate => { },
-                    onMarginUpdate => { },
-                    onAccountUpdate => {
-                        if (onAccountUpdate.Data.UpdateData.Reason == Binance.Net.Enums.AccountUpdateReason.Order)
-                        {
-                            string[] symbols = onAccountUpdate.Data.UpdateData.Positions.Select(pos => pos.Symbol).ToArray();
-                            OnAccountUpdate?.Invoke(onAccountUpdate.Data, symbols);
-                            AddSymbolPositionsAsync(onAccountUpdate.Data.UpdateData.Positions);
-                        }
-                    },
-                    onOrderUpdate =>
-                    {
-                        OnOrderUpdate?.Invoke(onOrderUpdate.Data);
-                        AddOrder(onOrderUpdate.Data.UpdateData);
-                    },
-                    onListenKeyExpired => { },
-                    onStrategyUpdate => { },
-                    onGridUpdate => { });
-                if (!result.Success)
+                var listenKey = await client.UsdFuturesApi.Account.StartUserStreamAsync();
+                if (!listenKey.Success)
                 {
-                    Error.WriteLog(path, errorFile, $"Failed UserDataUpdates: {result.Error?.Message}");
+                    Error.WriteLog(path, errorFile, $"Failed to start user stream: listenKey");
                 }
+                else
+                {
+                    KeepAliveUserStreamAsync(listenKey.Data);
+                    Error.WriteLog(path, errorFile, $"Listen Key Created");
+                    var result = await socketClient.UsdFuturesStreams.SubscribeToUserDataUpdatesAsync(listenKey: listenKey.Data,
+                        onLeverageUpdate => { },
+                        onMarginUpdate => { },
+                        onAccountUpdate => {
+                            if (onAccountUpdate.Data.UpdateData.Reason == Binance.Net.Enums.AccountUpdateReason.Order)
+                            {
+                                string[] symbols = onAccountUpdate.Data.UpdateData.Positions.Select(pos => pos.Symbol).ToArray();
+                                OnAccountUpdate?.Invoke(onAccountUpdate.Data, symbols);
+                                AddSymbolPositionsAsync(onAccountUpdate.Data.UpdateData.Positions);
+                            }
+                        },
+                        onOrderUpdate =>
+                        {
+                            OnOrderUpdate?.Invoke(onOrderUpdate.Data);
+                            AddOrder(onOrderUpdate.Data.UpdateData);
+                        },
+                        onListenKeyExpired => { },
+                        onStrategyUpdate => { },
+                        onGridUpdate => { });
+                    if (!result.Success)
+                    {
+                        Error.WriteLog(path, errorFile, $"Failed UserDataUpdates: {result.Error?.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Error.WriteLog(path, errorFile, $"Exception SubscribeToUserDataUpdatesAsync: {ex?.Message}");
             }
         }
         private async void AddAllOrdersAsync(IEnumerable<BinanceFuturesOrder> futuresOrders)
@@ -367,11 +404,18 @@ namespace VolumeShot.ViewModels
             {
                 while (true)
                 {
-                    var result = await client.UsdFuturesApi.Account.KeepAliveUserStreamAsync(listenKey);
-                    if (!result.Success) Error.WriteLog(path, errorFile, $"Failed KeepAliveUserStreamAsync: {result.Error?.Message}");
-                    else
+                    try
                     {
-                        Error.WriteLog(path, errorFile, "Success KeepAliveUserStreamAsync");
+                        var result = await client.UsdFuturesApi.Account.KeepAliveUserStreamAsync(listenKey);
+                        if (!result.Success) Error.WriteLog(path, errorFile, $"Failed KeepAliveUserStreamAsync: {result.Error?.Message}");
+                        else
+                        {
+                            Error.WriteLog(path, errorFile, "Success KeepAliveUserStreamAsync");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Error.WriteLog(path, errorFile, $"Exception KeepAliveUserStreamAsync: {ex?.Message}");
                     }
                     await Task.Delay(900000);
                 }
@@ -379,52 +423,59 @@ namespace VolumeShot.ViewModels
         }
         private void LoadSymbols()
         {
-            List<BinanceFuturesUsdtSymbol> list = ListSymbols().OrderBy(item=>item.Name).ToList();
-            if (list.Count > 0)
+            try
             {
-                List<Config>? configs = new();
-                string pathFileConfig = pathConfigs + "config";
-                if (File.Exists(pathFileConfig))
+                List<BinanceFuturesUsdtSymbol> list = ListSymbols().OrderBy(item => item.Name).ToList();
+                if (list.Count > 0)
                 {
-                    string json = File.ReadAllText(pathFileConfig);
-                    configs = JsonConvert.DeserializeObject<List<Config>>(json);
-                }
-                List<string>? symbols = new();
-                string pathFileSymbols = pathConfigs + "symbols";
-                if (File.Exists(pathFileSymbols))
-                {
-                    string json = File.ReadAllText(pathFileSymbols);
-                    symbols = JsonConvert.DeserializeObject<List<string>>(json);
-                }
-                foreach (var symbol in list)
-                {
-                    if (symbol.QuoteAsset == "USDT")
+                    List<Config>? configs = new();
+                    string pathFileConfig = pathConfigs + "config";
+                    if (File.Exists(pathFileConfig))
                     {
-                        decimal volume = 500000m;
-                        if (configs != null)
+                        string json = File.ReadAllText(pathFileConfig);
+                        configs = JsonConvert.DeserializeObject<List<Config>>(json);
+                    }
+                    List<string>? symbols = new();
+                    string pathFileSymbols = pathConfigs + "symbols";
+                    if (File.Exists(pathFileSymbols))
+                    {
+                        string json = File.ReadAllText(pathFileSymbols);
+                        symbols = JsonConvert.DeserializeObject<List<string>>(json);
+                    }
+                    foreach (var symbol in list)
+                    {
+                        if (symbol.QuoteAsset == "USDT")
                         {
-                            Config? config = configs.FirstOrDefault(conf => conf.Name == symbol.Name);
-                            if (config != null) volume = config.Volume;
-                        }
-                        SymbolViewModel symbolViewModel = new(symbol, volume, socketClient, client, LoginViewModel.Login.SelectedUser.IsTestnet);
-                        OnOrderUpdate += symbolViewModel.ExchangeViewModel.OrderUpdate;
-                        OnAccountUpdate += symbolViewModel.ExchangeViewModel.AccountUpdate;
-                        symbolViewModel.Symbol.PropertyChanged += Symbol_PropertyChanged;
-                        App.Current.Dispatcher.BeginInvoke(new Action(() => {
-                            Main.FullSymbols.Add(symbolViewModel.Symbol);
-                        }));
-                        if(symbols != null && symbols.Count > 0)
-                        {
-                            if (symbols.Contains(symbol.Name))
+                            decimal volume = 500000m;
+                            if (configs != null)
                             {
-                                App.Current.Dispatcher.BeginInvoke(new Action(() => {
-                                    Main.Symbols.Add(symbolViewModel.Symbol);
-                                }));
+                                Config? config = configs.FirstOrDefault(conf => conf.Name == symbol.Name);
+                                if (config != null) volume = config.Volume;
+                            }
+                            SymbolViewModel symbolViewModel = new(symbol, volume, socketClient, client, LoginViewModel.Login.SelectedUser.IsTestnet);
+                            OnOrderUpdate += symbolViewModel.ExchangeViewModel.OrderUpdate;
+                            OnAccountUpdate += symbolViewModel.ExchangeViewModel.AccountUpdate;
+                            symbolViewModel.Symbol.PropertyChanged += Symbol_PropertyChanged;
+                            App.Current.Dispatcher.BeginInvoke(new Action(() => {
+                                Main.FullSymbols.Add(symbolViewModel.Symbol);
+                            }));
+                            if (symbols != null && symbols.Count > 0)
+                            {
+                                if (symbols.Contains(symbol.Name))
+                                {
+                                    App.Current.Dispatcher.BeginInvoke(new Action(() => {
+                                        Main.Symbols.Add(symbolViewModel.Symbol);
+                                    }));
+                                }
                             }
                         }
                     }
+                    Main.SelectedFullSymbol = Main.FullSymbols[0];
                 }
-                Main.SelectedFullSymbol = Main.FullSymbols[0];
+            }
+            catch (Exception ex)
+            {
+                Error.WriteLog(path, errorFile, $"Exception LoadSymbols: {ex?.Message}");
             }
         }
 
