@@ -1,5 +1,6 @@
 ﻿using System;
 using VolumeShot.Command;
+using VolumeShot.Views;
 
 namespace VolumeShot.Models
 {
@@ -14,6 +15,17 @@ namespace VolumeShot.Models
             {
                 return _hideCommand ?? (_hideCommand = new RelayCommand(obj => {
                     IsVisible = false;
+                }));
+            }
+        }
+        private RelayCommand? _historyCommand;
+        public RelayCommand HistoryCommand
+        {
+            get
+            {
+                return _historyCommand ?? (_historyCommand = new RelayCommand(obj => {
+                    HistoryWindow historyWindow = new HistoryWindow(Exchange.Bets);
+                    historyWindow.Show();
                 }));
             }
         }

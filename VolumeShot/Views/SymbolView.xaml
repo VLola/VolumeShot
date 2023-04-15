@@ -99,6 +99,13 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
+                    <GridViewColumn Header="Action" Width="60">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="History" Command="{Binding Path=HistoryCommand}" Padding="5 0"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
 
                     <GridViewColumn Header="Open long" DisplayMemberBinding="{Binding Path=Exchange.IsOpenLongOrder}" Width="Auto"/>
                     <GridViewColumn Header="Open short" DisplayMemberBinding="{Binding Path=Exchange.IsOpenShortOrder}" Width="Auto"/>

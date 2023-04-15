@@ -136,6 +136,7 @@ namespace VolumeShot.ViewModels
         {
             Exchange.OpenBetSymbolPrices.Clear();
             Bet bet = new Bet();
+            bet.Symbol = Exchange.Symbol;
             bet.SymbolPrices = Exchange.SymbolPrices.ToList();
             bet.OpenTime = openTime;
             bet.OpenPrice = openPrice;
@@ -164,6 +165,7 @@ namespace VolumeShot.ViewModels
             bet.PriceDistanceLower = Exchange.DistanceLowerPrice; 
             bet.PriceDistanceUpper = Exchange.DistanceUpperPrice;
             bet.Volume = Exchange.Volume;
+            Exchange.Bet = bet;
             App.Current.Dispatcher.BeginInvoke(new Action(() => {
                 Exchange.Bets.Insert(0, bet);
             }));

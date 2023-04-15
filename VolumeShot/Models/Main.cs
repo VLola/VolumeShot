@@ -13,6 +13,7 @@ namespace VolumeShot.Models
         public ObservableCollection<Symbol> Symbols { get; set; } = new();
         public ObservableCollection<Position> Positions { get; set; } = new();
         public ObservableCollection<Order> Orders { get; set; } = new();
+        public ObservableCollection<Bet> Bets { get; set; } = new();
         private Symbol _selectedFullSymbol { get; set; }
         public Symbol SelectedFullSymbol
         {

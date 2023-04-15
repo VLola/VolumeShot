@@ -1,7 +1,6 @@
 ﻿using Binance.Net.Objects.Models.Futures;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Windows.Documents;
 
 namespace VolumeShot.Models
 {
@@ -17,6 +16,16 @@ namespace VolumeShot.Models
         public ObservableCollection<Bet> Bets { get; set; } = new();
         public List<SymbolPrice> OpenBetSymbolPrices { get; set; } = new();
         public List<SymbolPrice> SymbolPrices { get; set; } = new();
+        private Bet _bet { get; set; }
+        public Bet Bet
+        {
+            get { return _bet; }
+            set
+            {
+                _bet = value;
+                OnPropertyChanged("Bet");
+            }
+        }
         public string Symbol { get; set; }
         private decimal _minQuantity { get; set; }
         public decimal MinQuantity

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="VolumeShot.Views.SymbolInfoView"
+﻿<UserControl x:Class="VolumeShot.Views.HistoryView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -25,9 +25,10 @@
         </Style>
     </UserControl.Resources>
     <Grid>
-        <ListView ItemsSource="{Binding Path=Main.SelectedSymbol.Exchange.Bets}">
+        <ListView ItemsSource="{Binding Path=Main.Bets}">
             <ListView.View>
                 <GridView>
+                    <GridViewColumn Header="Symbol" DisplayMemberBinding="{Binding Path=Symbol}" Width="Auto"/>
                     <GridViewColumn Header="Open time" DisplayMemberBinding="{Binding Path=OpenTime}" Width="Auto"/>
                     <GridViewColumn Header="Close time" DisplayMemberBinding="{Binding Path=CloseTime}" Width="Auto"/>
                     <GridViewColumn Header="Open price" DisplayMemberBinding="{Binding Path=OpenPrice}" Width="Auto"/>
@@ -57,7 +58,7 @@
                     <GridViewColumn Header="Volume" DisplayMemberBinding="{Binding Path=Volume, StringFormat={} {0:N0}}" Width="Auto"/>
                     <GridViewColumn Header="Quantity" DisplayMemberBinding="{Binding Path=Quantity, StringFormat={}  {0}}" Width="60"/>
                     <GridViewColumn Header="Usdt" DisplayMemberBinding="{Binding Path=Usdt, StringFormat={} {0:N2}}" Width="Auto"/>
-                    
+
                     <GridViewColumn Header="Show" Width="55">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>

@@ -55,8 +55,11 @@
                         </Grid>
                     </Grid>
                 </TabItem>
-                <TabItem Header="History">
-                    <local:SymbolInfoView/>
+                <TabItem>
+                    <TabItem.Header>
+                        <TextBlock Text="{Binding Path=Main.Bets.Count, StringFormat=History: {0}}"/>
+                    </TabItem.Header>
+                    <local:HistoryView/>
                 </TabItem>
                 <TabItem>
                     <TabItem.Header>

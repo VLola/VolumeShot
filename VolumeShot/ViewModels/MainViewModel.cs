@@ -11,6 +11,7 @@ using Binance.Net.Objects.Models.Futures.Socket;
 using ScottPlot;
 using System.Drawing;
 using VolumeShot.Command;
+using System.Collections.ObjectModel;
 
 namespace VolumeShot.ViewModels
 {
@@ -20,6 +21,7 @@ namespace VolumeShot.ViewModels
         private string pathConfigs = $"{Directory.GetCurrentDirectory()}/configs/";
         private string pathPositions = Directory.GetCurrentDirectory() + "/log/positions/";
         private string pathOrders = Directory.GetCurrentDirectory() + "/log/orders/";
+        private string pathHistory = $"{Directory.GetCurrentDirectory()}/history/";
         private const double _second10 = 0.00011574074596865103;
         private const double _second60 = 0.0006944444394321181;
         string errorFile = "Main";
@@ -54,6 +56,7 @@ namespace VolumeShot.ViewModels
         }
         public MainViewModel()
         {
+            if (!Directory.Exists(pathHistory)) Directory.CreateDirectory(pathHistory);
             if (!Directory.Exists(pathOrders)) Directory.CreateDirectory(pathOrders);
             if (!Directory.Exists(pathConfigs)) Directory.CreateDirectory(pathConfigs);
             if (!Directory.Exists(pathPositions)) Directory.CreateDirectory(pathPositions);
@@ -75,6 +78,7 @@ namespace VolumeShot.ViewModels
         {
             client = LoginViewModel.Client;
             socketClient = LoginViewModel.SocketClient;
+            LoadBetsAsync();
             GetOpenOrdersAsync();
             GetPositionInformationAsync();
             SubscribeToUserDataUpdatesAsync();
@@ -82,7 +86,40 @@ namespace VolumeShot.ViewModels
             LoadChart();
             RunChartAsync();
         }
-
+        private async void LoadBetsAsync()
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    List<Bet> allBets = new();
+                    string[] files = Directory.GetFiles(pathHistory);
+                    foreach (string file in files)
+                    {
+                        string json = File.ReadAllText(file);
+                        List<Bet>? bets = JsonConvert.DeserializeObject<List<Bet>>(json);
+                        if (bets != null && bets.Count > 0)
+                        {
+                            foreach (var item in bets)
+                            {
+                                allBets.Add(item);
+                            }
+                        }
+                    }
+                    allBets = allBets.OrderByDescending(bet=>bet.OpenTime).ToList();
+                    App.Current.Dispatcher.Invoke(() => {
+                        foreach (var bet in allBets)
+                        {
+                            Main.Bets.Add(bet);
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, errorFile, $"Exception CancelOrderAsync: {ex?.Message}");
+                }
+            });
+        }
         private void LoadChart()
         {
             try
@@ -456,6 +493,7 @@ namespace VolumeShot.ViewModels
                             OnOrderUpdate += symbolViewModel.ExchangeViewModel.OrderUpdate;
                             OnAccountUpdate += symbolViewModel.ExchangeViewModel.AccountUpdate;
                             symbolViewModel.Symbol.PropertyChanged += Symbol_PropertyChanged;
+                            symbolViewModel.Symbol.Exchange.PropertyChanged += Exchange_PropertyChanged;
                             App.Current.Dispatcher.BeginInvoke(new Action(() => {
                                 Main.FullSymbols.Add(symbolViewModel.Symbol);
                             }));
@@ -476,6 +514,20 @@ namespace VolumeShot.ViewModels
             catch (Exception ex)
             {
                 Error.WriteLog(path, errorFile, $"Exception LoadSymbols: {ex?.Message}");
+            }
+        }
+
+        private void Exchange_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == "Bet")
+            {
+                Exchange? exchange = sender as Exchange;
+                if(exchange != null)
+                {
+                    App.Current.Dispatcher.BeginInvoke(new Action(() => {
+                        Main.Bets.Insert(0, exchange.Bet);
+                    }));
+                }
             }
         }
 

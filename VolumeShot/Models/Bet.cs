@@ -8,6 +8,7 @@ namespace VolumeShot.Models
     public class Bet : Changed
     {
         public List<SymbolPrice> SymbolPrices { get; set; } = new();
+        public string Symbol { get; set; }
         public decimal PriceBufferLower { get; set; }
         public decimal PriceBufferUpper { get; set; }
         public decimal PriceDistanceLower { get; set; }
