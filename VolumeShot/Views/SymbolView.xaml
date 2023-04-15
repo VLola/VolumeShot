@@ -99,6 +99,9 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
+
+                    <GridViewColumn Header="Open long" DisplayMemberBinding="{Binding Path=Exchange.IsOpenLongOrder}" Width="Auto"/>
+                    <GridViewColumn Header="Open short" DisplayMemberBinding="{Binding Path=Exchange.IsOpenShortOrder}" Width="Auto"/>
                 </GridView>
             </ListView.View>
         </ListView>

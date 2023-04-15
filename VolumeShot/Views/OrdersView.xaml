@@ -6,15 +6,32 @@
              xmlns:local="clr-namespace:VolumeShot.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Style TargetType="TextBlock" x:Key="stylePosition">
+            <Setter Property="Foreground" Value="LightGreen"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=PositionSide}" Value="Short">
+                    <Setter Property="Foreground" Value="Pink"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
     <Grid>
         <ListView ItemsSource="{Binding Path=Main.Orders}">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="UpdateTime" DisplayMemberBinding="{Binding Path=UpdateTime}" Width="Auto"/>
+                    <GridViewColumn Header="UpdateTime" DisplayMemberBinding="{Binding Path=UpdateTime, StringFormat={}{0:HH:mm:ss}}" Width="Auto"/>
                     <GridViewColumn Header="Symbol" DisplayMemberBinding="{Binding Path=Symbol}" Width="Auto"/>
                     <GridViewColumn Header="Quantity" DisplayMemberBinding="{Binding Path=Quantity}" Width="Auto"/>
                     <GridViewColumn Header="Price" DisplayMemberBinding="{Binding Path=Price}" Width="Auto"/>
-                    <GridViewColumn Header="PositionSide" DisplayMemberBinding="{Binding Path=PositionSide}" Width="Auto"/>
+                    <GridViewColumn Header="Usdt" DisplayMemberBinding="{Binding Path=Usdt, StringFormat={}{0:N2}}" Width="Auto"/>
+                    <GridViewColumn Header="Position" Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=PositionSide}" Style="{StaticResource stylePosition}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn Header="Side" DisplayMemberBinding="{Binding Path=Side}" Width="Auto"/>
                     <GridViewColumn Header="OrderId" DisplayMemberBinding="{Binding Path=OrderId}" Width="Auto"/>
                     <GridViewColumn Header="Status" DisplayMemberBinding="{Binding Path=Status}" Width="Auto"/>
@@ -29,6 +46,6 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button Content="Cancel all orders" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="10 4" Margin="1" Foreground="LightGreen"/>
+        <Button Content="Cancel all orders" Command="{Binding Path=CancelAllOrdersCommand}" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="10 4" Margin="1" Foreground="LightGreen"/>
     </Grid>
 </UserControl>

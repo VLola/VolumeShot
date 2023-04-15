@@ -18,6 +18,7 @@ namespace VolumeShot.Models
         public PositionSide PositionSide { get; set; }
         public decimal Quantity { get; set; }
         public decimal Price { get; set; }
+        public decimal Usdt { get; set; }
         public DateTime UpdateTime { get; set; }
         public OrderSide Side { get; set; }
         public decimal StopPrice { get; set; }
@@ -42,6 +43,7 @@ namespace VolumeShot.Models
             UpdateTime = order.UpdateTime;
             Side = order.Side;
             StopPrice = order.StopPrice;
+            Usdt = Quantity * Price;
         }
         public Order(BinanceFuturesOrder order, BinanceClient client)
         {
@@ -54,7 +56,8 @@ namespace VolumeShot.Models
             Status = order.Status;
             UpdateTime = order.UpdateTime;
             Side = order.Side;
-            if(order.StopPrice != null) StopPrice = (decimal)order.StopPrice;
+            Usdt = Quantity * Price;
+            if (order.StopPrice != null) StopPrice = (decimal)order.StopPrice;
         }
 
         private RelayCommand? _cancelCommand;

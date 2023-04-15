@@ -188,9 +188,10 @@ namespace VolumeShot.ViewModels
         {
             try
             {
-                if(Main.Orders.Count > 0)
+                List<Order> list = Main.Orders.ToList();
+                if (list.Count > 0)
                 {
-                    foreach (var order in Main.Orders)
+                    foreach (var order in list)
                     {
                         var result = await client.UsdFuturesApi.Trading.CancelOrderAsync(order.Symbol, order.OrderId);
                         if (!result.Success)
