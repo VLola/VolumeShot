@@ -41,7 +41,6 @@ namespace VolumeShot.ViewModels
                         {
                             Exchange.Bets.Add(item);
                         }
-                        //Exchange.Bets = bets;
                     }
                 }
             });
