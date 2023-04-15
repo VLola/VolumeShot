@@ -1,5 +1,6 @@
 ﻿using Binance.Net.Clients;
 using Binance.Net.Enums;
+using Binance.Net.Objects.Models.Futures;
 using Binance.Net.Objects.Models.Futures.Socket;
 using CryptoExchange.Net.Interfaces;
 using System;
@@ -91,6 +92,17 @@ namespace VolumeShot.Models
             Price = position.EntryPrice;
             PositionSide = position.PositionSide;
             OpenTime = DateTime.Now;
+            SubscribeToAggregatedTradeUpdatesAsync();
+        }
+        public Position(BinancePositionDetailsUsdt position, BinanceClient client, BinanceSocketClient socketClient)
+        {
+            this.client = client;
+            this.socketClient = socketClient;
+            Symbol = position.Symbol;
+            Quantity = position.Quantity;
+            Price = position.EntryPrice;
+            PositionSide = position.PositionSide;
+            OpenTime = position.UpdateTime.ToLocalTime();
             SubscribeToAggregatedTradeUpdatesAsync();
         }
 

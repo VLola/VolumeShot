@@ -158,6 +158,15 @@ namespace VolumeShot.ViewModels
         }
         private async void SubscribeToUserDataUpdatesAsync()
         {
+            var resultPositions = await client.UsdFuturesApi.Account.GetPositionInformationAsync();
+            if (!resultPositions.Success)
+            {
+                Error.WriteLog(path, errorFile, $"Failed GetPositionInformationAsync: {resultPositions.Error?.Message}");
+            }
+            else
+            {
+                AddAllPositionsAsync(resultPositions.Data);
+            }
             var listenKey = await client.UsdFuturesApi.Account.StartUserStreamAsync();
             if (!listenKey.Success)
             {
@@ -175,7 +184,7 @@ namespace VolumeShot.ViewModels
                         {
                             string[] symbols = onAccountUpdate.Data.UpdateData.Positions.Select(pos => pos.Symbol).ToArray();
                             OnAccountUpdate?.Invoke(onAccountUpdate.Data, symbols);
-                            AddPositionsAsync(onAccountUpdate.Data.UpdateData.Positions);
+                            AddSymbolPositionsAsync(onAccountUpdate.Data.UpdateData.Positions);
                         }
                     },
                     onOrderUpdate =>
@@ -191,7 +200,23 @@ namespace VolumeShot.ViewModels
                 }
             }
         }
-        private async void AddPositionsAsync(IEnumerable<BinanceFuturesStreamPosition> positions)
+        private async void AddAllPositionsAsync(IEnumerable<BinancePositionDetailsUsdt> positions)
+        {
+            await Task.Run(() => {
+                foreach (var item in positions)
+                {
+                    if(item.Quantity != 0m)
+                    {
+                        Position positionNew = new Position(item, client, socketClient);
+                        positionNew.PropertyChanged += PositionNew_PropertyChanged;
+                        App.Current.Dispatcher.Invoke(() => {
+                            Main.Positions.Add(positionNew);
+                        });
+                    }
+                }
+            });
+        }
+        private async void AddSymbolPositionsAsync(IEnumerable<BinanceFuturesStreamPosition> positions)
         {
             await Task.Run(() =>
             {
