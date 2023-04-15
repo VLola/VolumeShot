@@ -106,9 +106,9 @@ namespace VolumeShot.ViewModels
         }
         private void OpenBet(PositionSide positionSide, DateTime openTime, decimal openPrice)
         {
-            Exchange.OpenBetOrders.Clear();
+            Exchange.OpenBetSymbolPrices.Clear();
             Bet bet = new Bet();
-            bet.Orders = Exchange.Orders.ToList();
+            bet.SymbolPrices = Exchange.SymbolPrices.ToList();
             bet.OpenTime = openTime;
             bet.OpenPrice = openPrice;
             if(positionSide == PositionSide.Long)
@@ -142,7 +142,7 @@ namespace VolumeShot.ViewModels
         }
         private void CloseBet(DateTime closeTime, decimal closePrice, decimal quantity)
         {
-            Exchange.Bets[0].Orders.AddRange(Exchange.OpenBetOrders);
+            Exchange.Bets[0].SymbolPrices.AddRange(Exchange.OpenBetSymbolPrices);
             Exchange.Bets[0].CloseTime = closeTime;
             Exchange.Bets[0].ClosePrice = closePrice;
             Exchange.Bets[0].Quantity = quantity;

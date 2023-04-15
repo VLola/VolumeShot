@@ -61,15 +61,15 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
-        private void Order_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void SymbolPrice_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if(e.PropertyName == "IsRemove")
             {
                 if(sender != null)
                 {
-                    Order order = (Order)sender;
-                    order.PropertyChanged -= Order_PropertyChanged;
-                    Symbol.Exchange.Orders.Remove(order);
+                    SymbolPrice symbolPrice = (SymbolPrice)sender;
+                    symbolPrice.PropertyChanged -= SymbolPrice_PropertyChanged;
+                    Symbol.Exchange.SymbolPrices.Remove(symbolPrice);
                 }
             }
         }
@@ -227,17 +227,17 @@ namespace VolumeShot.ViewModels
                     if (!Symbol.IsRun)
                     {
                         socketClient.UnsubscribeAsync(socketId);
-                        Symbol.Exchange.Orders.Clear();
+                        Symbol.Exchange.SymbolPrices.Clear();
                     }
                     Symbol.BuyerIsMaker = Message.Data.BuyerIsMaker;
                     Symbol.TradeTime = Message.Data.TradeTime;
                     Symbol.Price = Message.Data.Price;
-                    Order order = new Order(Message.Data.Price, Message.Data.BuyerIsMaker, Message.Data.TradeTime);
-                    order.PropertyChanged += Order_PropertyChanged;
-                    Symbol.Exchange.Orders.Add(order);
+                    SymbolPrice symbolPrice = new SymbolPrice(Message.Data.Price, Message.Data.BuyerIsMaker, Message.Data.TradeTime);
+                    symbolPrice.PropertyChanged += SymbolPrice_PropertyChanged;
+                    Symbol.Exchange.SymbolPrices.Add(symbolPrice);
                     if (Symbol.Exchange.IsOpenLongOrder || Symbol.Exchange.IsOpenShortOrder)
                     {
-                        Symbol.Exchange.OpenBetOrders.Add(order);
+                        Symbol.Exchange.OpenBetSymbolPrices.Add(symbolPrice);
                     }
                 });
                 if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToAggregatedTradeUpdatesAsync: {result.Error?.Message}");

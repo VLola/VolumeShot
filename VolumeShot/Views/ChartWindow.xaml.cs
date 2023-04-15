@@ -14,7 +14,7 @@ namespace VolumeShot.Views
         {
             InitializeComponent();
             Chart();
-            if(bet.Orders != null)
+            if(bet.SymbolPrices != null)
             {
                 double bufferLower = Decimal.ToDouble(bet.PriceBufferLower);
                 double bufferUpper = Decimal.ToDouble(bet.PriceBufferUpper);
@@ -22,14 +22,14 @@ namespace VolumeShot.Views
                 double distanceUpper = Decimal.ToDouble(bet.PriceDistanceUpper);
                 double takeProfit = Decimal.ToDouble(bet.PriceTakeProfit);
                 double stopLoss = Decimal.ToDouble(bet.PriceStopLoss);
-                IEnumerable<Order> buyers =  bet.Orders.Where(order => order.BuyerIsMaker == false);
-                IEnumerable<Order> makers =  bet.Orders.Where(order => order.BuyerIsMaker == true);
-                double[] buyersX = buyers.Select(order => order.DateTime.ToOADate()).ToArray();
-                double[] buyersY = buyers.Select(order => Decimal.ToDouble(order.Price)).ToArray();
-                double[] makersX = makers.Select(order => order.DateTime.ToOADate()).ToArray();
-                double[] makersY = makers.Select(order => Decimal.ToDouble(order.Price)).ToArray();
+                IEnumerable<SymbolPrice> buyers =  bet.SymbolPrices.Where(price => price != null).Where(price => price.BuyerIsMaker == false);
+                IEnumerable<SymbolPrice> makers =  bet.SymbolPrices.Where(price => price != null).Where(price => price.BuyerIsMaker == true);
+                double[] buyersX = buyers.Select(price => price.DateTime.ToOADate()).ToArray();
+                double[] buyersY = buyers.Select(price => Decimal.ToDouble(price.Price)).ToArray();
+                double[] makersX = makers.Select(price => price.DateTime.ToOADate()).ToArray();
+                double[] makersY = makers.Select(price => Decimal.ToDouble(price.Price)).ToArray();
 
-                double[] xBuffer = { bet.Orders.ToList()[0].DateTime.ToOADate(), bet.OpenTime.ToOADate() };
+                double[] xBuffer = { bet.SymbolPrices.ToList()[0].DateTime.ToOADate(), bet.OpenTime.ToOADate() };
                 double[] xDictance = { bet.OpenTime.ToOADate(), bet.CloseTime.AddSeconds(20).ToOADate() };
                 plt.Dispatcher.Invoke(() =>
                 {

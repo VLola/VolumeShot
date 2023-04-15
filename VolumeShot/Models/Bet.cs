@@ -7,7 +7,7 @@ namespace VolumeShot.Models
 {
     public class Bet
     {
-        public List<Order> Orders { get; set; } = new();
+        public List<SymbolPrice> SymbolPrices { get; set; } = new();
         public decimal PriceBufferLower { get; set; }
         public decimal PriceBufferUpper { get; set; }
         public decimal PriceDistanceLower { get; set; }

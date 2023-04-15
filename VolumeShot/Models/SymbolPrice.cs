@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace VolumeShot.Models
 {
-    public class Order : Changed
+    public class SymbolPrice : Changed
     {
         public decimal Price { get; set; }
         public bool BuyerIsMaker { get; set; }
@@ -18,7 +18,7 @@ namespace VolumeShot.Models
                 OnPropertyChanged("IsRemove");
             }
         }
-        public Order(decimal price, bool buyerIsMaker, DateTime dateTime)
+        public SymbolPrice(decimal price, bool buyerIsMaker, DateTime dateTime)
         {
             Price = price;
             BuyerIsMaker = buyerIsMaker;
