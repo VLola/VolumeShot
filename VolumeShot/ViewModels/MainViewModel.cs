@@ -12,6 +12,7 @@ using ScottPlot;
 using System.Drawing;
 using VolumeShot.Command;
 using System.Collections.ObjectModel;
+using System.Net.Sockets;
 
 namespace VolumeShot.ViewModels
 {
@@ -78,6 +79,7 @@ namespace VolumeShot.ViewModels
         {
             client = LoginViewModel.Client;
             socketClient = LoginViewModel.SocketClient;
+            BalanceFutureAsync();
             LoadBetsAsync();
             GetOpenOrdersAsync();
             GetPositionInformationAsync();
@@ -237,6 +239,27 @@ namespace VolumeShot.ViewModels
                 Main.WpfPlot.Plot.RenderUnlock();
             }));
         }
+        private async void BalanceFutureAsync()
+        {
+            await Task.Run(async() => {
+                try
+                {
+                    var result = await client.UsdFuturesApi.Account.GetAccountInfoAsync();
+                    if (!result.Success)
+                    {
+                        Error.WriteLog(path, errorFile, $"Failed BalanceFutureAsync: {result.Error?.Message}");
+                    }
+                    else
+                    {
+                        Main.Balance = result.Data.TotalMarginBalance;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, errorFile, $"Exception BalanceFutureAsync: {ex?.Message}");
+                }
+            });
+        }
         private async void CancelAllOrdersAsync()
         {
             try
@@ -320,6 +343,7 @@ namespace VolumeShot.ViewModels
                                 OnAccountUpdate?.Invoke(onAccountUpdate.Data, symbols);
                                 AddSymbolPositionsAsync(onAccountUpdate.Data.UpdateData.Positions);
                             }
+                            Main.Balance = onAccountUpdate.Data.UpdateData.Balances.ToList()[0].CrossWalletBalance;
                         },
                         onOrderUpdate =>
                         {
@@ -356,7 +380,7 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(() =>
             {
-                if (orderUpdateData.Status != Binance.Net.Enums.OrderStatus.Canceled && orderUpdateData.Status != Binance.Net.Enums.OrderStatus.Filled)
+                if (orderUpdateData.Status != Binance.Net.Enums.OrderStatus.Canceled && orderUpdateData.Status != Binance.Net.Enums.OrderStatus.Filled && orderUpdateData.Status != Binance.Net.Enums.OrderStatus.Expired)
                 {
                     Order order = new(orderUpdateData, client);
                     App.Current.Dispatcher.Invoke(() => {

@@ -46,6 +46,16 @@ namespace VolumeShot.Models
                 OnPropertyChanged("IsVisibleChart");
             }
         }
+        private decimal _balance { get; set; }
+        public decimal Balance
+        {
+            get { return _balance; }
+            set
+            {
+                _balance = value;
+                OnPropertyChanged("Balance");
+            }
+        }
         private void Value_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "Price")

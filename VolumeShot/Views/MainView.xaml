@@ -74,6 +74,7 @@
                     <local:OrdersView/>
                 </TabItem>
             </TabControl>
+            <TextBlock Text="{Binding Path=Main.Balance, StringFormat={}Balance: {0:N2}}" FontSize="16" Foreground="White" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10"/>
         </Grid>
     </Grid>
 </UserControl>
