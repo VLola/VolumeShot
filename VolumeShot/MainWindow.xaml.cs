@@ -7,6 +7,21 @@ namespace VolumeShot
         public MainWindow()
         {
             InitializeComponent();
+            Closing += MainWindow_Closing;
+        }
+
+        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            MessageBoxResult result = MessageBox.Show("Close a window?", "Volume shot", MessageBoxButton.OKCancel);
+            switch (result)
+            {
+                case MessageBoxResult.Yes:
+                    e.Cancel = false;
+                    break;
+                case MessageBoxResult.Cancel:
+                    e.Cancel = true;
+                    break;
+            }
         }
     }
 }
