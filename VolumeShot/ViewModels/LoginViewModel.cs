@@ -13,7 +13,7 @@ namespace VolumeShot.ViewModels
 {
     internal class LoginViewModel
     {
-        private string path = $"{Directory.GetCurrentDirectory()}/users";
+        private string path = $"{Directory.GetCurrentDirectory()}/configs/users";
         public Login Login { get; set; } = new();
         public BinanceClient Client { get; set; }
         public BinanceSocketClient SocketClient { get; set; }

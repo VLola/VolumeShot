@@ -1,4 +1,5 @@
 ﻿using System;
+using VolumeShot.Command;
 
 namespace VolumeShot.Models
 {
@@ -6,6 +7,16 @@ namespace VolumeShot.Models
     {
         public Exchange Exchange { get; set; }
         public OrderBook OrderBook = new();
+        private RelayCommand? _hideCommand;
+        public RelayCommand HideCommand
+        {
+            get
+            {
+                return _hideCommand ?? (_hideCommand = new RelayCommand(obj => {
+                    IsVisible = false;
+                }));
+            }
+        }
         private string _name { get; set; }
         public string Name
         {
@@ -22,8 +33,19 @@ namespace VolumeShot.Models
             get { return _isRun; }
             set
             {
-                _isRun = value;
-                OnPropertyChanged("IsRun");
+                if (value)
+                {
+                    _isRun = value;
+                    OnPropertyChanged("IsRun");
+                }
+                else
+                {
+                    if (!IsTrading)
+                    {
+                        _isRun = value;
+                        OnPropertyChanged("IsRun");
+                    }
+                }
             }
         }
         private bool _isTrading { get; set; }
@@ -47,6 +69,27 @@ namespace VolumeShot.Models
                 }
             }
         }
+        private bool _isVisible { get; set; }
+        public bool IsVisible
+        {
+            get { return _isVisible; }
+            set
+            {
+                if (value)
+                {
+                    _isVisible = value;
+                    OnPropertyChanged("IsVisible");
+                }
+                else
+                {
+                    if (!IsRun)
+                    {
+                        _isVisible = value;
+                        OnPropertyChanged("IsVisible");
+                    }
+                }
+            }
+        }
         private decimal _volume { get; set; }
         public decimal Volume
         {
@@ -55,6 +98,26 @@ namespace VolumeShot.Models
             {
                 _volume = value;
                 OnPropertyChanged("Volume");
+                if (value < 1000000m)
+                {
+                    string volume = Decimal.ToInt32(value / 1000).ToString() + " k";
+                    VolumeString = volume;
+                }
+                else
+                {
+                    string volume = (value / 1000000).ToString() + " M";
+                    VolumeString = volume;
+                }
+            }
+        }
+        private string _volumeString { get; set; }
+        public string VolumeString
+        {
+            get { return _volumeString; }
+            set
+            {
+                _volumeString = value;
+                OnPropertyChanged("VolumeString");
             }
         }
         private decimal _price { get; set; }

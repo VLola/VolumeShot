@@ -12,6 +12,7 @@ namespace VolumeShot.ViewModels
 {
     internal class SymbolViewModel
     {
+        private string pathConfigs = $"{Directory.GetCurrentDirectory()}/configs/";
         private string path = $"{Directory.GetCurrentDirectory()}/log/binance/";
         public Symbol Symbol { get; set; } = new();
         public ExchangeViewModel ExchangeViewModel { get; set; }
@@ -125,7 +126,7 @@ namespace VolumeShot.ViewModels
             await Task.Run(() =>
             {
                 List<Config>? configs = new();
-                string path = Directory.GetCurrentDirectory() + "/config";
+                string path = pathConfigs + "config";
                 if (File.Exists(path))
                 {
                     string json = File.ReadAllText(path);

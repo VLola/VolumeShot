@@ -1,7 +1,5 @@
-﻿using Binance.Net.Objects.Models.Futures.Socket;
-using ScottPlot;
+﻿using ScottPlot;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 
@@ -10,9 +8,19 @@ namespace VolumeShot.Models
     public class Main : Changed
     {
         public WpfPlot WpfPlot { get; set; } = new();
+        public ObservableCollection<Symbol> FullSymbols { get; set; } = new();
         public ObservableCollection<Symbol> Symbols { get; set; } = new();
         public ObservableCollection<Position> Positions { get; set; } = new();
-        
+        private Symbol _selectedFullSymbol { get; set; }
+        public Symbol SelectedFullSymbol
+        {
+            get { return _selectedFullSymbol; }
+            set
+            {
+                _selectedFullSymbol = value;
+                OnPropertyChanged("SelectedFullSymbol");
+            }
+        }
         private Symbol _selectedSymbol { get; set; }
         public Symbol SelectedSymbol
         {
@@ -25,7 +33,16 @@ namespace VolumeShot.Models
                 OnPropertyChanged("SelectedSymbol");
             }
         }
-
+        private bool _isVisibleChart { get; set; }
+        public bool IsVisibleChart
+        {
+            get { return _isVisibleChart; }
+            set
+            {
+                _isVisibleChart = value;
+                OnPropertyChanged("IsVisibleChart");
+            }
+        }
         private void Value_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "Price")

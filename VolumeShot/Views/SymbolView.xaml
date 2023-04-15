@@ -7,7 +7,28 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <ListView ItemsSource="{Binding Path=Main.Symbols}" SelectedItem="{Binding Path=Main.SelectedSymbol}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <WrapPanel Grid.Row="0">
+            <ComboBox ItemsSource="{Binding Path=Main.FullSymbols}" SelectedItem="{Binding Path=Main.SelectedFullSymbol}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition Width="40"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Path=Name}"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Path=VolumeString}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Content="Add" Command="{Binding Path=AddSymbolCommand}" Padding="5"/>
+        </WrapPanel>
+        <ListView Grid.Row="1" ItemsSource="{Binding Path=Main.Symbols}" SelectedItem="{Binding Path=Main.SelectedSymbol}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Symbol" DisplayMemberBinding="{Binding Path=Name}" Width="120"/>
@@ -22,6 +43,13 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding Path=IsTrading}" Margin="10 0"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Volume" Width="50">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=VolumeString}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -63,6 +91,14 @@
                     <GridViewColumn Header="Distance ▲" DisplayMemberBinding="{Binding Path=DistanceUpper, StringFormat={}      {0:N2}}" Width="80"/>
                     <GridViewColumn Header="Distance ▼" DisplayMemberBinding="{Binding Path=DistanceLower, StringFormat={}      {0:N2}}" Width="80"/>
                     <GridViewColumn Header="History" DisplayMemberBinding="{Binding Path=Exchange.Bets.Count, StringFormat={}      {0}}" Width="70"/>
+
+                    <GridViewColumn Header="Action" Width="50">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Hide" Command="{Binding Path=HideCommand}" Padding="5 0"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                 </GridView>
             </ListView.View>
         </ListView>

@@ -23,6 +23,14 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <Style TargetType="RowDefinition" x:Key="styleRowDefinition">
+            <Setter Property="Height" Value="1*"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Main.IsVisibleChart}" Value="False">
+                    <Setter Property="Height" Value="Auto"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
     <Grid>
         <Grid Style="{StaticResource styleLogin}">
@@ -33,12 +41,17 @@
                 <TabItem Header="Main">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Style="{StaticResource styleRowDefinition}"/>
                         </Grid.RowDefinitions>
                         <local:SymbolView Grid.Row="0"/>
                         <Grid Grid.Row="1">
-                            <WpfPlot Content="{Binding Path=Main.WpfPlot}"/>
+                            <Expander IsExpanded="{Binding Path=Main.IsVisibleChart}">
+                                <Expander.Header>
+                                    <TextBlock Text="Chart" Foreground="White"/>
+                                </Expander.Header>
+                                <WpfPlot Grid.Column="0" Grid.Row="0" Content="{Binding Path=Main.WpfPlot}"/>
+                            </Expander>
                         </Grid>
                     </Grid>
                 </TabItem>

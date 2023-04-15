@@ -1922,7 +1922,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="{x:Type Expander}">
+    <!--<Style TargetType="{x:Type Expander}">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
@@ -2018,7 +2018,7 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>
+    </Style>-->
     
     <!-- ListBox -->
     <Style TargetType="{x:Type ListBox}">

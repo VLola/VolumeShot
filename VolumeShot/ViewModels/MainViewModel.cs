@@ -10,13 +10,16 @@ using System.Threading.Tasks;
 using Binance.Net.Objects.Models.Futures.Socket;
 using ScottPlot;
 using System.Drawing;
+using VolumeShot.Command;
+using System.Windows;
 
 namespace VolumeShot.ViewModels
 {
     internal class MainViewModel
     {
         private string path = $"{Directory.GetCurrentDirectory()}/log/";
-        string pathPositions = Directory.GetCurrentDirectory() + "/log/positions/";
+        private string pathConfigs = $"{Directory.GetCurrentDirectory()}/configs/";
+        private string pathPositions = Directory.GetCurrentDirectory() + "/log/positions/";
         private const double _second10 = 0.00011574074596865103;
         private const double _second60 = 0.0006944444394321181;
         string errorFile = "Main";
@@ -28,8 +31,20 @@ namespace VolumeShot.ViewModels
         public event AccountOnOrderUpdate? OnOrderUpdate;
         public delegate void AccountOnAccountUpdate(BinanceFuturesStreamAccountUpdate AccountUpdate, string[] Symbols);
         public event AccountOnAccountUpdate? OnAccountUpdate;
+
+        private RelayCommand? _addSymbolCommand;
+        public RelayCommand AddSymbolCommand
+        {
+            get
+            {
+                return _addSymbolCommand ?? (_addSymbolCommand = new RelayCommand(obj => {
+                    if (Main.SelectedFullSymbol != null) Main.SelectedFullSymbol.IsVisible = true;
+                }));
+            }
+        }
         public MainViewModel()
         {
+            if (!Directory.Exists(pathConfigs)) Directory.CreateDirectory(pathConfigs);
             if (!Directory.Exists(pathPositions)) Directory.CreateDirectory(pathPositions);
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             LoginViewModel.Login.PropertyChanged += Login_PropertyChanged;
@@ -101,7 +116,7 @@ namespace VolumeShot.ViewModels
                 while(true)
                 {
                     await Task.Delay(100);
-                    if(Main.SelectedSymbol != null)
+                    if(Main.SelectedSymbol != null && Main.IsVisibleChart)
                     {
                         if (Main.SelectedSymbol.BufferLowerPrice > 0m &&
                             Main.SelectedSymbol.BufferUpperPrice > 0m)
@@ -278,21 +293,28 @@ namespace VolumeShot.ViewModels
         }
         private void LoadSymbols()
         {
-            List<BinanceFuturesUsdtSymbol> list = ListSymbols();
+            List<BinanceFuturesUsdtSymbol> list = ListSymbols().OrderBy(item=>item.Name).ToList();
             if (list.Count > 0)
             {
                 List<Config>? configs = new();
-                string path = Directory.GetCurrentDirectory() + "/config";
-                if (File.Exists(path))
+                string pathFileConfig = pathConfigs + "config";
+                if (File.Exists(pathFileConfig))
                 {
-                    string json = File.ReadAllText(path);
+                    string json = File.ReadAllText(pathFileConfig);
                     configs = JsonConvert.DeserializeObject<List<Config>>(json);
+                }
+                List<string>? symbols = new();
+                string pathFileSymbols = pathConfigs + "symbols";
+                if (File.Exists(pathFileSymbols))
+                {
+                    string json = File.ReadAllText(pathFileSymbols);
+                    symbols = JsonConvert.DeserializeObject<List<string>>(json);
                 }
                 foreach (var symbol in list)
                 {
-                    decimal volume = 500000m;
                     if (symbol.QuoteAsset == "USDT")
                     {
+                        decimal volume = 500000m;
                         if (configs != null)
                         {
                             Config? config = configs.FirstOrDefault(conf => conf.Name == symbol.Name);
@@ -301,13 +323,82 @@ namespace VolumeShot.ViewModels
                         SymbolViewModel symbolViewModel = new(symbol, volume, socketClient, client, LoginViewModel.Login.SelectedUser.IsTestnet);
                         OnOrderUpdate += symbolViewModel.ExchangeViewModel.OrderUpdate;
                         OnAccountUpdate += symbolViewModel.ExchangeViewModel.AccountUpdate;
-                        App.Current.Dispatcher.BeginInvoke(new Action(() => { 
-                            Main.Symbols.Add(symbolViewModel.Symbol);
+                        symbolViewModel.Symbol.PropertyChanged += Symbol_PropertyChanged;
+                        App.Current.Dispatcher.BeginInvoke(new Action(() => {
+                            Main.FullSymbols.Add(symbolViewModel.Symbol);
                         }));
+                        if(symbols != null && symbols.Count > 0)
+                        {
+                            if (symbols.Contains(symbol.Name))
+                            {
+                                App.Current.Dispatcher.BeginInvoke(new Action(() => {
+                                    Main.Symbols.Add(symbolViewModel.Symbol);
+                                }));
+                            }
+                        }
                     }
+                }
+                Main.SelectedFullSymbol = Main.FullSymbols[0];
+            }
+        }
+
+        private void Symbol_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == "IsVisible")
+            {
+                try
+                {
+                    Symbol? symbol = sender as Symbol;
+                    if (symbol != null)
+                    {
+                        if (symbol.IsVisible)
+                        {
+                            if (!Main.Symbols.Contains(symbol))
+                            {
+                                List<string>? symbols = new();
+                                string pathFileSymbols = pathConfigs + "symbols";
+                                if (File.Exists(pathFileSymbols))
+                                {
+                                    string json = File.ReadAllText(pathFileSymbols);
+                                    symbols = JsonConvert.DeserializeObject<List<string>>(json);
+                                }
+                                if (symbols != null)
+                                {
+                                    symbols.Add(symbol.Name);
+                                    File.WriteAllText(pathFileSymbols, JsonConvert.SerializeObject(symbols));
+                                    App.Current.Dispatcher.BeginInvoke(new Action(() =>
+                                    {
+                                        Main.Symbols.Add(symbol);
+                                    }));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            List<string>? symbols = new();
+                            string pathFileSymbols = pathConfigs + "symbols";
+                            if (File.Exists(pathFileSymbols))
+                            {
+                                string json = File.ReadAllText(pathFileSymbols);
+                                symbols = JsonConvert.DeserializeObject<List<string>>(json);
+                            }
+                            if(symbols != null && symbols.Count > 0)
+                            {
+                                symbols.Remove(symbol.Name);
+                                File.WriteAllText(pathFileSymbols, JsonConvert.SerializeObject(symbols));
+                                App.Current.Dispatcher.BeginInvoke(new Action(() => {
+                                    Main.Symbols.Remove(symbol);
+                                }));
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex) {
+                    Error.WriteLog(path, errorFile, $"Exception Symbol_PropertyChanged: {ex.Message}");
                 }
             }
         }
+
         private List<BinanceFuturesUsdtSymbol> ListSymbols()
         {
             try
