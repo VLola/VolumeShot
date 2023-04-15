@@ -1,4 +1,5 @@
-﻿using ScottPlot;
+﻿using Binance.Net.Objects.Models.Futures.Socket;
+using ScottPlot;
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
@@ -11,6 +12,7 @@ namespace VolumeShot.Models
         public ObservableCollection<Symbol> FullSymbols { get; set; } = new();
         public ObservableCollection<Symbol> Symbols { get; set; } = new();
         public ObservableCollection<Position> Positions { get; set; } = new();
+        public ObservableCollection<Order> Orders { get; set; } = new();
         private Symbol _selectedFullSymbol { get; set; }
         public Symbol SelectedFullSymbol
         {

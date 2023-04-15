@@ -64,6 +64,12 @@
                     </TabItem.Header>
                     <local:PositionsView/>
                 </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <TextBlock Text="{Binding Path=Main.Orders.Count, StringFormat=Orders: {0}}"/>
+                    </TabItem.Header>
+                    <local:OrdersView/>
+                </TabItem>
             </TabControl>
         </Grid>
     </Grid>

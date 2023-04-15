@@ -2,12 +2,9 @@
 using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
 using Binance.Net.Objects.Models.Futures.Socket;
-using CryptoExchange.Net.Interfaces;
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Shapes;
 using VolumeShot.Command;
 
 namespace VolumeShot.Models

@@ -11,7 +11,6 @@ using Binance.Net.Objects.Models.Futures.Socket;
 using ScottPlot;
 using System.Drawing;
 using VolumeShot.Command;
-using System.Windows;
 
 namespace VolumeShot.ViewModels
 {
@@ -20,6 +19,7 @@ namespace VolumeShot.ViewModels
         private string path = $"{Directory.GetCurrentDirectory()}/log/";
         private string pathConfigs = $"{Directory.GetCurrentDirectory()}/configs/";
         private string pathPositions = Directory.GetCurrentDirectory() + "/log/positions/";
+        private string pathOrders = Directory.GetCurrentDirectory() + "/log/orders/";
         private const double _second10 = 0.00011574074596865103;
         private const double _second60 = 0.0006944444394321181;
         string errorFile = "Main";
@@ -42,8 +42,19 @@ namespace VolumeShot.ViewModels
                 }));
             }
         }
+        private RelayCommand? _cancelAllOrdersCommand;
+        public RelayCommand CancelAllOrdersCommand
+        {
+            get
+            {
+                return _cancelAllOrdersCommand ?? (_cancelAllOrdersCommand = new RelayCommand(obj => {
+                    CancelAllOrdersAsync();
+                }));
+            }
+        }
         public MainViewModel()
         {
+            if (!Directory.Exists(pathOrders)) Directory.CreateDirectory(pathOrders);
             if (!Directory.Exists(pathConfigs)) Directory.CreateDirectory(pathConfigs);
             if (!Directory.Exists(pathPositions)) Directory.CreateDirectory(pathPositions);
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
@@ -64,6 +75,8 @@ namespace VolumeShot.ViewModels
         {
             client = LoginViewModel.Client;
             socketClient = LoginViewModel.SocketClient;
+            GetOpenOrdersAsync();
+            GetPositionInformationAsync();
             SubscribeToUserDataUpdatesAsync();
             LoadSymbols();
             LoadChart();
@@ -171,17 +184,53 @@ namespace VolumeShot.ViewModels
                 Main.WpfPlot.Plot.RenderUnlock();
             }));
         }
-        private async void SubscribeToUserDataUpdatesAsync()
+        private async void CancelAllOrdersAsync()
         {
-            var resultPositions = await client.UsdFuturesApi.Account.GetPositionInformationAsync();
-            if (!resultPositions.Success)
+            try
             {
-                Error.WriteLog(path, errorFile, $"Failed GetPositionInformationAsync: {resultPositions.Error?.Message}");
+                if(Main.Orders.Count > 0)
+                {
+                    foreach (var order in Main.Orders)
+                    {
+                        var result = await client.UsdFuturesApi.Trading.CancelOrderAsync(order.Symbol, order.OrderId);
+                        if (!result.Success)
+                        {
+                            Error.WriteLog(path, errorFile, $"Failed CancelOrderAsync: {result.Error?.Message}");
+                        }
+                    }
+                }
+            }
+            catch(Exception ex) 
+            {
+                Error.WriteLog(path, errorFile, $"Exception CancelOrderAsync: {ex?.Message}");
+            }
+        }
+        private async void GetOpenOrdersAsync()
+        {
+            var result = await client.UsdFuturesApi.Trading.GetOpenOrdersAsync();
+            if (!result.Success)
+            {
+                Error.WriteLog(path, errorFile, $"Failed GetOpenOrdersAsync: {result.Error?.Message}");
             }
             else
             {
-                AddAllPositionsAsync(resultPositions.Data);
+                AddAllOrdersAsync(result.Data);
             }
+        }
+        private async void GetPositionInformationAsync()
+        {
+            var result = await client.UsdFuturesApi.Account.GetPositionInformationAsync();
+            if (!result.Success)
+            {
+                Error.WriteLog(path, errorFile, $"Failed GetPositionInformationAsync: {result.Error?.Message}");
+            }
+            else
+            {
+                AddAllPositionsAsync(result.Data);
+            }
+        }
+        private async void SubscribeToUserDataUpdatesAsync()
+        {
             var listenKey = await client.UsdFuturesApi.Account.StartUserStreamAsync();
             if (!listenKey.Success)
             {
@@ -205,6 +254,7 @@ namespace VolumeShot.ViewModels
                     onOrderUpdate =>
                     {
                         OnOrderUpdate?.Invoke(onOrderUpdate.Data);
+                        AddOrder(onOrderUpdate.Data.UpdateData);
                     },
                     onListenKeyExpired => { },
                     onStrategyUpdate => { },
@@ -215,6 +265,41 @@ namespace VolumeShot.ViewModels
                 }
             }
         }
+        private async void AddAllOrdersAsync(IEnumerable<BinanceFuturesOrder> futuresOrders)
+        {
+            await Task.Run(() =>
+            {
+                App.Current.Dispatcher.Invoke(() => {
+                    foreach (var item in futuresOrders)
+                    {
+                        Main.Orders.Insert(0, new Order(item, client));
+                    }
+                });
+            });
+        }
+        private async void AddOrder(BinanceFuturesStreamOrderUpdateData orderUpdateData)
+        {
+            await Task.Run(() =>
+            {
+                if (orderUpdateData.Status != Binance.Net.Enums.OrderStatus.Canceled && orderUpdateData.Status != Binance.Net.Enums.OrderStatus.Filled)
+                {
+                    Order order = new(orderUpdateData, client);
+                    App.Current.Dispatcher.Invoke(() => {
+                        Main.Orders.Insert(0, order);
+                    });
+                }
+                else
+                {
+                    Order? order = Main.Orders.FirstOrDefault(order=>order.OrderId == orderUpdateData.OrderId);
+                    if (order != null)
+                    {
+                        App.Current.Dispatcher.Invoke(() => {
+                            Main.Orders.Remove(order);
+                        });
+                    }
+                }
+            });
+        } 
         private async void AddAllPositionsAsync(IEnumerable<BinancePositionDetailsUsdt> positions)
         {
             await Task.Run(() => {
