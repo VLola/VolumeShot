@@ -54,7 +54,7 @@ namespace VolumeShot.ViewModels
         }
         public void AccountUpdate(BinanceFuturesStreamAccountUpdate AccountUpdate, string[] Symbols)
         {
-            if (Symbols.Contains(Exchange.Symbol) && Exchange.IsTrading) {
+            if (Symbols.Contains(Exchange.Symbol)) {
                 foreach (var item in AccountUpdate.UpdateData.Positions)
                 {
                     if(item.Symbol == Exchange.Symbol)
@@ -105,7 +105,7 @@ namespace VolumeShot.ViewModels
         }
         public void OrderUpdate(BinanceFuturesStreamOrderUpdate OrderUpdate)
         {
-            if (OrderUpdate.UpdateData.Symbol == Exchange.Symbol && Exchange.IsTrading)
+            if (OrderUpdate.UpdateData.Symbol == Exchange.Symbol)
             {
                 if (OrderUpdate.UpdateData.Status == OrderStatus.Filled)
                 {
@@ -141,6 +141,7 @@ namespace VolumeShot.ViewModels
             try
             {
                 Exchange.OpenBetSymbolPrices.Clear();
+                Exchange.IsWriteSymbolPrices = true;
                 Bet bet = new Bet();
                 bet.Symbol = Exchange.Symbol;
                 bet.SymbolPrices = Exchange.SymbolPrices.ToList();
@@ -185,9 +186,10 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                await Task.Delay(1000);
                 try
                 {
+                    await Task.Delay(5000);
+                    Exchange.IsWriteSymbolPrices = false; 
                     Exchange.Bets[0].SymbolPrices.AddRange(Exchange.OpenBetSymbolPrices);
                     Exchange.Bets[0].CloseTime = closeTime;
                     Exchange.Bets[0].ClosePrice = Exchange.ClosePrice;

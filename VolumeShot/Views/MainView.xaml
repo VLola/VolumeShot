@@ -53,7 +53,7 @@
                                         <TextBlock Text="{Binding Path=Main.Ping, StringFormat={}Ping: {0}}" Foreground="White" HorizontalAlignment="Right" Margin="30 0"/>
                                     </Grid>
                                 </Expander.Header>
-                                <WpfPlot Grid.Column="0" Grid.Row="0" Content="{Binding Path=Main.WpfPlot}"/>
+                                <WpfPlot Grid.Column="0" Grid.Row="0"  Content="{Binding Path=Main.WpfPlot}"/>
                             </Expander>
                         </Grid>
                     </Grid>

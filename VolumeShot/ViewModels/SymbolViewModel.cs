@@ -62,25 +62,6 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
-        private void SymbolPrice_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if(e.PropertyName == "IsRemove")
-            {
-                if(sender != null)
-                {
-                    try
-                    {
-                        SymbolPrice symbolPrice = (SymbolPrice)sender;
-                        symbolPrice.PropertyChanged -= SymbolPrice_PropertyChanged;
-                        Symbol.Exchange.SymbolPrices.Remove(symbolPrice);
-                    }
-                    catch (Exception ex)
-                    {
-                        Error.WriteLog(path, Symbol.Name, $"Exception SymbolPrice_PropertyChanged: {ex.Message}");
-                    }
-                }
-            }
-        }
         private void Symbol_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "Volume")
@@ -256,10 +237,9 @@ namespace VolumeShot.ViewModels
                         Symbol.BuyerIsMaker = Message.Data.BuyerIsMaker;
                         Symbol.TradeTime = Message.Data.TradeTime;
                         Symbol.Price = Message.Data.Price;
-                        SymbolPrice symbolPrice = new SymbolPrice(Message.Data.Price, Message.Data.BuyerIsMaker, Message.Data.TradeTime);
-                        symbolPrice.PropertyChanged += SymbolPrice_PropertyChanged;
+                        SymbolPrice symbolPrice = new SymbolPrice(Message.Data.Price, Message.Data.BuyerIsMaker, Message.Data.TradeTime, Symbol.Exchange.SymbolPrices);
                         Symbol.Exchange.SymbolPrices.Add(symbolPrice);
-                        if (Symbol.Exchange.IsOpenLongOrder || Symbol.Exchange.IsOpenShortOrder)
+                        if (Symbol.Exchange.IsWriteSymbolPrices)
                         {
                             Symbol.Exchange.OpenBetSymbolPrices.Add(symbolPrice);
                         }
@@ -362,7 +342,7 @@ namespace VolumeShot.ViewModels
                                 }
                                 else
                                 {
-                                    if (percentBid > 0m) Symbol.DistanceLower = percentBid;
+                                    if (percentBid > 0.01m) Symbol.DistanceLower = percentBid;
                                     else Symbol.DistanceLower = 0.01m;
                                 }
                             }
@@ -378,7 +358,7 @@ namespace VolumeShot.ViewModels
                                 }
                                 else
                                 {
-                                    if (percentAsk > 0m) Symbol.DistanceUpper = percentAsk;
+                                    if (percentAsk > 0.01m) Symbol.DistanceUpper = percentAsk;
                                     else Symbol.DistanceUpper = 0.01m;
                                 }
                             }

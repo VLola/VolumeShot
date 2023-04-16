@@ -66,7 +66,7 @@ namespace VolumeShot.Models
                 OnPropertyChanged("Ping");
             }
         }
-        private long _pingMax { get; set; } = 400;
+        private long _pingMax { get; set; } = 1000;
         public long PingMax
         {
             get { return _pingMax; }

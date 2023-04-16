@@ -26,18 +26,17 @@ namespace VolumeShot.Models
                 OnPropertyChanged("Bet");
             }
         }
-        public string Symbol { get; set; }
-
-        private bool _isTrading { get; set; }
-        public bool IsTrading
+        private bool _isWriteSymbolPrices { get; set; }
+        public bool IsWriteSymbolPrices
         {
-            get { return _isTrading; }
+            get { return _isWriteSymbolPrices; }
             set
             {
-                _isTrading = value;
-                OnPropertyChanged("IsTrading");
+                _isWriteSymbolPrices = value;
+                OnPropertyChanged("IsWriteSymbolPrices");
             }
         }
+        public string Symbol { get; set; }
         private decimal _minQuantity { get; set; }
         public decimal MinQuantity
         {
