@@ -11,8 +11,6 @@ using Binance.Net.Objects.Models.Futures.Socket;
 using ScottPlot;
 using System.Drawing;
 using VolumeShot.Command;
-using System.Collections.ObjectModel;
-using System.Net.Sockets;
 
 namespace VolumeShot.ViewModels
 {
@@ -349,6 +347,7 @@ namespace VolumeShot.ViewModels
                         {
                             OnOrderUpdate?.Invoke(onOrderUpdate.Data);
                             AddOrder(onOrderUpdate.Data.UpdateData);
+                            WriteLogOrder(onOrderUpdate.Data.UpdateData);
                         },
                         onListenKeyExpired => { },
                         onStrategyUpdate => { },
@@ -368,68 +367,72 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(() =>
             {
-                App.Current.Dispatcher.Invoke(() => {
-                    foreach (var item in futuresOrders)
-                    {
-                        Main.Orders.Insert(0, new Order(item, client));
-                    }
-                });
+                try
+                {
+                    App.Current.Dispatcher.Invoke(() => {
+                        foreach (var item in futuresOrders)
+                        {
+                            Main.Orders.Insert(0, new Order(item, client));
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, errorFile, $"Exception AddAllOrdersAsync: {ex.Message}");
+                }
             });
+        }
+        private void WriteLogOrder(BinanceFuturesStreamOrderUpdateData orderUpdateData)
+        {
+            // Write log
+            try
+            {
+                string json = JsonConvert.SerializeObject(orderUpdateData);
+                Error.WriteLog(pathOrders, orderUpdateData.Symbol, json);
+            }
+            catch (Exception ex)
+            {
+                Error.WriteLog(path, errorFile, $"Exception WriteLogOrder: {ex.Message}");
+            }
         }
         private async void AddOrder(BinanceFuturesStreamOrderUpdateData orderUpdateData)
         {
             await Task.Run(() =>
             {
-                if (orderUpdateData.Status == Binance.Net.Enums.OrderStatus.New)
+                try
                 {
-                    Order order = new(orderUpdateData, client);
-                    App.Current.Dispatcher.Invoke(() => {
-                        Main.Orders.Insert(0, order);
-                    });
-                }
-                else if (orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Canceled || orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Filled || orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Expired)
-                {
-                    Order? order = Main.Orders.FirstOrDefault(order=>order.OrderId == orderUpdateData.OrderId);
-                    if (order != null)
+                    if (orderUpdateData.Status == Binance.Net.Enums.OrderStatus.New)
                     {
+                        Order order = new(orderUpdateData, client);
                         App.Current.Dispatcher.Invoke(() => {
-                            Main.Orders.Remove(order);
+                            Main.Orders.Insert(0, order);
                         });
                     }
+                    else if (orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Canceled || orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Filled || orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Expired)
+                    {
+                        Order? order = Main.Orders.FirstOrDefault(order => order.OrderId == orderUpdateData.OrderId);
+                        if (order != null)
+                        {
+                            App.Current.Dispatcher.Invoke(() => {
+                                Main.Orders.Remove(order);
+                            });
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, errorFile, $"Exception AddOrder: {ex.Message}");
                 }
             });
         } 
         private async void AddAllPositionsAsync(IEnumerable<BinancePositionDetailsUsdt> positions)
         {
             await Task.Run(() => {
-                foreach (var item in positions)
+                try
                 {
-                    if(item.Quantity != 0m)
+                    foreach (var item in positions)
                     {
-                        Position positionNew = new Position(item, client, socketClient);
-                        positionNew.PropertyChanged += PositionNew_PropertyChanged;
-                        App.Current.Dispatcher.Invoke(() => {
-                            Main.Positions.Add(positionNew);
-                        });
-                    }
-                }
-            });
-        }
-        private async void AddSymbolPositionsAsync(IEnumerable<BinanceFuturesStreamPosition> positions)
-        {
-            await Task.Run(() =>
-            {
-                foreach (var item in positions)
-                {
-                    Position? position = Main.Positions.FirstOrDefault(position => position.Symbol == item.Symbol && position.PositionSide == item.PositionSide);
-                    if (position != null)
-                    {
-                        position.Quantity = item.Quantity;
-                        position.Price = item.EntryPrice;
-                    }
-                    else
-                    {
-                        if(item.Quantity != 0m)
+                        if (item.Quantity != 0m)
                         {
                             Position positionNew = new Position(item, client, socketClient);
                             positionNew.PropertyChanged += PositionNew_PropertyChanged;
@@ -438,6 +441,43 @@ namespace VolumeShot.ViewModels
                             });
                         }
                     }
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, errorFile, $"Exception AddAllPositionsAsync: {ex.Message}");
+                }
+            });
+        }
+        private async void AddSymbolPositionsAsync(IEnumerable<BinanceFuturesStreamPosition> positions)
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    foreach (var item in positions)
+                    {
+                        Position? position = Main.Positions.FirstOrDefault(position => position.Symbol == item.Symbol && position.PositionSide == item.PositionSide);
+                        if (position != null)
+                        {
+                            position.Quantity = item.Quantity;
+                            position.Price = item.EntryPrice;
+                        }
+                        else
+                        {
+                            if (item.Quantity != 0m)
+                            {
+                                Position positionNew = new Position(item, client, socketClient);
+                                positionNew.PropertyChanged += PositionNew_PropertyChanged;
+                                App.Current.Dispatcher.Invoke(() => {
+                                    Main.Positions.Add(positionNew);
+                                });
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, errorFile, $"Exception AddSymbolPositionsAsync: {ex.Message}");
                 }
             });
         }
@@ -451,9 +491,16 @@ namespace VolumeShot.ViewModels
                 {
                     if (position.Quantity == 0m)
                     {
-                        App.Current.Dispatcher.Invoke(() => {
-                            Main.Positions.Remove(position);
-                        });
+                        try
+                        {
+                            App.Current.Dispatcher.Invoke(() => {
+                                Main.Positions.Remove(position);
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            Error.WriteLog(path, errorFile, $"Exception PositionNew_PropertyChanged: {ex.Message}");
+                        }
                     }
                 }
             }
@@ -548,9 +595,16 @@ namespace VolumeShot.ViewModels
                 Exchange? exchange = sender as Exchange;
                 if(exchange != null)
                 {
-                    App.Current.Dispatcher.BeginInvoke(new Action(() => {
-                        Main.Bets.Insert(0, exchange.Bet);
-                    }));
+                    try
+                    {
+                        App.Current.Dispatcher.BeginInvoke(new Action(() => {
+                            Main.Bets.Insert(0, exchange.Bet);
+                        }));
+                    }
+                    catch (Exception ex)
+                    {
+                        Error.WriteLog(path, errorFile, $"Exception Exchange_PropertyChanged: {ex.Message}");
+                    }
                 }
             }
         }

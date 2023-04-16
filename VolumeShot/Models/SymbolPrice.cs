@@ -28,7 +28,7 @@ namespace VolumeShot.Models
         private async void RunAsync()
         {
             await Task.Run(async () => {
-                await Task.Delay(60000);
+                await Task.Delay(10000);
                 IsRemove = true;
             });
         }
