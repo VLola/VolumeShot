@@ -13,7 +13,7 @@ namespace VolumeShot.ViewModels
     internal class SymbolViewModel
     {
         private string pathConfigs = $"{Directory.GetCurrentDirectory()}/configs/";
-        private string path = $"{Directory.GetCurrentDirectory()}/log/binance/";
+        private string path = $"{Directory.GetCurrentDirectory()}/log/symbol/";
         public Symbol Symbol { get; set; } = new();
         public ExchangeViewModel ExchangeViewModel { get; set; }
         public BinanceClient client { get; set; }
@@ -68,9 +68,16 @@ namespace VolumeShot.ViewModels
             {
                 if(sender != null)
                 {
-                    SymbolPrice symbolPrice = (SymbolPrice)sender;
-                    symbolPrice.PropertyChanged -= SymbolPrice_PropertyChanged;
-                    Symbol.Exchange.SymbolPrices.Remove(symbolPrice);
+                    try
+                    {
+                        SymbolPrice symbolPrice = (SymbolPrice)sender;
+                        symbolPrice.PropertyChanged -= SymbolPrice_PropertyChanged;
+                        Symbol.Exchange.SymbolPrices.Remove(symbolPrice);
+                    }
+                    catch (Exception ex)
+                    {
+                        Error.WriteLog(path, Symbol.Name, $"Exception SymbolPrice_PropertyChanged: {ex.Message}");
+                    }
                 }
             }
         }
@@ -125,29 +132,36 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(() =>
             {
-                List<Config>? configs = new();
-                string path = pathConfigs + "config";
-                if (File.Exists(path))
+                try
                 {
-                    string json = File.ReadAllText(path);
-                    configs = JsonConvert.DeserializeObject<List<Config>>(json);
-                    if (configs != null)
+                    List<Config>? configs = new();
+                    string pathFile = pathConfigs + "config";
+                    if (File.Exists(pathFile))
                     {
-                        Config? config = configs.FirstOrDefault(conf => conf.Name == Symbol.Name);
-                        if (config != null)
+                        string json = File.ReadAllText(pathFile);
+                        configs = JsonConvert.DeserializeObject<List<Config>>(json);
+                        if (configs != null)
                         {
-                            configs.Remove(config);
+                            Config? config = configs.FirstOrDefault(conf => conf.Name == Symbol.Name);
+                            if (config != null)
+                            {
+                                configs.Remove(config);
+                            }
+                            configs.Add(new Config() { Name = Symbol.Name, Volume = Symbol.Volume });
+                            string json1 = JsonConvert.SerializeObject(configs);
+                            File.WriteAllText(pathFile, json1);
                         }
+                    }
+                    else
+                    {
                         configs.Add(new Config() { Name = Symbol.Name, Volume = Symbol.Volume });
-                        string json1 = JsonConvert.SerializeObject(configs);
-                        File.WriteAllText(path, json1);
+                        string json = JsonConvert.SerializeObject(configs);
+                        File.WriteAllText(pathFile, json);
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    configs.Add(new Config() { Name = Symbol.Name, Volume = Symbol.Volume });
-                    string json = JsonConvert.SerializeObject(configs);
-                    File.WriteAllText(path, json);
+                    Error.WriteLog(path, Symbol.Name, $"Exception SaveVolumeAsync: {ex.Message}");
                 }
             });
         }
@@ -182,10 +196,17 @@ namespace VolumeShot.ViewModels
         }
         private void ReBuffers()
         {
-            Symbol.BestAskPriceLast = Symbol.BestAskPrice;
-            Symbol.BestBidPriceLast = Symbol.BestBidPrice;
-            Symbol.BufferLowerPrice = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.BufferLower);
-            Symbol.BufferUpperPrice = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.BufferUpper);
+            try
+            {
+                Symbol.BestAskPriceLast = Symbol.BestAskPrice;
+                Symbol.BestBidPriceLast = Symbol.BestBidPrice;
+                Symbol.BufferLowerPrice = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.BufferLower);
+                Symbol.BufferUpperPrice = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.BufferUpper);
+            }
+            catch (Exception ex)
+            {
+                Error.WriteLog(path, Symbol.Name, $"Exception ReBuffers: {ex.Message}");
+            }
         }
         private async Task CheckBufferAsync()
         {
@@ -225,20 +246,27 @@ namespace VolumeShot.ViewModels
                 int socketId = 0;
                 var result = await socketClient.UsdFuturesStreams.SubscribeToAggregatedTradeUpdatesAsync(Symbol.Name, Message =>
                 {
-                    if (!Symbol.IsRun)
+                    try
                     {
-                        socketClient.UnsubscribeAsync(socketId);
-                        Symbol.Exchange.SymbolPrices.Clear();
+                        if (!Symbol.IsRun)
+                        {
+                            socketClient.UnsubscribeAsync(socketId);
+                            Symbol.Exchange.SymbolPrices.Clear();
+                        }
+                        Symbol.BuyerIsMaker = Message.Data.BuyerIsMaker;
+                        Symbol.TradeTime = Message.Data.TradeTime;
+                        Symbol.Price = Message.Data.Price;
+                        SymbolPrice symbolPrice = new SymbolPrice(Message.Data.Price, Message.Data.BuyerIsMaker, Message.Data.TradeTime);
+                        symbolPrice.PropertyChanged += SymbolPrice_PropertyChanged;
+                        Symbol.Exchange.SymbolPrices.Add(symbolPrice);
+                        if (Symbol.Exchange.IsOpenLongOrder || Symbol.Exchange.IsOpenShortOrder)
+                        {
+                            Symbol.Exchange.OpenBetSymbolPrices.Add(symbolPrice);
+                        }
                     }
-                    Symbol.BuyerIsMaker = Message.Data.BuyerIsMaker;
-                    Symbol.TradeTime = Message.Data.TradeTime;
-                    Symbol.Price = Message.Data.Price;
-                    SymbolPrice symbolPrice = new SymbolPrice(Message.Data.Price, Message.Data.BuyerIsMaker, Message.Data.TradeTime);
-                    symbolPrice.PropertyChanged += SymbolPrice_PropertyChanged;
-                    Symbol.Exchange.SymbolPrices.Add(symbolPrice);
-                    if (Symbol.Exchange.IsOpenLongOrder || Symbol.Exchange.IsOpenShortOrder)
+                    catch (Exception ex)
                     {
-                        Symbol.Exchange.OpenBetSymbolPrices.Add(symbolPrice);
+                        Error.WriteLog(path, Symbol.Name, $"Exception SubscribeToAggregatedTradeUpdatesAsync: {ex.Message}");
                     }
                 });
                 if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToAggregatedTradeUpdatesAsync: {result.Error?.Message}");
@@ -252,12 +280,19 @@ namespace VolumeShot.ViewModels
                 int socketId = 0;
                 var result = await socketClient.UsdFuturesStreams.SubscribeToBookTickerUpdatesAsync(Symbol.Name, Message =>
                 {
-                    if (!Symbol.IsRun)
+                    try
                     {
-                        socketClient.UnsubscribeAsync(socketId);
+                        if (!Symbol.IsRun)
+                        {
+                            socketClient.UnsubscribeAsync(socketId);
+                        }
+                        Symbol.BestAskPrice = Message.Data.BestAskPrice;
+                        Symbol.BestBidPrice = Message.Data.BestBidPrice;
                     }
-                    Symbol.BestAskPrice = Message.Data.BestAskPrice;
-                    Symbol.BestBidPrice = Message.Data.BestBidPrice;
+                    catch (Exception ex)
+                    {
+                        Error.WriteLog(path, Symbol.Name, $"Exception SubscribeToBookTickerUpdatesAsync: {ex.Message}");
+                    }
                 });
                 if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToBookTickerUpdatesAsync: {result.Error?.Message}");
                 else socketId = result.Data.Id;
@@ -267,14 +302,21 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                var result = await client.UsdFuturesApi.ExchangeData.GetOrderBookAsync(Symbol.Name, limit: 1000);
-                if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed GetOrderBookAsync: {result.Error?.Message}");
-                else
+                try
                 {
-                    Symbol.OrderBook.Bids.Clear();
-                    Symbol.OrderBook.Asks.Clear();
-                    Symbol.OrderBook.AddBids(result.Data.Bids);
-                    Symbol.OrderBook.AddAsks(result.Data.Asks);
+                    var result = await client.UsdFuturesApi.ExchangeData.GetOrderBookAsync(Symbol.Name, limit: 1000);
+                    if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed GetOrderBookAsync: {result.Error?.Message}");
+                    else
+                    {
+                        Symbol.OrderBook.Bids.Clear();
+                        Symbol.OrderBook.Asks.Clear();
+                        Symbol.OrderBook.AddBids(result.Data.Bids);
+                        Symbol.OrderBook.AddAsks(result.Data.Asks);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, Symbol.Name, $"Exception GetOrderBookAsync: {ex.Message}");
                 }
             });
         }
@@ -342,7 +384,7 @@ namespace VolumeShot.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToOrderBookUpdatesAsync: {ex.Message}");
+                        Error.WriteLog(path, Symbol.Name, $"Exception SubscribeToOrderBookUpdatesAsync: {ex.Message}");
                     }
 
                 });
