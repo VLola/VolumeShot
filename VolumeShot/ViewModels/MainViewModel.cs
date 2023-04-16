@@ -380,14 +380,14 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(() =>
             {
-                if (orderUpdateData.Status != Binance.Net.Enums.OrderStatus.Canceled && orderUpdateData.Status != Binance.Net.Enums.OrderStatus.Filled && orderUpdateData.Status != Binance.Net.Enums.OrderStatus.Expired)
+                if (orderUpdateData.Status == Binance.Net.Enums.OrderStatus.New)
                 {
                     Order order = new(orderUpdateData, client);
                     App.Current.Dispatcher.Invoke(() => {
                         Main.Orders.Insert(0, order);
                     });
                 }
-                else
+                else if (orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Canceled || orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Filled || orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Expired)
                 {
                     Order? order = Main.Orders.FirstOrDefault(order=>order.OrderId == orderUpdateData.OrderId);
                     if (order != null)
