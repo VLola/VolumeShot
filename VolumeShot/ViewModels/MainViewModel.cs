@@ -481,7 +481,7 @@ namespace VolumeShot.ViewModels
                     }
                     else if (orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Canceled || orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Filled || orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Expired)
                     {
-                        Order? order = Main.Orders.FirstOrDefault(order => order.OrderId == orderUpdateData.OrderId);
+                        Order? order = Main.Orders.ToArray().FirstOrDefault(order => order.OrderId == orderUpdateData.OrderId);
                         if (order != null)
                         {
                             App.Current.Dispatcher.Invoke(() => {
@@ -527,7 +527,7 @@ namespace VolumeShot.ViewModels
                 {
                     foreach (var item in positions)
                     {
-                        Position? position = Main.Positions.FirstOrDefault(position => position.Symbol == item.Symbol && position.PositionSide == item.PositionSide);
+                        Position? position = Main.Positions.ToArray().FirstOrDefault(position => position.Symbol == item.Symbol && position.PositionSide == item.PositionSide);
                         if (position != null)
                         {
                             position.Quantity = item.Quantity;
