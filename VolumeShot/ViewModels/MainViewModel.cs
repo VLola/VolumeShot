@@ -85,6 +85,37 @@ namespace VolumeShot.ViewModels
             LoadSymbols();
             LoadChart();
             RunChartAsync();
+            CheckPingAsync();
+        }
+        private async void CheckPingAsync()
+        {
+            await Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await Task.Delay(1000);
+                    try
+                    {
+                        var result = await client.UsdFuturesApi.ExchangeData.PingAsync();
+                        if (!result.Success)
+                        {
+                            Error.WriteLog(path, errorFile, $"Failed CheckPingAsync: {result.Error?.Message}");
+                        }
+                        else
+                        {
+                            Main.Ping = result.Data;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Error.WriteLog(path, errorFile, $"Exception CheckPingAsync: {ex?.Message}");
+                    }
+                }
+            });
+        }
+        private async void StopTradingAsync()
+        {
+
         }
         private async void LoadBetsAsync()
         {

@@ -27,6 +27,17 @@ namespace VolumeShot.Models
             }
         }
         public string Symbol { get; set; }
+
+        private bool _isTrading { get; set; }
+        public bool IsTrading
+        {
+            get { return _isTrading; }
+            set
+            {
+                _isTrading = value;
+                OnPropertyChanged("IsTrading");
+            }
+        }
         private decimal _minQuantity { get; set; }
         public decimal MinQuantity
         {

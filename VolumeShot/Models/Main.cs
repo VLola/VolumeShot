@@ -56,6 +56,16 @@ namespace VolumeShot.Models
                 OnPropertyChanged("Balance");
             }
         }
+        private long _ping { get; set; }
+        public long Ping
+        {
+            get { return _ping; }
+            set
+            {
+                _ping = value;
+                OnPropertyChanged("Ping");
+            }
+        }
         private void Value_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "Price")

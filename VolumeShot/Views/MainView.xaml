@@ -48,7 +48,14 @@
                         <Grid Grid.Row="1">
                             <Expander IsExpanded="{Binding Path=Main.IsVisibleChart}">
                                 <Expander.Header>
-                                    <TextBlock Text="Chart" Foreground="White"/>
+                                    <Grid Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Expander}}, Path=ActualWidth}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Chart" Foreground="White"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Path=Main.Ping, StringFormat={}Ping: {0}}" Foreground="White" HorizontalAlignment="Right" Margin="30 0"/>
+                                    </Grid>
                                 </Expander.Header>
                                 <WpfPlot Grid.Column="0" Grid.Row="0" Content="{Binding Path=Main.WpfPlot}"/>
                             </Expander>

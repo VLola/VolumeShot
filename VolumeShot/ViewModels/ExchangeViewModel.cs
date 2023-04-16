@@ -54,7 +54,7 @@ namespace VolumeShot.ViewModels
         }
         public void AccountUpdate(BinanceFuturesStreamAccountUpdate AccountUpdate, string[] Symbols)
         {
-            if (Symbols.Contains(Exchange.Symbol)) {
+            if (Symbols.Contains(Exchange.Symbol) && Exchange.IsTrading) {
                 foreach (var item in AccountUpdate.UpdateData.Positions)
                 {
                     if(item.Symbol == Exchange.Symbol)
@@ -105,7 +105,7 @@ namespace VolumeShot.ViewModels
         }
         public void OrderUpdate(BinanceFuturesStreamOrderUpdate OrderUpdate)
         {
-            if (OrderUpdate.UpdateData.Symbol == Exchange.Symbol)
+            if (OrderUpdate.UpdateData.Symbol == Exchange.Symbol && Exchange.IsTrading)
             {
                 if (OrderUpdate.UpdateData.Status == OrderStatus.Filled)
                 {

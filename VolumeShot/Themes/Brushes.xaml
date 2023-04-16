@@ -132,7 +132,20 @@
         <GradientStop Color="#4C000000" Offset="0.093"/>
         <GradientStop Color="#4C000000" Offset="0.548"/>
     </LinearGradientBrush>
-                                        
+
+    <LinearGradientBrush x:Key="colorPing" EndPoint="0,1" MappingMode="Absolute" SpreadMethod="Repeat" StartPoint="20,1">
+        <LinearGradientBrush.Transform>
+            <TransformGroup>
+                <TranslateTransform X="0"/>
+                <SkewTransform AngleX="-30"/>
+            </TransformGroup>
+        </LinearGradientBrush.Transform>
+        <GradientStop Color="Orange" Offset="0"/>
+        <GradientStop Color="GreenYellow" Offset="0.651"/>
+        <GradientStop Color="Aqua" Offset="0.093"/>
+        <GradientStop Color="Pink" Offset="0.548"/>
+    </LinearGradientBrush>
+
     <LinearGradientBrush x:Key="BrushTrackProgressBar" EndPoint="0,0.5" StartPoint="1,0.5">
         <GradientStop Color="#FF13E7D9" Offset="0"/>
         <GradientStop Color="#FF16C38F" Offset="1"/>

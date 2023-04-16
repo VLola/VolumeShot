@@ -79,6 +79,7 @@ namespace VolumeShot.Models
                     _isTrading = value;
                     OnPropertyChanged("IsTrading");
                 }
+                Exchange.IsTrading = _isTrading;
             }
         }
         private bool _isVisible { get; set; }
