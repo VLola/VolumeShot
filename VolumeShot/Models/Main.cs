@@ -66,6 +66,26 @@ namespace VolumeShot.Models
                 OnPropertyChanged("Ping");
             }
         }
+        private long _pingMax { get; set; } = 400;
+        public long PingMax
+        {
+            get { return _pingMax; }
+            set
+            {
+                _pingMax = value;
+                OnPropertyChanged("PingMax");
+            }
+        }
+        private bool _isStopTrading { get; set; }
+        public bool IsStopTrading
+        {
+            get { return _isStopTrading; }
+            set
+            {
+                _isStopTrading = value;
+                OnPropertyChanged("IsStopTrading");
+            }
+        }
         private void Value_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "Price")

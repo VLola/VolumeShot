@@ -100,6 +100,7 @@ namespace VolumeShot.ViewModels
                         if (!result.Success)
                         {
                             Error.WriteLog(path, errorFile, $"Failed CheckPingAsync: {result.Error?.Message}");
+                            Main.Ping = 10000;
                         }
                         else
                         {
@@ -109,13 +110,52 @@ namespace VolumeShot.ViewModels
                     catch (Exception ex)
                     {
                         Error.WriteLog(path, errorFile, $"Exception CheckPingAsync: {ex?.Message}");
+                        Main.Ping = 10000;
+                    }
+                    if (!Main.IsStopTrading)
+                    {
+                        if(Main.Ping > Main.PingMax)
+                        {
+                            Main.IsStopTrading = true;
+                            StopTradingAsync();
+                        }
                     }
                 }
             });
         }
         private async void StopTradingAsync()
         {
-
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    List<Symbol>? list = Main.Symbols.Where(symbol=>symbol.IsTrading == true).ToList();
+                    if(list != null && list.Count > 0)
+                    {
+                        foreach (var item in list)
+                        {
+                            if (item.IsTrading) item.IsTrading = false;
+                        }
+                        string[] symbols = list.Select(item => item.Name).ToArray();
+                        Error.WriteLog(path, errorFile, $"Ping > {Main.PingMax}, stop trading: {string.Join(", ", symbols)}");
+                        while (true)
+                        {
+                            await Task.Delay(30000);
+                            if (Main.Ping <= Main.PingMax) break;
+                        }
+                        Error.WriteLog(path, errorFile, $"Ping <= {Main.PingMax}, start trading: {string.Join(", ", symbols)}");
+                        foreach (var item in list)
+                        {
+                            if (!item.IsTrading) item.IsTrading = true;
+                        }
+                    }
+                    Main.IsStopTrading = false;
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, errorFile, $"Exception StopTradingAsync: {ex?.Message}");
+                }
+            });
         }
         private async void LoadBetsAsync()
         {
