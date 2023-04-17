@@ -7,6 +7,17 @@ namespace VolumeShot.Models
 {
     public class Main : Changed
     {
+        private string _version { get; set; }
+        public string Version
+        {
+            get { return _version; }
+            set
+            {
+                _version = value;
+                OnPropertyChanged("Version");
+                Title = $"Version: {_version} - User: {_loginUser}";
+            }
+        }
         private string _loginUser { get; set; } = "main";
         public string LoginUser
         {
@@ -15,6 +26,17 @@ namespace VolumeShot.Models
             {
                 _loginUser = value;
                 OnPropertyChanged("LoginUser");
+                Title = $"Version: {_version} - User: {_loginUser}";
+            }
+        }
+        private string _title { get; set; }
+        public string Title
+        {
+            get { return _title; }
+            set
+            {
+                _title = value;
+                OnPropertyChanged("Title");
             }
         }
         public WpfPlot WpfPlot { get; set; } = new();

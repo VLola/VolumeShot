@@ -12,6 +12,7 @@ using ScottPlot;
 using System.Drawing;
 using VolumeShot.Command;
 using System.Windows;
+using System.Reflection;
 
 namespace VolumeShot.ViewModels
 {
@@ -55,6 +56,7 @@ namespace VolumeShot.ViewModels
         }
         public MainViewModel()
         {
+            Main.Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(2);
             if (!Directory.Exists(pathHistory)) Directory.CreateDirectory(pathHistory);
             if (!Directory.Exists(pathOrders)) Directory.CreateDirectory(pathOrders);
             if (!Directory.Exists(pathConfigs)) Directory.CreateDirectory(pathConfigs);
