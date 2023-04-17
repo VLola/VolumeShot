@@ -241,42 +241,45 @@ namespace VolumeShot.ViewModels
         {
             try
             {
-                decimal openQuantity = RoundQuantity(Exchange.Usdt / askPrice);
-
-                if (openQuantity * askPrice < 10.5m)
-                {
-                    openQuantity += Exchange.StepSize;
-                }
-
-                decimal priceDistanceLower = RoundPriceDecimal(bidPrice - (bidPrice / 100 * distanceLower));
-                Exchange.DistanceLowerPrice = priceDistanceLower;
-                Exchange.DistanceLower = distanceLower;
-                Exchange.TakeProfitLong = distanceLower / Exchange.DenominatorTakeProfit;
-                Exchange.StopLossLong = distanceLower / Exchange.DenominatorStopLoss;
-                Exchange.TakeProfitLongPrice = RoundPriceDecimal(priceDistanceLower + (priceDistanceLower / 100 * distanceLower / Exchange.DenominatorTakeProfit));
-                Exchange.StopLossLongPrice = RoundPriceDecimal(priceDistanceLower - (priceDistanceLower / 100 * distanceLower / Exchange.DenominatorStopLoss));
-
-                decimal priceDistanceUpper = RoundPriceDecimal(askPrice + (askPrice / 100 * distanceUpper));
-                Exchange.DistanceUpperPrice = priceDistanceUpper;
-                Exchange.DistanceUpper = distanceUpper;
-                Exchange.TakeProfitShort = distanceUpper / Exchange.DenominatorTakeProfit;
-                Exchange.StopLossShort = distanceUpper / Exchange.DenominatorStopLoss;
-                Exchange.TakeProfitShortPrice = RoundPriceDecimal(priceDistanceUpper - (priceDistanceUpper / 100 * distanceUpper / Exchange.DenominatorTakeProfit));
-                Exchange.StopLossShortPrice = RoundPriceDecimal(priceDistanceUpper + (priceDistanceUpper / 100 * distanceUpper / Exchange.DenominatorStopLoss));
-                // Buffers
-                Exchange.BufferLowerPrice = bufferLowerPrice;
-                Exchange.BufferUpperPrice = bufferUpperPrice;
-                Exchange.BufferLower = bufferLower;
-                Exchange.BufferUpper = bufferUpper;
-
-                Exchange.Volume = volume;
-                Exchange.Fee = 0m;
-                Exchange.Profit = 0m;
-                Exchange.Quantity = 0m;
-
                 await CancelAllOrdersAsync();
-                await OpenOrderLimitAsync(PositionSide.Long, OrderSide.Buy, priceDistanceLower, openQuantity);
-                await OpenOrderLimitAsync(PositionSide.Short, OrderSide.Sell, priceDistanceUpper, openQuantity);
+                if (!Exchange.IsOpenLongOrder && !Exchange.IsOpenShortOrder)
+                {
+                    decimal openQuantity = RoundQuantity(Exchange.Usdt / askPrice);
+
+                    if (openQuantity * askPrice < 10.5m)
+                    {
+                        openQuantity += Exchange.StepSize;
+                    }
+
+                    decimal priceDistanceLower = RoundPriceDecimal(bidPrice - (bidPrice / 100 * distanceLower));
+                    Exchange.DistanceLowerPrice = priceDistanceLower;
+                    Exchange.DistanceLower = distanceLower;
+                    Exchange.TakeProfitLong = distanceLower / Exchange.DenominatorTakeProfit;
+                    Exchange.StopLossLong = distanceLower / Exchange.DenominatorStopLoss;
+                    Exchange.TakeProfitLongPrice = RoundPriceDecimal(priceDistanceLower + (priceDistanceLower / 100 * distanceLower / Exchange.DenominatorTakeProfit));
+                    Exchange.StopLossLongPrice = RoundPriceDecimal(priceDistanceLower - (priceDistanceLower / 100 * distanceLower / Exchange.DenominatorStopLoss));
+
+                    decimal priceDistanceUpper = RoundPriceDecimal(askPrice + (askPrice / 100 * distanceUpper));
+                    Exchange.DistanceUpperPrice = priceDistanceUpper;
+                    Exchange.DistanceUpper = distanceUpper;
+                    Exchange.TakeProfitShort = distanceUpper / Exchange.DenominatorTakeProfit;
+                    Exchange.StopLossShort = distanceUpper / Exchange.DenominatorStopLoss;
+                    Exchange.TakeProfitShortPrice = RoundPriceDecimal(priceDistanceUpper - (priceDistanceUpper / 100 * distanceUpper / Exchange.DenominatorTakeProfit));
+                    Exchange.StopLossShortPrice = RoundPriceDecimal(priceDistanceUpper + (priceDistanceUpper / 100 * distanceUpper / Exchange.DenominatorStopLoss));
+                    // Buffers
+                    Exchange.BufferLowerPrice = bufferLowerPrice;
+                    Exchange.BufferUpperPrice = bufferUpperPrice;
+                    Exchange.BufferLower = bufferLower;
+                    Exchange.BufferUpper = bufferUpper;
+
+                    Exchange.Volume = volume;
+                    Exchange.Fee = 0m;
+                    Exchange.Profit = 0m;
+                    Exchange.Quantity = 0m;
+
+                    await OpenOrderLimitAsync(PositionSide.Long, OrderSide.Buy, priceDistanceLower, openQuantity);
+                    await OpenOrderLimitAsync(PositionSide.Short, OrderSide.Sell, priceDistanceUpper, openQuantity);
+                }
             }
             catch (Exception ex)
             {
