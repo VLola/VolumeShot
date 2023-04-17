@@ -61,18 +61,21 @@ namespace VolumeShot.Views
         {
             plt.Plot.Layout(padding: 12);
             plt.Plot.Style(figureBackground: Color.Black, dataBackground: Color.Black);
-            plt.Plot.Frameless();
+            //plt.Plot.Frameless();
             plt.Plot.XAxis.TickLabelStyle(color: Color.White);
             plt.Plot.XAxis.TickMarkColor(ColorTranslator.FromHtml("#333333"));
             plt.Plot.XAxis.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
 
             plt.Plot.YAxis.Ticks(false);
             plt.Plot.YAxis.Grid(false);
-            plt.Plot.YAxis2.Ticks(true);
-            plt.Plot.YAxis2.Grid(true);
+            plt.Plot.YAxis2.Ticks(false);
+            plt.Plot.YAxis2.Grid(false);
             plt.Plot.YAxis2.TickLabelStyle(color: ColorTranslator.FromHtml("#00FF00"));
             plt.Plot.YAxis2.TickMarkColor(ColorTranslator.FromHtml("#333333"));
             plt.Plot.YAxis2.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
+
+            plt.Plot.XAxis.TickLabelFormat("ss:f", dateTimeFormat: true);
+
 
             var legend = plt.Plot.Legend();
             legend.FillColor = Color.Transparent;
