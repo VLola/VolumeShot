@@ -87,25 +87,6 @@ namespace VolumeShot.ViewModels
                     ExchangeViewModel.ClosePositionsAsync();
                 }
             }
-            else if (e.PropertyName == "DistanceUpper")
-            {
-                Symbol.BufferUpper = Symbol.DistanceUpper / 5;
-            }
-            else if (e.PropertyName == "DistanceLower")
-            {
-                Symbol.BufferLower = Symbol.DistanceLower / 5;
-            }
-            if(e.PropertyName == "BestBidPrice"/* || e.PropertyName == "BestAskPrice"*/)
-            {
-                // Stop loss
-                if (!ExchangeViewModel.Exchange.IsWorkedStopLoss)
-                {
-                    if (ExchangeViewModel.Exchange.IsOpenShortOrder && Symbol.BestBidPrice >= ExchangeViewModel.Exchange.StopLossShortPrice || ExchangeViewModel.Exchange.IsOpenLongOrder && Symbol.BestAskPrice <= ExchangeViewModel.Exchange.StopLossLongPrice)
-                    {
-                        ExchangeViewModel.ClosePositionsAsync();
-                    }
-                }
-            }
         }
 
 
@@ -268,6 +249,14 @@ namespace VolumeShot.ViewModels
                         }
                         Symbol.BestAskPrice = Message.Data.BestAskPrice;
                         Symbol.BestBidPrice = Message.Data.BestBidPrice;
+                        // Stop loss
+                        if (!ExchangeViewModel.Exchange.IsWorkedStopLoss)
+                        {
+                            if (ExchangeViewModel.Exchange.IsOpenShortOrder && Symbol.BestBidPrice >= ExchangeViewModel.Exchange.StopLossShortPrice || ExchangeViewModel.Exchange.IsOpenLongOrder && Symbol.BestAskPrice <= ExchangeViewModel.Exchange.StopLossLongPrice)
+                            {
+                                ExchangeViewModel.ClosePositionsAsync();
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -362,6 +351,9 @@ namespace VolumeShot.ViewModels
                                     else Symbol.DistanceUpper = 0.01m;
                                 }
                             }
+
+                            Symbol.BufferUpper = Symbol.DistanceUpper / 5;
+                            Symbol.BufferLower = Symbol.DistanceLower / 5;
                         }
                     }
                     catch (Exception ex)
