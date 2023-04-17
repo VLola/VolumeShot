@@ -18,7 +18,7 @@ namespace VolumeShot.Models
                 Title = $"Version: {_version} - User: {_loginUser}";
             }
         }
-        private string _loginUser { get; set; } = "main";
+        private string _loginUser { get; set; } = "null";
         public string LoginUser
         {
             get { return _loginUser; }
