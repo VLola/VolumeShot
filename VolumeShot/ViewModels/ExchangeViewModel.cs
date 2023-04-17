@@ -66,7 +66,7 @@ namespace VolumeShot.ViewModels
                             {
                                 if (Exchange.IsOpenLongOrder) 
                                 {
-                                    CloseBet(DateTime.UtcNow); 
+                                    CloseBet(AccountUpdate.EventTime); 
                                 }
                                 Exchange.IsOpenLongOrder = false;
                             }
@@ -74,7 +74,7 @@ namespace VolumeShot.ViewModels
                             {
                                 if (Exchange.IsOpenShortOrder)
                                 {
-                                    CloseBet(DateTime.UtcNow);
+                                    CloseBet(AccountUpdate.EventTime);
                                 }
                                 Exchange.IsOpenShortOrder = false;
                             }
@@ -85,7 +85,7 @@ namespace VolumeShot.ViewModels
                             {
                                 if (!Exchange.IsOpenLongOrder)
                                 {
-                                    OpenBet(item.PositionSide, DateTime.UtcNow, item.EntryPrice);
+                                    OpenBet(item.PositionSide, AccountUpdate.EventTime, item.EntryPrice);
                                 }
                                 Exchange.IsOpenLongOrder = true;
                             }
@@ -93,7 +93,7 @@ namespace VolumeShot.ViewModels
                             {
                                 if (!Exchange.IsOpenShortOrder)
                                 {
-                                    OpenBet(item.PositionSide, DateTime.UtcNow, item.EntryPrice);
+                                    OpenBet(item.PositionSide, AccountUpdate.EventTime, item.EntryPrice);
                                 }
                                 Exchange.IsOpenShortOrder = true;
                             }

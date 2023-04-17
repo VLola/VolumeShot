@@ -1,5 +1,4 @@
-﻿using Binance.Net.Objects.Models.Futures.Socket;
-using ScottPlot;
+﻿using ScottPlot;
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
@@ -8,6 +7,16 @@ namespace VolumeShot.Models
 {
     public class Main : Changed
     {
+        private string _loginUser { get; set; } = "main";
+        public string LoginUser
+        {
+            get { return _loginUser; }
+            set
+            {
+                _loginUser = value;
+                OnPropertyChanged("LoginUser");
+            }
+        }
         public WpfPlot WpfPlot { get; set; } = new();
         public ObservableCollection<Symbol> FullSymbols { get; set; } = new();
         public ObservableCollection<Symbol> Symbols { get; set; } = new();

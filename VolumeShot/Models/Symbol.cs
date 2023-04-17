@@ -68,7 +68,7 @@ namespace VolumeShot.Models
             {
                 if (value)
                 {
-                    if(DistanceLower > 0m && DistanceUpper > 0m && BestAskPrice > 0m && BestBidPrice > 0m)
+                    if(IsRun && DistanceLower > 0m && DistanceUpper > 0m && BestAskPrice > 0m && BestBidPrice > 0m)
                     {
                         _isTrading = value;
                         OnPropertyChanged("IsTrading");

@@ -11,6 +11,7 @@ using Binance.Net.Objects.Models.Futures.Socket;
 using ScottPlot;
 using System.Drawing;
 using VolumeShot.Command;
+using System.Windows;
 
 namespace VolumeShot.ViewModels
 {
@@ -23,7 +24,6 @@ namespace VolumeShot.ViewModels
         private string pathHistory = $"{Directory.GetCurrentDirectory()}/history/";
         private const double _second10 = 0.00011574074596865103;
         private const double _second60 = 0.0006944444394321181;
-        string errorFile = "Main";
         public LoginViewModel LoginViewModel { get; set; } = new();
         public Main Main { get; set; } = new();
         public BinanceClient client { get; set; }
@@ -39,7 +39,7 @@ namespace VolumeShot.ViewModels
             get
             {
                 return _addSymbolCommand ?? (_addSymbolCommand = new RelayCommand(obj => {
-                    if (Main.SelectedFullSymbol != null) Main.SelectedFullSymbol.IsVisible = true;
+                    AddSymbolToListAsync();
                 }));
             }
         }
@@ -62,7 +62,36 @@ namespace VolumeShot.ViewModels
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             LoginViewModel.Login.PropertyChanged += Login_PropertyChanged;
         }
+        private async void AddSymbolToListAsync()
+        {
+            await Task.Run(() => {
+                if (Main.SelectedFullSymbol != null)
+                {
+                    Symbol symbol = Main.SelectedFullSymbol;
 
+                    List<ConfigSelectedSymbol>? configSelectedSymbols = new();
+                    string pathFileSymbols = pathConfigs + "symbols";
+                    if (File.Exists(pathFileSymbols))
+                    {
+                        string json = File.ReadAllText(pathFileSymbols);
+                        configSelectedSymbols = JsonConvert.DeserializeObject<List<ConfigSelectedSymbol>>(json);
+                    }
+                    if(configSelectedSymbols != null)
+                    {
+                        ConfigSelectedSymbol? configSelectedSymbol = configSelectedSymbols.FirstOrDefault(conf=>conf.Symbol == symbol.Name);
+                        if (configSelectedSymbol == null)
+                        {
+                            symbol.IsVisible = true;
+                        }
+                        else
+                        {
+                            if(configSelectedSymbol.UserName == Main.LoginUser) MessageBox.Show("Symbol already added");
+                            else MessageBox.Show($"Symbol added by another user: {configSelectedSymbol.UserName}");
+                        }
+                    }
+                }
+            });
+        }
         private void Login_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if(e.PropertyName == "IsLogin")
@@ -75,6 +104,7 @@ namespace VolumeShot.ViewModels
         }
         private void LoadMain()
         {
+            Main.LoginUser = LoginViewModel.Login.SelectedUser.Name;
             client = LoginViewModel.Client;
             socketClient = LoginViewModel.SocketClient;
             BalanceFutureAsync();
@@ -99,7 +129,7 @@ namespace VolumeShot.ViewModels
                         var result = await client.UsdFuturesApi.ExchangeData.PingAsync();
                         if (!result.Success)
                         {
-                            Error.WriteLog(path, errorFile, $"Failed CheckPingAsync: {result.Error?.Message}");
+                            Error.WriteLog(path, Main.LoginUser, $"Failed CheckPingAsync: {result.Error?.Message}");
                             Main.Ping = 10000;
                         }
                         else
@@ -109,7 +139,7 @@ namespace VolumeShot.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        Error.WriteLog(path, errorFile, $"Exception CheckPingAsync: {ex?.Message}");
+                        Error.WriteLog(path, Main.LoginUser, $"Exception CheckPingAsync: {ex?.Message}");
                         Main.Ping = 10000;
                     }
                     if (!Main.IsStopTrading)
@@ -137,13 +167,13 @@ namespace VolumeShot.ViewModels
                             if (item.IsTrading) item.IsTrading = false;
                         }
                         string[] symbols = list.Select(item => item.Name).ToArray();
-                        Error.WriteLog(path, errorFile, $"Ping > {Main.PingMax}, stop trading: {string.Join(", ", symbols)}");
+                        Error.WriteLog(path, Main.LoginUser, $"Ping > {Main.PingMax}, stop trading: {string.Join(", ", symbols)}");
                         while (true)
                         {
                             await Task.Delay(30000);
                             if (Main.Ping <= Main.PingMax) break;
                         }
-                        Error.WriteLog(path, errorFile, $"Ping <= {Main.PingMax}, start trading: {string.Join(", ", symbols)}");
+                        Error.WriteLog(path, Main.LoginUser, $"Ping <= {Main.PingMax}, start trading: {string.Join(", ", symbols)}");
                         foreach (var item in list)
                         {
                             if (!item.IsTrading) item.IsTrading = true;
@@ -153,7 +183,7 @@ namespace VolumeShot.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Error.WriteLog(path, errorFile, $"Exception StopTradingAsync: {ex?.Message}");
+                    Error.WriteLog(path, Main.LoginUser, $"Exception StopTradingAsync: {ex?.Message}");
                 }
             });
         }
@@ -187,7 +217,7 @@ namespace VolumeShot.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Error.WriteLog(path, errorFile, $"Exception CancelOrderAsync: {ex?.Message}");
+                    Error.WriteLog(path, Main.LoginUser, $"Exception CancelOrderAsync: {ex?.Message}");
                 }
             });
         }
@@ -235,7 +265,7 @@ namespace VolumeShot.ViewModels
             }
             catch (Exception ex)
             {
-                Error.WriteLog(path, errorFile, $"Exception LoadChart: {ex?.Message}");
+                Error.WriteLog(path, Main.LoginUser, $"Exception LoadChart: {ex?.Message}");
             }
         }
         private async void RunChartAsync()
@@ -291,7 +321,7 @@ namespace VolumeShot.ViewModels
                         }
                         catch (Exception ex)
                         {
-                            Error.WriteLog(path, errorFile, $"Exception RunChartAsync: {ex?.Message}");
+                            Error.WriteLog(path, Main.LoginUser, $"Exception RunChartAsync: {ex?.Message}");
                         }
                     }
                 }
@@ -316,7 +346,7 @@ namespace VolumeShot.ViewModels
                     var result = await client.UsdFuturesApi.Account.GetAccountInfoAsync();
                     if (!result.Success)
                     {
-                        Error.WriteLog(path, errorFile, $"Failed BalanceFutureAsync: {result.Error?.Message}");
+                        Error.WriteLog(path, Main.LoginUser, $"Failed BalanceFutureAsync: {result.Error?.Message}");
                     }
                     else
                     {
@@ -325,7 +355,7 @@ namespace VolumeShot.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Error.WriteLog(path, errorFile, $"Exception BalanceFutureAsync: {ex?.Message}");
+                    Error.WriteLog(path, Main.LoginUser, $"Exception BalanceFutureAsync: {ex?.Message}");
                 }
             });
         }
@@ -341,14 +371,14 @@ namespace VolumeShot.ViewModels
                         var result = await client.UsdFuturesApi.Trading.CancelOrderAsync(order.Symbol, order.OrderId);
                         if (!result.Success)
                         {
-                            Error.WriteLog(path, errorFile, $"Failed CancelOrderAsync: {result.Error?.Message}");
+                            Error.WriteLog(path, Main.LoginUser, $"Failed CancelOrderAsync: {result.Error?.Message}");
                         }
                     }
                 }
             }
             catch(Exception ex) 
             {
-                Error.WriteLog(path, errorFile, $"Exception CancelOrderAsync: {ex?.Message}");
+                Error.WriteLog(path, Main.LoginUser, $"Exception CancelOrderAsync: {ex?.Message}");
             }
         }
         private async void GetOpenOrdersAsync()
@@ -358,7 +388,7 @@ namespace VolumeShot.ViewModels
                 var result = await client.UsdFuturesApi.Trading.GetOpenOrdersAsync();
                 if (!result.Success)
                 {
-                    Error.WriteLog(path, errorFile, $"Failed GetOpenOrdersAsync: {result.Error?.Message}");
+                    Error.WriteLog(path, Main.LoginUser, $"Failed GetOpenOrdersAsync: {result.Error?.Message}");
                 }
                 else
                 {
@@ -367,7 +397,7 @@ namespace VolumeShot.ViewModels
             }
             catch (Exception ex)
             {
-                Error.WriteLog(path, errorFile, $"Exception GetOpenOrdersAsync: {ex?.Message}");
+                Error.WriteLog(path, Main.LoginUser, $"Exception GetOpenOrdersAsync: {ex?.Message}");
             }
         }
         private async void GetPositionInformationAsync()
@@ -377,7 +407,7 @@ namespace VolumeShot.ViewModels
                 var result = await client.UsdFuturesApi.Account.GetPositionInformationAsync();
                 if (!result.Success)
                 {
-                    Error.WriteLog(path, errorFile, $"Failed GetPositionInformationAsync: {result.Error?.Message}");
+                    Error.WriteLog(path, Main.LoginUser, $"Failed GetPositionInformationAsync: {result.Error?.Message}");
                 }
                 else
                 {
@@ -386,7 +416,7 @@ namespace VolumeShot.ViewModels
             }
             catch (Exception ex)
             {
-                Error.WriteLog(path, errorFile, $"Exception GetPositionInformationAsync: {ex?.Message}");
+                Error.WriteLog(path, Main.LoginUser, $"Exception GetPositionInformationAsync: {ex?.Message}");
             }
         }
         private async void SubscribeToUserDataUpdatesAsync()
@@ -396,12 +426,12 @@ namespace VolumeShot.ViewModels
                 var listenKey = await client.UsdFuturesApi.Account.StartUserStreamAsync();
                 if (!listenKey.Success)
                 {
-                    Error.WriteLog(path, errorFile, $"Failed to start user stream: listenKey");
+                    Error.WriteLog(path, Main.LoginUser, $"Failed to start user stream: listenKey");
                 }
                 else
                 {
                     KeepAliveUserStreamAsync(listenKey.Data);
-                    Error.WriteLog(path, errorFile, $"Listen Key Created");
+                    Error.WriteLog(path, Main.LoginUser, $"Listen Key Created");
                     var result = await socketClient.UsdFuturesStreams.SubscribeToUserDataUpdatesAsync(listenKey: listenKey.Data,
                         onLeverageUpdate => { },
                         onMarginUpdate => { },
@@ -425,13 +455,13 @@ namespace VolumeShot.ViewModels
                         onGridUpdate => { });
                     if (!result.Success)
                     {
-                        Error.WriteLog(path, errorFile, $"Failed UserDataUpdates: {result.Error?.Message}");
+                        Error.WriteLog(path, Main.LoginUser, $"Failed UserDataUpdates: {result.Error?.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Error.WriteLog(path, errorFile, $"Exception SubscribeToUserDataUpdatesAsync: {ex?.Message}");
+                Error.WriteLog(path, Main.LoginUser, $"Exception SubscribeToUserDataUpdatesAsync: {ex?.Message}");
             }
         }
         private async void AddAllOrdersAsync(IEnumerable<BinanceFuturesOrder> futuresOrders)
@@ -449,7 +479,7 @@ namespace VolumeShot.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Error.WriteLog(path, errorFile, $"Exception AddAllOrdersAsync: {ex.Message}");
+                    Error.WriteLog(path, Main.LoginUser, $"Exception AddAllOrdersAsync: {ex.Message}");
                 }
             });
         }
@@ -463,7 +493,7 @@ namespace VolumeShot.ViewModels
             }
             catch (Exception ex)
             {
-                Error.WriteLog(path, errorFile, $"Exception WriteLogOrder: {ex.Message}");
+                Error.WriteLog(path, Main.LoginUser, $"Exception WriteLogOrder: {ex.Message}");
             }
         }
         private async void AddOrder(BinanceFuturesStreamOrderUpdateData orderUpdateData)
@@ -492,7 +522,7 @@ namespace VolumeShot.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Error.WriteLog(path, errorFile, $"Exception AddOrder: {ex.Message}");
+                    Error.WriteLog(path, Main.LoginUser, $"Exception AddOrder: {ex.Message}");
                 }
             });
         } 
@@ -515,7 +545,7 @@ namespace VolumeShot.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Error.WriteLog(path, errorFile, $"Exception AddAllPositionsAsync: {ex.Message}");
+                    Error.WriteLog(path, Main.LoginUser, $"Exception AddAllPositionsAsync: {ex.Message}");
                 }
             });
         }
@@ -548,7 +578,7 @@ namespace VolumeShot.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Error.WriteLog(path, errorFile, $"Exception AddSymbolPositionsAsync: {ex.Message}");
+                    Error.WriteLog(path, Main.LoginUser, $"Exception AddSymbolPositionsAsync: {ex.Message}");
                 }
             });
         }
@@ -570,7 +600,7 @@ namespace VolumeShot.ViewModels
                         }
                         catch (Exception ex)
                         {
-                            Error.WriteLog(path, errorFile, $"Exception PositionNew_PropertyChanged: {ex.Message}");
+                            Error.WriteLog(path, Main.LoginUser, $"Exception PositionNew_PropertyChanged: {ex.Message}");
                         }
                     }
                 }
@@ -586,15 +616,15 @@ namespace VolumeShot.ViewModels
                     try
                     {
                         var result = await client.UsdFuturesApi.Account.KeepAliveUserStreamAsync(listenKey);
-                        if (!result.Success) Error.WriteLog(path, errorFile, $"Failed KeepAliveUserStreamAsync: {result.Error?.Message}");
+                        if (!result.Success) Error.WriteLog(path, Main.LoginUser, $"Failed KeepAliveUserStreamAsync: {result.Error?.Message}");
                         else
                         {
-                            Error.WriteLog(path, errorFile, "Success KeepAliveUserStreamAsync");
+                            Error.WriteLog(path, Main.LoginUser, "Success KeepAliveUserStreamAsync");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Error.WriteLog(path, errorFile, $"Exception KeepAliveUserStreamAsync: {ex?.Message}");
+                        Error.WriteLog(path, Main.LoginUser, $"Exception KeepAliveUserStreamAsync: {ex?.Message}");
                     }
                     await Task.Delay(900000);
                 }
@@ -614,12 +644,12 @@ namespace VolumeShot.ViewModels
                         string json = File.ReadAllText(pathFileConfig);
                         configs = JsonConvert.DeserializeObject<List<Config>>(json);
                     }
-                    List<string>? symbols = new();
+                    List<ConfigSelectedSymbol>? configSelectedSymbols = new();
                     string pathFileSymbols = pathConfigs + "symbols";
                     if (File.Exists(pathFileSymbols))
                     {
                         string json = File.ReadAllText(pathFileSymbols);
-                        symbols = JsonConvert.DeserializeObject<List<string>>(json);
+                        configSelectedSymbols = JsonConvert.DeserializeObject<List<ConfigSelectedSymbol>>(json);
                     }
                     foreach (var symbol in list)
                     {
@@ -639,9 +669,9 @@ namespace VolumeShot.ViewModels
                             App.Current.Dispatcher.BeginInvoke(new Action(() => {
                                 Main.FullSymbols.Add(symbolViewModel.Symbol);
                             }));
-                            if (symbols != null && symbols.Count > 0)
+                            if (configSelectedSymbols != null && configSelectedSymbols.Count > 0)
                             {
-                                if (symbols.Contains(symbol.Name))
+                                if (configSelectedSymbols.Contains(new ConfigSelectedSymbol(Main.LoginUser, symbol.Name)))
                                 {
                                     App.Current.Dispatcher.BeginInvoke(new Action(() => {
                                         Main.Symbols.Add(symbolViewModel.Symbol);
@@ -655,7 +685,7 @@ namespace VolumeShot.ViewModels
             }
             catch (Exception ex)
             {
-                Error.WriteLog(path, errorFile, $"Exception LoadSymbols: {ex?.Message}");
+                Error.WriteLog(path, Main.LoginUser, $"Exception LoadSymbols: {ex?.Message}");
             }
         }
 
@@ -674,7 +704,7 @@ namespace VolumeShot.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        Error.WriteLog(path, errorFile, $"Exception Exchange_PropertyChanged: {ex.Message}");
+                        Error.WriteLog(path, Main.LoginUser, $"Exception Exchange_PropertyChanged: {ex.Message}");
                     }
                 }
             }
@@ -693,17 +723,17 @@ namespace VolumeShot.ViewModels
                         {
                             if (!Main.Symbols.Contains(symbol))
                             {
-                                List<string>? symbols = new();
+                                List<ConfigSelectedSymbol>? configSelectedSymbols = new();
                                 string pathFileSymbols = pathConfigs + "symbols";
                                 if (File.Exists(pathFileSymbols))
                                 {
                                     string json = File.ReadAllText(pathFileSymbols);
-                                    symbols = JsonConvert.DeserializeObject<List<string>>(json);
+                                    configSelectedSymbols = JsonConvert.DeserializeObject<List<ConfigSelectedSymbol>>(json);
                                 }
-                                if (symbols != null)
+                                if (configSelectedSymbols != null)
                                 {
-                                    symbols.Add(symbol.Name);
-                                    File.WriteAllText(pathFileSymbols, JsonConvert.SerializeObject(symbols));
+                                    configSelectedSymbols.Add(new ConfigSelectedSymbol(Main.LoginUser, symbol.Name));
+                                    File.WriteAllText(pathFileSymbols, JsonConvert.SerializeObject(configSelectedSymbols));
                                     App.Current.Dispatcher.BeginInvoke(new Action(() =>
                                     {
                                         Main.Symbols.Add(symbol);
@@ -713,26 +743,30 @@ namespace VolumeShot.ViewModels
                         }
                         else
                         {
-                            List<string>? symbols = new();
+                            List<ConfigSelectedSymbol>? configSelectedSymbols = new();
                             string pathFileSymbols = pathConfigs + "symbols";
                             if (File.Exists(pathFileSymbols))
                             {
                                 string json = File.ReadAllText(pathFileSymbols);
-                                symbols = JsonConvert.DeserializeObject<List<string>>(json);
+                                configSelectedSymbols = JsonConvert.DeserializeObject<List<ConfigSelectedSymbol>>(json);
                             }
-                            if(symbols != null && symbols.Count > 0)
+                            if (configSelectedSymbols != null && configSelectedSymbols.Count > 0)
                             {
-                                symbols.Remove(symbol.Name);
-                                File.WriteAllText(pathFileSymbols, JsonConvert.SerializeObject(symbols));
-                                App.Current.Dispatcher.BeginInvoke(new Action(() => {
-                                    Main.Symbols.Remove(symbol);
-                                }));
+                                ConfigSelectedSymbol? configSelectedSymbol = configSelectedSymbols.FirstOrDefault(conf => conf.Symbol == symbol.Name);
+                                if (configSelectedSymbol != null)
+                                {
+                                    configSelectedSymbols.Remove(configSelectedSymbol);
+                                    File.WriteAllText(pathFileSymbols, JsonConvert.SerializeObject(configSelectedSymbols));
+                                    App.Current.Dispatcher.BeginInvoke(new Action(() => {
+                                        Main.Symbols.Remove(symbol);
+                                    }));
+                                }
                             }
                         }
                     }
                 }
                 catch (Exception ex) {
-                    Error.WriteLog(path, errorFile, $"Exception Symbol_PropertyChanged: {ex.Message}");
+                    Error.WriteLog(path, Main.LoginUser, $"Exception Symbol_PropertyChanged: {ex.Message}");
                 }
             }
         }
@@ -744,7 +778,7 @@ namespace VolumeShot.ViewModels
                 var result = client.UsdFuturesApi.ExchangeData.GetExchangeInfoAsync().Result;
                 if (!result.Success)
                 {
-                    Error.WriteLog(path, errorFile, $"Failed ListSymbols {result.Error?.Message}");
+                    Error.WriteLog(path, Main.LoginUser, $"Failed ListSymbols {result.Error?.Message}");
                     return new();
                 }
                 return result.Data.Symbols.ToList();
@@ -752,7 +786,7 @@ namespace VolumeShot.ViewModels
             }
             catch (Exception ex)
             {
-                Error.WriteLog(path, errorFile, $"Exception ListSymbols: {ex.Message}");
+                Error.WriteLog(path, Main.LoginUser, $"Exception ListSymbols: {ex.Message}");
                 return new();
             }
         }

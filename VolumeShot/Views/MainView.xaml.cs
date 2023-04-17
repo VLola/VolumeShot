@@ -8,8 +8,6 @@ namespace VolumeShot.Views
         public MainView()
         {
             InitializeComponent();
-            MainViewModel mainViewModel = new MainViewModel();
-            DataContext = mainViewModel;
         }
     }
 }

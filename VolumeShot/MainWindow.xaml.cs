@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using VolumeShot.ViewModels;
 
 namespace VolumeShot
 {
@@ -8,6 +9,8 @@ namespace VolumeShot
         {
             InitializeComponent();
             Closing += MainWindow_Closing;
+            MainViewModel mainViewModel = new MainViewModel();
+            DataContext = mainViewModel;
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
