@@ -26,7 +26,8 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <Button Content="Add" Command="{Binding Path=AddSymbolCommand}" Padding="5"/>
+            <Button Content="Add" Command="{Binding Path=AddSymbolCommand}" Padding="5" Margin="10 0"/>
+            <TextBlock Text="{Binding Path=Main.Symbols.Count, StringFormat={}Count: {0}}" VerticalAlignment="Center"/>
         </WrapPanel>
         <ListView Grid.Row="1" ItemsSource="{Binding Path=Main.Symbols}" SelectedItem="{Binding Path=Main.SelectedSymbol}">
             <ListView.View>
