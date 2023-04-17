@@ -19,7 +19,7 @@ namespace VolumeShot.Views
         {
             try
             {
-                Chart();
+                Chart(bet.OpenPrice);
                 if (bet.SymbolPrices != null)
                 {
                     DateTime startTime = bet.OpenTime.AddSeconds(-20);
@@ -57,8 +57,18 @@ namespace VolumeShot.Views
                 MessageBox.Show(ex.ToString());
             }
         }
-        private void Chart()
+        private void Chart(decimal price)
         {
+            string format;
+            if (price > 10000m) format = "N0";
+            else if (price > 100m) format = "N1";
+            else if (price > 100m) format = "N2";
+            else if (price > 10m) format = "N3";
+            else if (price > 1m) format = "N4";
+            else if (price > 0.1m) format = "N5";
+            else if (price > 0.01m) format = "N6";
+            else if (price > 0.001m) format = "N7";
+            else format = "N8";
             plt.Plot.Layout(padding: 12);
             plt.Plot.Style(figureBackground: Color.Black, dataBackground: Color.Black);
             //plt.Plot.Frameless();
@@ -66,22 +76,22 @@ namespace VolumeShot.Views
             plt.Plot.XAxis.TickMarkColor(ColorTranslator.FromHtml("#333333"));
             plt.Plot.XAxis.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
 
-            plt.Plot.YAxis.Ticks(false);
-            plt.Plot.YAxis.Grid(false);
+            plt.Plot.YAxis.Ticks(true);
+            plt.Plot.YAxis.Grid(true);
             plt.Plot.YAxis2.Ticks(false);
             plt.Plot.YAxis2.Grid(false);
-            plt.Plot.YAxis2.TickLabelStyle(color: ColorTranslator.FromHtml("#00FF00"));
-            plt.Plot.YAxis2.TickMarkColor(ColorTranslator.FromHtml("#333333"));
-            plt.Plot.YAxis2.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
+            plt.Plot.YAxis.TickLabelStyle(color: Color.White);
+            plt.Plot.YAxis.TickMarkColor(ColorTranslator.FromHtml("#333333"));
+            plt.Plot.YAxis.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
 
             plt.Plot.XAxis.TickLabelFormat("ss:f", dateTimeFormat: true);
+            plt.Plot.YAxis.TickLabelFormat(format, dateTimeFormat: false);
 
-
-            var legend = plt.Plot.Legend();
-            legend.FillColor = Color.Transparent;
-            legend.OutlineColor = Color.Transparent;
-            legend.Font.Color = Color.White;
-            legend.Font.Bold = true;
+            //var legend = plt.Plot.Legend();
+            //legend.FillColor = Color.Transparent;
+            //legend.OutlineColor = Color.Transparent;
+            //legend.Font.Color = Color.White;
+            //legend.Font.Bold = true;
         }
     }
 }
