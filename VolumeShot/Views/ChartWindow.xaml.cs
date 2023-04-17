@@ -87,11 +87,11 @@ namespace VolumeShot.Views
             plt.Plot.XAxis.TickLabelFormat("ss:f", dateTimeFormat: true);
             plt.Plot.YAxis.TickLabelFormat(format, dateTimeFormat: false);
 
-            //var legend = plt.Plot.Legend();
-            //legend.FillColor = Color.Transparent;
-            //legend.OutlineColor = Color.Transparent;
-            //legend.Font.Color = Color.White;
-            //legend.Font.Bold = true;
+            var legend = plt.Plot.Legend();
+            legend.FillColor = Color.Transparent;
+            legend.OutlineColor = Color.Transparent;
+            legend.Font.Color = Color.White;
+            legend.Font.Bold = true;
         }
     }
 }
