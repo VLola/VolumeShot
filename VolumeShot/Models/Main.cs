@@ -171,13 +171,16 @@ namespace VolumeShot.Models
         }
         private void Value_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "Price")
+            if (IsVisibleChart)
             {
-                if (sender != null)
+                if (e.PropertyName == "Price")
                 {
-                    Symbol symbol = (Symbol)sender;
-                    if(symbol.BuyerIsMaker) AddPoint(symbol.TradeTime.ToOADate(), Decimal.ToDouble(symbol.Price), Color.Red);
-                    else AddPoint(symbol.TradeTime.ToOADate(), Decimal.ToDouble(symbol.Price), Color.Green);
+                    if (sender != null)
+                    {
+                        Symbol symbol = (Symbol)sender;
+                        if (symbol.BuyerIsMaker) AddPoint(symbol.TradeTime.ToOADate(), Decimal.ToDouble(symbol.Price), Color.Red);
+                        else AddPoint(symbol.TradeTime.ToOADate(), Decimal.ToDouble(symbol.Price), Color.Green);
+                    }
                 }
             }
         }
