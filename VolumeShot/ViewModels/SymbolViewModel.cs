@@ -331,8 +331,8 @@ namespace VolumeShot.ViewModels
                                 }
                                 else
                                 {
-                                    if (percentBid > 0.01m) Symbol.DistanceLower = percentBid;
-                                    else Symbol.DistanceLower = 0.01m;
+                                    if (percentBid > 0.001m) Symbol.DistanceLower = percentBid;
+                                    else Symbol.DistanceLower = 0.001m;
                                 }
                             }
 
@@ -347,8 +347,8 @@ namespace VolumeShot.ViewModels
                                 }
                                 else
                                 {
-                                    if (percentAsk > 0.01m) Symbol.DistanceUpper = percentAsk;
-                                    else Symbol.DistanceUpper = 0.01m;
+                                    if (percentAsk > 0.001m) Symbol.DistanceUpper = percentAsk;
+                                    else Symbol.DistanceUpper = 0.001m;
                                 }
                             }
 

@@ -365,7 +365,8 @@ namespace VolumeShot.ViewModels
         {
             try
             {
-                List<Order> list = Main.Orders.ToList();
+                List<Order> list = new();
+                lock (Main.Orders) list = Main.Orders.ToList();
                 if (list.Count > 0)
                 {
                     foreach (var order in list)
@@ -475,7 +476,7 @@ namespace VolumeShot.ViewModels
                     App.Current.Dispatcher.Invoke(() => {
                         foreach (var item in futuresOrders)
                         {
-                            Main.Orders.Insert(0, new Order(item, client));
+                            lock (Main.Orders) Main.Orders.Insert(0, new Order(item, client));
                         }
                     });
                 }
@@ -508,16 +509,17 @@ namespace VolumeShot.ViewModels
                     {
                         Order order = new(orderUpdateData, client);
                         App.Current.Dispatcher.Invoke(() => {
-                            Main.Orders.Insert(0, order);
+                            lock (Main.Orders) Main.Orders.Insert(0, order);
                         });
                     }
                     else if (orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Canceled || orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Filled || orderUpdateData.Status == Binance.Net.Enums.OrderStatus.Expired)
                     {
-                        Order? order = Main.Orders.ToArray().FirstOrDefault(order => order.OrderId == orderUpdateData.OrderId);
+                        Order? order = null;
+                        lock (Main.Orders) order = Main.Orders.FirstOrDefault(order => order.OrderId == orderUpdateData.OrderId);
                         if (order != null)
                         {
                             App.Current.Dispatcher.Invoke(() => {
-                                Main.Orders.Remove(order);
+                                lock (Main.Orders) Main.Orders.Remove(order);
                             });
                         }
                     }
