@@ -6,6 +6,34 @@
              xmlns:local="clr-namespace:VolumeShot.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Margin" Value="5 0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+            <Setter Property="Margin" Value="10 0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="DockPanel" x:Key="styleDockPanel">
+            <Setter Property="IsEnabled" Value="False"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Main.IsAddList}" Value="True">
+                    <Setter Property="IsEnabled" Value="True"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -26,6 +54,13 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
+            <CheckBox Content="List" IsChecked="{Binding Path=Main.IsAddList}"/>
+            <DockPanel Style="{StaticResource styleDockPanel}">
+                <TextBlock Text="Min: "/>
+                <TextBox Width="100" Text="{Binding Path=Main.MinVolume}"/>
+                <TextBlock Text="Max: "/>
+                <TextBox Width="100" Text="{Binding Path=Main.MaxVolume}"/>
+            </DockPanel>
             <Button Content="Add" Command="{Binding Path=AddSymbolCommand}" Padding="5" Margin="10 0"/>
             <TextBlock Text="{Binding Path=Main.Symbols.Count, StringFormat={}Count: {0}}" VerticalAlignment="Center"/>
         </WrapPanel>

@@ -67,30 +67,73 @@ namespace VolumeShot.ViewModels
         private async void AddSymbolToListAsync()
         {
             await Task.Run(() => {
-                if (Main.SelectedFullSymbol != null)
+                try
                 {
-                    Symbol symbol = Main.SelectedFullSymbol;
+                    if (Main.IsAddList)
+                    {
+                        if (Main.FullSymbols != null && Main.FullSymbols.Count > 0)
+                        {
+                            List<ConfigSelectedSymbol>? configSelectedSymbols = new();
+                            string pathFileSymbols = pathConfigs + "symbols";
+                            if (File.Exists(pathFileSymbols))
+                            {
+                                string json = File.ReadAllText(pathFileSymbols);
+                                configSelectedSymbols = JsonConvert.DeserializeObject<List<ConfigSelectedSymbol>>(json);
+                            }
+                            if (configSelectedSymbols != null)
+                            {
+                                List<Symbol>? list = Main.FullSymbols.Where(symbol => symbol.Volume >= Main.MinVolume && symbol.Volume < Main.MaxVolume).ToList();
+                                if (list != null && list.Count > 0)
+                                {
+                                    foreach (Symbol symbol in list)
+                                    {
+                                        ConfigSelectedSymbol? configSelectedSymbol = configSelectedSymbols.FirstOrDefault(conf => conf.Symbol == symbol.Name);
+                                        if (configSelectedSymbol == null)
+                                        {
+                                            symbol.IsVisible = true;
+                                        }
+                                        else
+                                        {
+                                            if (configSelectedSymbol.UserName == Main.LoginUser) MessageBox.Show($"Symbol already added {symbol.Name}");
+                                            else MessageBox.Show($"Symbol: {symbol.Name} added by another user: {configSelectedSymbol.UserName}");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (Main.SelectedFullSymbol != null)
+                        {
+                            Symbol symbol = Main.SelectedFullSymbol;
 
-                    List<ConfigSelectedSymbol>? configSelectedSymbols = new();
-                    string pathFileSymbols = pathConfigs + "symbols";
-                    if (File.Exists(pathFileSymbols))
-                    {
-                        string json = File.ReadAllText(pathFileSymbols);
-                        configSelectedSymbols = JsonConvert.DeserializeObject<List<ConfigSelectedSymbol>>(json);
-                    }
-                    if(configSelectedSymbols != null)
-                    {
-                        ConfigSelectedSymbol? configSelectedSymbol = configSelectedSymbols.FirstOrDefault(conf=>conf.Symbol == symbol.Name);
-                        if (configSelectedSymbol == null)
-                        {
-                            symbol.IsVisible = true;
+                            List<ConfigSelectedSymbol>? configSelectedSymbols = new();
+                            string pathFileSymbols = pathConfigs + "symbols";
+                            if (File.Exists(pathFileSymbols))
+                            {
+                                string json = File.ReadAllText(pathFileSymbols);
+                                configSelectedSymbols = JsonConvert.DeserializeObject<List<ConfigSelectedSymbol>>(json);
+                            }
+                            if (configSelectedSymbols != null)
+                            {
+                                ConfigSelectedSymbol? configSelectedSymbol = configSelectedSymbols.FirstOrDefault(conf => conf.Symbol == symbol.Name);
+                                if (configSelectedSymbol == null)
+                                {
+                                    symbol.IsVisible = true;
+                                }
+                                else
+                                {
+                                    if (configSelectedSymbol.UserName == Main.LoginUser) MessageBox.Show("Symbol already added");
+                                    else MessageBox.Show($"Symbol added by another user: {configSelectedSymbol.UserName}");
+                                }
+                            }
                         }
-                        else
-                        {
-                            if(configSelectedSymbol.UserName == Main.LoginUser) MessageBox.Show("Symbol already added");
-                            else MessageBox.Show($"Symbol added by another user: {configSelectedSymbol.UserName}");
-                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, Main.LoginUser, $"Exception AddSymbolToListAsync: {ex?.Message}");
                 }
             });
         }

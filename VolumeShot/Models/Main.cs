@@ -67,6 +67,36 @@ namespace VolumeShot.Models
                 OnPropertyChanged("SelectedSymbol");
             }
         }
+        private decimal _minVolume { get; set; }
+        public decimal MinVolume
+        {
+            get { return _minVolume; }
+            set
+            {
+                _minVolume = value;
+                OnPropertyChanged("MinVolume");
+            }
+        }
+        private bool _isAddList { get; set; }
+        public bool IsAddList
+        {
+            get { return _isAddList; }
+            set
+            {
+                _isAddList = value;
+                OnPropertyChanged("IsAddList");
+            }
+        }
+        private decimal _maxVolume { get; set; }
+        public decimal MaxVolume
+        {
+            get { return _maxVolume; }
+            set
+            {
+                _maxVolume = value;
+                OnPropertyChanged("MaxVolume");
+            }
+        }
         private bool _isVisibleChart { get; set; }
         public bool IsVisibleChart
         {
