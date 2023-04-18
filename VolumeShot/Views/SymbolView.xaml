@@ -39,7 +39,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <WrapPanel Grid.Row="0">
+        <DockPanel Grid.Row="0">
             <ComboBox ItemsSource="{Binding Path=Main.FullSymbols}" SelectedItem="{Binding Path=Main.SelectedFullSymbol}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
@@ -64,7 +64,10 @@
             <Button Content="Add" Command="{Binding Path=AddSymbolCommand}" Padding="5" Margin="10 0"/>
             <Button Content="Clear" Command="{Binding Path=ClearSymbolsCommand}" Padding="5" Margin="10 0"/>
             <TextBlock Text="{Binding Path=Main.Symbols.Count, StringFormat={}Count: {0}}" VerticalAlignment="Center"/>
-        </WrapPanel>
+            <DockPanel>
+                <Button Content="Trading all" Command="{Binding Path=TradingAllSymbolsCommand}" HorizontalAlignment="Right" Padding="5"/>
+            </DockPanel>
+        </DockPanel>
         <ListView Grid.Row="1" ItemsSource="{Binding Path=Main.Symbols}" SelectedItem="{Binding Path=Main.SelectedSymbol}">
             <ListView.View>
                 <GridView>

@@ -64,6 +64,16 @@ namespace VolumeShot.ViewModels
                 }));
             }
         }
+        private RelayCommand? _tradingAllSymbolsCommand;
+        public RelayCommand TradingAllSymbolsCommand
+        {
+            get
+            {
+                return _tradingAllSymbolsCommand ?? (_tradingAllSymbolsCommand = new RelayCommand(obj => {
+                    TradingAllSymbolsAsync();
+                }));
+            }
+        }
         public MainViewModel()
         {
             Main.Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(2);
@@ -73,6 +83,26 @@ namespace VolumeShot.ViewModels
             if (!Directory.Exists(pathPositions)) Directory.CreateDirectory(pathPositions);
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             LoginViewModel.Login.PropertyChanged += Login_PropertyChanged;
+        }
+        private async void TradingAllSymbolsAsync()
+        {
+            await Task.Run(() => {
+                try
+                {
+                    List<Symbol> symbols = Main.Symbols.ToList();
+                    foreach (var item in symbols)
+                    {
+                        if (item.IsRun)
+                        {
+                            item.IsTrading = true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, Main.LoginUser, $"Exception TradingAllSymbolsAsync: {ex?.Message}");
+                }
+            });
         }
         private async void ClearSymbolsAsync()
         {
