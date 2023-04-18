@@ -1,4 +1,5 @@
 ﻿using Binance.Net.Objects.Models.Futures;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -24,6 +25,16 @@ namespace VolumeShot.Models
             {
                 _bet = value;
                 OnPropertyChanged("Bet");
+            }
+        }
+        private string _loginUser { get; set; } = "null";
+        public string LoginUser
+        {
+            get { return _loginUser; }
+            set
+            {
+                _loginUser = value;
+                OnPropertyChanged("LoginUser");
             }
         }
         private bool _isWriteSymbolPrices { get; set; }

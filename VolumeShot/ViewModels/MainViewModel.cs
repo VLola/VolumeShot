@@ -196,7 +196,7 @@ namespace VolumeShot.ViewModels
                 try
                 {
                     List<Bet> allBets = new();
-                    string[] files = Directory.GetFiles(pathHistory);
+                    string[] files = Directory.GetFiles(pathHistory + Main.LoginUser + "/");
                     foreach (string file in files)
                     {
                         string json = File.ReadAllText(file);
@@ -668,6 +668,7 @@ namespace VolumeShot.ViewModels
                             OnAccountUpdate += symbolViewModel.ExchangeViewModel.AccountUpdate;
                             symbolViewModel.Symbol.PropertyChanged += Symbol_PropertyChanged;
                             symbolViewModel.Symbol.Exchange.PropertyChanged += Exchange_PropertyChanged;
+                            symbolViewModel.Symbol.Exchange.LoginUser = Main.LoginUser;
                             App.Current.Dispatcher.BeginInvoke(new Action(() => {
                                 Main.FullSymbols.Add(symbolViewModel.Symbol);
                             }));

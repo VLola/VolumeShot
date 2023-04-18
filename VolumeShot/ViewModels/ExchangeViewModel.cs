@@ -33,9 +33,9 @@ namespace VolumeShot.ViewModels
             await Task.Run(()=>{
                 try
                 {
-                    if (File.Exists(pathHistory + Exchange.Symbol))
+                    if (File.Exists(pathHistory + Exchange.LoginUser + "/" + Exchange.Symbol))
                     {
-                        string json = File.ReadAllText(pathHistory + Exchange.Symbol);
+                        string json = File.ReadAllText(pathHistory + Exchange.LoginUser + "/" + Exchange.Symbol);
                         ObservableCollection<Bet>? bets = JsonConvert.DeserializeObject<ObservableCollection<Bet>>(json);
                         if (bets != null && bets.Count > 0)
                         {
@@ -216,7 +216,7 @@ namespace VolumeShot.ViewModels
                 try
                 {
                     string json = JsonConvert.SerializeObject(Exchange.Bets);
-                    File.WriteAllText(pathHistory + Exchange.Symbol, json);
+                    File.WriteAllText(pathHistory + Exchange.LoginUser + "/" + Exchange.Symbol, json);
                 }
                 catch (Exception ex)
                 {

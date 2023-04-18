@@ -14,6 +14,7 @@ namespace VolumeShot.ViewModels
     internal class LoginViewModel
     {
         private string path = $"{Directory.GetCurrentDirectory()}/configs/users";
+        private string pathHistory = $"{Directory.GetCurrentDirectory()}/history/";
         public Login Login { get; set; } = new();
         public BinanceClient Client { get; set; }
         public BinanceSocketClient SocketClient { get; set; }
@@ -47,6 +48,11 @@ namespace VolumeShot.ViewModels
                 {
                     Login.Users = users;
                     Login.SelectedUser = users[0];
+                    foreach (var item in users)
+                    {
+                        string userHistory = $"{pathHistory}{item.Name}/";
+                        if(!Directory.Exists(userHistory))Directory.CreateDirectory(userHistory);
+                    }
                 }
             }
         }
@@ -70,6 +76,9 @@ namespace VolumeShot.ViewModels
             Login.SelectedUser = user;
             string json = JsonConvert.SerializeObject(Login.Users);
             File.WriteAllText(path, json);
+
+            string userHistory = $"{pathHistory}{user.Name}/";
+            if (!Directory.Exists(userHistory)) Directory.CreateDirectory(userHistory);
 
             Login.Name = "";
             Login.ApiKey = "";
