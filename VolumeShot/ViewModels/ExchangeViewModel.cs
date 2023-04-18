@@ -19,13 +19,14 @@ namespace VolumeShot.ViewModels
         public Exchange Exchange { get; set; }
         public BinanceClient client { get; set; }
         public BinanceSocketClient socketClient { get; set; }
-        public ExchangeViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, BinanceSocketClient _socketClient, BinanceClient _client)
+        public ExchangeViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, BinanceSocketClient _socketClient, BinanceClient _client, string loginUser)
         {
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             if (!Directory.Exists(pathHistory)) Directory.CreateDirectory(pathHistory);
             socketClient = _socketClient;
             client = _client;
             Exchange = new(binanceFuturesUsdtSymbol);
+            Exchange.LoginUser = loginUser;
             LoadHistoryAsync();
         }
         private async void LoadHistoryAsync()
@@ -172,7 +173,6 @@ namespace VolumeShot.ViewModels
                 bet.PriceDistanceLower = Exchange.DistanceLowerPrice;
                 bet.PriceDistanceUpper = Exchange.DistanceUpperPrice;
                 bet.Volume = Exchange.Volume;
-                Exchange.Bet = bet;
                 App.Current.Dispatcher.BeginInvoke(new Action(() => {
                     Exchange.Bets.Insert(0, bet);
                 }));
@@ -189,18 +189,19 @@ namespace VolumeShot.ViewModels
                 try
                 {
                     await Task.Delay(5000);
-                    Exchange.IsWriteSymbolPrices = false; 
-                    Exchange.Bets[0].SymbolPrices.AddRange(Exchange.OpenBetSymbolPrices);
-                    Exchange.Bets[0].CloseTime = closeTime;
-                    Exchange.Bets[0].ClosePrice = Exchange.ClosePrice;
-                    Exchange.Bets[0].Quantity = Exchange.Quantity;
-                    Exchange.Bets[0].Usdt = Exchange.Quantity * Exchange.ClosePrice;
-                    Exchange.Bets[0].Fee = Exchange.Fee;
-                    Exchange.Bets[0].Profit = Exchange.Profit;
-                    Exchange.Bets[0].Total = Exchange.Profit - Exchange.Fee;
-                    if ((Exchange.Profit - Exchange.Fee) < 0m) Exchange.Bets[0].IsPositive = false;
-                    else Exchange.Bets[0].IsPositive = true;
-
+                    Exchange.IsWriteSymbolPrices = false;
+                    Bet bet = Exchange.Bets[0];
+                    bet.SymbolPrices.AddRange(Exchange.OpenBetSymbolPrices);
+                    bet.CloseTime = closeTime;
+                    bet.ClosePrice = Exchange.ClosePrice;
+                    bet.Quantity = Exchange.Quantity;
+                    bet.Usdt = Exchange.Quantity * Exchange.ClosePrice;
+                    bet.Fee = Exchange.Fee;
+                    bet.Profit = Exchange.Profit;
+                    bet.Total = Exchange.Profit - Exchange.Fee;
+                    if ((Exchange.Profit - Exchange.Fee) < 0m) bet.IsPositive = false;
+                    else bet.IsPositive = true;
+                    Exchange.Bet = bet;
                     SaveHistoryAsync();
                 }
                 catch (Exception ex)

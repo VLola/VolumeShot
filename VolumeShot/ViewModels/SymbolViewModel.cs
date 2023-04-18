@@ -18,11 +18,11 @@ namespace VolumeShot.ViewModels
         public ExchangeViewModel ExchangeViewModel { get; set; }
         public BinanceClient client { get; set; }
         public BinanceSocketClient socketClient { get; set; }
-        public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, decimal volume, BinanceSocketClient _socketClient, BinanceClient _client, bool isTestnet) {
+        public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, decimal volume, BinanceSocketClient _socketClient, BinanceClient _client, bool isTestnet, string loginUser) {
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             socketClient = _socketClient;
             client = _client;
-            ExchangeViewModel = new ExchangeViewModel(binanceFuturesUsdtSymbol, _socketClient, _client);
+            ExchangeViewModel = new ExchangeViewModel(binanceFuturesUsdtSymbol, _socketClient, _client, loginUser);
             Symbol.Exchange = ExchangeViewModel.Exchange;
             Symbol.IsTestnet = isTestnet;
             Symbol.Name = binanceFuturesUsdtSymbol.Name;

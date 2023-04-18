@@ -87,6 +87,28 @@ namespace VolumeShot.Models
                 OnPropertyChanged("Balance");
             }
         }
+        private decimal _totalHistory { get; set; }
+        public decimal TotalHistory
+        {
+            get { return _totalHistory; }
+            set
+            {
+                _totalHistory = value;
+                OnPropertyChanged("TotalHistory");
+                if (value >= 0m) IsPositiveTotalHistory = true;
+                else IsPositiveTotalHistory = false;
+            }
+        }
+        private bool _isPositiveTotalHistory { get; set; } = true;
+        public bool IsPositiveTotalHistory
+        {
+            get { return _isPositiveTotalHistory; }
+            set
+            {
+                _isPositiveTotalHistory = value;
+                OnPropertyChanged("IsPositiveTotalHistory");
+            }
+        }
         private long _ping { get; set; }
         public long Ping
         {

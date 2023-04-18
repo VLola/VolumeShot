@@ -23,6 +23,20 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <Style TargetType="TextBlock" x:Key="styleTotalHistory">
+            <Setter Property="Padding" Value="5 0"/>
+            <Setter Property="Foreground" Value="Pink"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Main.IsPositiveTotalHistory}" Value="True">
+                    <Setter Property="Foreground" Value="LightGreen"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="DockPanel" x:Key="styleDockPanel">
+            <Setter Property="Background" Value="#333"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+        </Style>
     </UserControl.Resources>
     <Grid>
         <ListView ItemsSource="{Binding Path=Main.Bets}">
@@ -69,5 +83,9 @@
                 </GridView>
             </ListView.View>
         </ListView>
+        <DockPanel Style="{StaticResource styleDockPanel}">
+            <TextBlock Text="Total: " Foreground="White" Padding="5 0"/>
+            <TextBlock Text="{Binding Path=Main.TotalHistory, StringFormat={}{0:N2}}" Style="{StaticResource styleTotalHistory}"/>
+        </DockPanel>
     </Grid>
 </UserControl>

@@ -210,6 +210,7 @@ namespace VolumeShot.ViewModels
                         }
                     }
                     allBets = allBets.OrderByDescending(bet=>bet.OpenTime).ToList();
+                    Main.TotalHistory = allBets.Select(bet=>bet.Total).Sum();
                     App.Current.Dispatcher.Invoke(() => {
                         foreach (var bet in allBets)
                         {
@@ -219,7 +220,7 @@ namespace VolumeShot.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Error.WriteLog(path, Main.LoginUser, $"Exception CancelOrderAsync: {ex?.Message}");
+                    Error.WriteLog(path, Main.LoginUser, $"Exception LoadBetsAsync: {ex?.Message}");
                 }
             });
         }
@@ -665,12 +666,11 @@ namespace VolumeShot.ViewModels
                                 Config? config = configs.FirstOrDefault(conf => conf.Name == symbol.Name);
                                 if (config != null) volume = config.Volume;
                             }
-                            SymbolViewModel symbolViewModel = new(symbol, volume, socketClient, client, LoginViewModel.Login.SelectedUser.IsTestnet);
+                            SymbolViewModel symbolViewModel = new(symbol, volume, socketClient, client, LoginViewModel.Login.SelectedUser.IsTestnet, Main.LoginUser);
                             OnOrderUpdate += symbolViewModel.ExchangeViewModel.OrderUpdate;
                             OnAccountUpdate += symbolViewModel.ExchangeViewModel.AccountUpdate;
                             symbolViewModel.Symbol.PropertyChanged += Symbol_PropertyChanged;
                             symbolViewModel.Symbol.Exchange.PropertyChanged += Exchange_PropertyChanged;
-                            symbolViewModel.Symbol.Exchange.LoginUser = Main.LoginUser;
                             App.Current.Dispatcher.BeginInvoke(new Action(() => {
                                 Main.FullSymbols.Add(symbolViewModel.Symbol);
                             }));
@@ -703,6 +703,7 @@ namespace VolumeShot.ViewModels
                 {
                     try
                     {
+                        Main.TotalHistory += exchange.Bet.Total;
                         App.Current.Dispatcher.BeginInvoke(new Action(() => {
                             Main.Bets.Insert(0, exchange.Bet);
                         }));
