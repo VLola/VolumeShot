@@ -115,6 +115,10 @@ namespace VolumeShot.ViewModels
                                 List<Symbol>? list = Main.FullSymbols.Where(symbol => symbol.Volume >= Main.MinVolume && symbol.Volume < Main.MaxVolume).ToList();
                                 if (list != null && list.Count > 0)
                                 {
+                                    bool check;
+                                    MessageBoxResult result = MessageBox.Show("Show warnings?", "Volume shot", MessageBoxButton.YesNo);
+                                    if (result == MessageBoxResult.Yes) check = true;
+                                    else check = false;
                                     foreach (Symbol symbol in list)
                                     {
                                         ConfigSelectedSymbol? configSelectedSymbol = configSelectedSymbols.FirstOrDefault(conf => conf.Symbol == symbol.Name);
@@ -124,8 +128,11 @@ namespace VolumeShot.ViewModels
                                         }
                                         else
                                         {
-                                            if (configSelectedSymbol.UserName == Main.LoginUser) MessageBox.Show($"Symbol already added {symbol.Name}");
-                                            else MessageBox.Show($"Symbol: {symbol.Name} added by another user: {configSelectedSymbol.UserName}");
+                                            if (check)
+                                            {
+                                                if (configSelectedSymbol.UserName == Main.LoginUser) MessageBox.Show($"Symbol already added {symbol.Name}");
+                                                else MessageBox.Show($"Symbol: {symbol.Name} added by another user: {configSelectedSymbol.UserName}");
+                                            }
                                         }
                                     }
                                 }
