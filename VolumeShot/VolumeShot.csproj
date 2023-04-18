@@ -5,8 +5,8 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <AssemblyVersion>3.3</AssemblyVersion>
-    <FileVersion>3.3</FileVersion>
+    <AssemblyVersion>3.5</AssemblyVersion>
+    <FileVersion>3.5</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

@@ -738,6 +738,12 @@ namespace VolumeShot.ViewModels
                     }
                     foreach (var symbol in list)
                     {
+                        if (symbol.Name == "RAYUSDT" || 
+                            symbol.Name == "FTTUSDT" || 
+                            symbol.Name == "CVCUSDT" || 
+                            symbol.Name == "SRMUSDT" || 
+                            symbol.Name == "SCUSDT") continue;
+
                         if (symbol.QuoteAsset == "USDT")
                         {
                             decimal volume = 500000m;

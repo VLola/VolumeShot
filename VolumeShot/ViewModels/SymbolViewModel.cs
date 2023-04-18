@@ -131,7 +131,7 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                await Task.Delay(1500);
+                await Task.Delay(500);
                 await ReDistanceAsync();
             });
         }
@@ -326,8 +326,8 @@ namespace VolumeShot.ViewModels
                                 decimal percentBid = (maxBid - priceBid) / priceBid * 100;
                                 if (!Symbol.IsTestnet)
                                 {
-                                    if (percentBid >= 0.5m) Symbol.DistanceLower = percentBid;
-                                    else Symbol.DistanceLower = 0.5m;
+                                    if (percentBid >= 0.7m) Symbol.DistanceLower = percentBid;
+                                    else Symbol.DistanceLower = 0.7m;
                                 }
                                 else
                                 {
@@ -342,8 +342,8 @@ namespace VolumeShot.ViewModels
                                 decimal percentAsk = (priceAsk - minAsk) / minAsk * 100;
                                 if (!Symbol.IsTestnet)
                                 {
-                                    if (percentAsk >= 0.5m) Symbol.DistanceUpper = percentAsk;
-                                    else Symbol.DistanceUpper = 0.5m;
+                                    if (percentAsk >= 0.7m) Symbol.DistanceUpper = percentAsk;
+                                    else Symbol.DistanceUpper = 0.7m;
                                 }
                                 else
                                 {
