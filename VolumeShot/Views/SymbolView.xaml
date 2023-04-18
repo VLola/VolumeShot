@@ -62,6 +62,7 @@
                 <TextBox Width="100" Text="{Binding Path=Main.MaxVolume}"/>
             </DockPanel>
             <Button Content="Add" Command="{Binding Path=AddSymbolCommand}" Padding="5" Margin="10 0"/>
+            <Button Content="Clear" Command="{Binding Path=ClearSymbolsCommand}" Padding="5" Margin="10 0"/>
             <TextBlock Text="{Binding Path=Main.Symbols.Count, StringFormat={}Count: {0}}" VerticalAlignment="Center"/>
         </WrapPanel>
         <ListView Grid.Row="1" ItemsSource="{Binding Path=Main.Symbols}" SelectedItem="{Binding Path=Main.SelectedSymbol}">

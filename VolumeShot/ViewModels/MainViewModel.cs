@@ -44,6 +44,16 @@ namespace VolumeShot.ViewModels
                 }));
             }
         }
+        private RelayCommand? _clearSymbolsCommand;
+        public RelayCommand ClearSymbolsCommand
+        {
+            get
+            {
+                return _clearSymbolsCommand ?? (_clearSymbolsCommand = new RelayCommand(obj => {
+                    ClearSymbolsAsync();
+                }));
+            }
+        }
         private RelayCommand? _cancelAllOrdersCommand;
         public RelayCommand CancelAllOrdersCommand
         {
@@ -63,6 +73,26 @@ namespace VolumeShot.ViewModels
             if (!Directory.Exists(pathPositions)) Directory.CreateDirectory(pathPositions);
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             LoginViewModel.Login.PropertyChanged += Login_PropertyChanged;
+        }
+        private async void ClearSymbolsAsync()
+        {
+            await Task.Run(() => {
+                try
+                {
+                    List<Symbol> symbols = Main.Symbols.ToList();
+                    foreach (var item in symbols)
+                    {
+                        if (!item.IsRun)
+                        {
+                            item.IsVisible = false;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, Main.LoginUser, $"Exception ClearSymbolsAsync: {ex?.Message}");
+                }
+            });
         }
         private async void AddSymbolToListAsync()
         {
