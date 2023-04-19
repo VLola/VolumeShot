@@ -248,11 +248,14 @@ namespace VolumeShot.ViewModels
             {
                 try
                 {
+                    Main.Tick++;
                     List<Symbol> symbols = Main.Symbols.ToList();
+                    int requests = 0;
                     foreach (Symbol symbol in symbols)
                     {
-
+                        requests += symbol.Exchange.Requests;
                     }
+                    Main.Requests = requests;
                 }
                 catch (Exception ex)
                 {

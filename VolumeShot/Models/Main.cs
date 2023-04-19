@@ -49,6 +49,26 @@ namespace VolumeShot.Models
                 OnPropertyChanged("DateTime");
             }
         }
+        private int _tick { get; set; }
+        public int Tick
+        {
+            get { return _tick; }
+            set
+            {
+                _tick = value;
+                OnPropertyChanged("Tick");
+            }
+        }
+        private int _requests { get; set; }
+        public int Requests
+        {
+            get { return _requests; }
+            set
+            {
+                _requests = value;
+                OnPropertyChanged("Requests");
+            }
+        }
         public WpfPlot WpfPlot { get; set; } = new();
         public ObservableCollection<Symbol> FullSymbols { get; set; } = new();
         public ObservableCollection<Symbol> Symbols { get; set; } = new();
