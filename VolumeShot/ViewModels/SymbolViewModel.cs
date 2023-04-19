@@ -139,7 +139,7 @@ namespace VolumeShot.ViewModels
             {
                 if (Symbol.BufferLowerPrice >= Symbol.BestAskPrice || Symbol.BufferUpperPrice <= Symbol.BestBidPrice)
                 {
-                    await ExchangeViewModel.CancelAllOrdersAsync();
+                    if (Symbol.IsTrading && !Symbol.Exchange.IsWait) await ExchangeViewModel.CancelAllOrdersAsync();
                     await Task.Delay(500);
                     ReBuffers();
                     if (Symbol.IsTrading && !Symbol.Exchange.IsWait) await ExchangeViewModel.SetDistances(distanceUpper: Symbol.DistanceUpper, distanceLower: Symbol.DistanceLower, askPrice: Symbol.BestAskPrice, bidPrice: Symbol.BestBidPrice, bufferUpper: Symbol.BufferUpper, bufferLower: Symbol.BufferLower, bufferUpperPrice: Symbol.BufferUpperPrice, bufferLowerPrice: Symbol.BufferLowerPrice, volume: Symbol.Volume);

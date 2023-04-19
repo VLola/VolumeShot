@@ -253,9 +253,17 @@ namespace VolumeShot.ViewModels
                     int requests = 0;
                     foreach (Symbol symbol in symbols)
                     {
-                        requests += symbol.Exchange.Requests;
+                        requests += (symbol.Exchange.Requests / 2);
                     }
-                    Main.Requests = requests;
+                    Main.Requests = requests * 60 / Main.Tick;
+                    if(Main.Tick > 120)
+                    {
+                        Main.Tick = 60;
+                        foreach (Symbol symbol in symbols)
+                        {
+                            symbol.Exchange.Requests = symbol.Exchange.Requests / 2;
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
