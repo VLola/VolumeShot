@@ -62,6 +62,7 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
+
         private void Symbol_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "Volume")
@@ -127,14 +128,6 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
-        //private async Task CheckOpenOrder()
-        //{
-        //    await Task.Run(async () =>
-        //    {
-        //        await Task.Delay(500);
-        //        await ReDistanceAsync();
-        //    });
-        //}
         private async void ReDistanceChengeVolumeAsync()
         {
             ReBuffers();

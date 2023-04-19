@@ -77,7 +77,12 @@
                     <local:OrdersView/>
                 </TabItem>
             </TabControl>
-            <TextBlock Text="{Binding Path=Main.Balance, StringFormat={}Balance: {0:N2}}" FontSize="16" Foreground="White" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10"/>
+            <DockPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10">
+                <Border BorderBrush="LightGray" BorderThickness="1" Margin="5 0">
+                    <TextBlock Text="{Binding Path=Main.DateTime, StringFormat={}{0:HH:mm:ss}}" FontSize="16" Foreground="LightGray" Margin="5 0" HorizontalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="{Binding Path=Main.Balance, StringFormat={}Balance: {0:N2}}" FontSize="16" Foreground="White"/>
+            </DockPanel>
         </Grid>
     </Grid>
 </UserControl>

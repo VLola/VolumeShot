@@ -43,8 +43,8 @@
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Symbol" DisplayMemberBinding="{Binding Path=Symbol}" Width="Auto"/>
-                    <GridViewColumn Header="Open time" DisplayMemberBinding="{Binding Path=OpenTime}" Width="Auto"/>
-                    <GridViewColumn Header="Close time" DisplayMemberBinding="{Binding Path=CloseTime}" Width="Auto"/>
+                    <GridViewColumn Header="Open time" DisplayMemberBinding="{Binding Path=OpenTime, StringFormat={}{0:HH:mm:ss}}" Width="Auto"/>
+                    <GridViewColumn Header="Close time" DisplayMemberBinding="{Binding Path=CloseTime, StringFormat={}{0:HH:mm:ss}}" Width="Auto"/>
                     <GridViewColumn Header="Open price" DisplayMemberBinding="{Binding Path=OpenPrice}" Width="Auto"/>
                     <GridViewColumn Header="Close price" DisplayMemberBinding="{Binding Path=ClosePrice}" Width="Auto"/>
                     <GridViewColumn Header="Buffer ▼" DisplayMemberBinding="{Binding Path=BufferLower, StringFormat={}     {0:N2}}" Width="70"/>

@@ -9,7 +9,7 @@ namespace VolumeShot.Models
         {
             try
             {
-                File.AppendAllText(path + file, $"{DateTime.Now} {text}\n");
+                File.AppendAllText(path + file, $"{DateTime.UtcNow} {text}\n");
             }
             catch { }
         }

@@ -39,6 +39,16 @@ namespace VolumeShot.Models
                 OnPropertyChanged("Title");
             }
         }
+        private DateTime _dateTime { get; set; }
+        public DateTime DateTime
+        {
+            get { return _dateTime; }
+            set
+            {
+                _dateTime = value;
+                OnPropertyChanged("DateTime");
+            }
+        }
         public WpfPlot WpfPlot { get; set; } = new();
         public ObservableCollection<Symbol> FullSymbols { get; set; } = new();
         public ObservableCollection<Symbol> Symbols { get; set; } = new();

@@ -228,6 +228,25 @@ namespace VolumeShot.ViewModels
             LoadChart();
             RunChartAsync();
             CheckPingAsync();
+            RunLimitsAsync();
+        }
+        private async void RunLimitsAsync()
+        {
+            await Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await Task.Delay(1000);
+                    try
+                    {
+                        Main.DateTime = DateTime.UtcNow; 
+                    }
+                    catch (Exception ex)
+                    {
+                        Error.WriteLog(path, Main.LoginUser, $"Exception RunLimitsAsync: {ex?.Message}");
+                    }
+                }
+            });
         }
         private async void CheckPingAsync()
         {
