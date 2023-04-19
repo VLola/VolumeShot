@@ -169,6 +169,18 @@ namespace VolumeShot.Models
                 OnPropertyChanged("IsPositiveTotalHistory");
             }
         }
+
+        private string _pingColor { get; set; } = "#FFC4C4C4";
+        public string PingColor
+        {
+            get { return _pingColor; }
+            set
+            {
+                _pingColor = value;
+                OnPropertyChanged("PingColor");
+            }
+        }
+
         private long _ping { get; set; }
         public long Ping
         {
@@ -177,6 +189,9 @@ namespace VolumeShot.Models
             {
                 _ping = value;
                 OnPropertyChanged("Ping");
+                if (value >= 1000) PingColor = "#FFF13D3D";
+                else if (value >= 500  ) PingColor = "#FFD7BA7D";
+                else PingColor = "#FFC4C4C4";
             }
         }
         private long _pingMax { get; set; } = 1000;
