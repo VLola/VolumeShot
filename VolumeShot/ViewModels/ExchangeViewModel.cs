@@ -242,8 +242,6 @@ namespace VolumeShot.ViewModels
         {
             try
             {
-                await CancelAllOrdersAsync();
-                await Task.Delay(500);
                 if (!Exchange.IsOpenLongOrder && !Exchange.IsOpenShortOrder)
                 {
                     decimal openQuantity = RoundQuantity(Exchange.Usdt / askPrice);
@@ -321,7 +319,7 @@ namespace VolumeShot.ViewModels
             await CancelAllOrdersAsync();
             GetPositionInformationAsync();
         }
-        private async Task CancelAllOrdersAsync()
+        public async Task CancelAllOrdersAsync()
         {
             await Task.Run(async() =>
             {

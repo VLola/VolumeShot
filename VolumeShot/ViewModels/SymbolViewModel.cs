@@ -127,14 +127,14 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
-        private async Task CheckOpenOrder()
-        {
-            await Task.Run(async () =>
-            {
-                await Task.Delay(500);
-                await ReDistanceAsync();
-            });
-        }
+        //private async Task CheckOpenOrder()
+        //{
+        //    await Task.Run(async () =>
+        //    {
+        //        await Task.Delay(500);
+        //        await ReDistanceAsync();
+        //    });
+        //}
         private async void ReDistanceChengeVolumeAsync()
         {
             ReBuffers();
@@ -144,6 +144,8 @@ namespace VolumeShot.ViewModels
         {
             if (!ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder && Symbol.DistanceLower > 0m && Symbol.DistanceUpper > 0m && Symbol.BestAskPrice > 0m && Symbol.BestBidPrice > 0m)
             {
+                await ExchangeViewModel.CancelAllOrdersAsync();
+                await Task.Delay(500);
                 if (Symbol.BufferLowerPrice >= Symbol.BestAskPrice || Symbol.BufferUpperPrice <= Symbol.BestBidPrice)
                 {
                     ReBuffers();
@@ -182,7 +184,7 @@ namespace VolumeShot.ViewModels
                 {
                     if (Symbol.BufferLowerPrice >= Symbol.BestAskPrice || Symbol.BufferUpperPrice <= Symbol.BestBidPrice)
                     {
-                        await CheckOpenOrder();
+                        await ReDistanceAsync();
                     }
                 }
             });
@@ -210,6 +212,14 @@ namespace VolumeShot.ViewModels
                 {
                     try
                     {
+                        // Stop loss
+                        if (!ExchangeViewModel.Exchange.IsWorkedStopLoss)
+                        {
+                            if (ExchangeViewModel.Exchange.IsOpenShortOrder && Message.Data.Price >= ExchangeViewModel.Exchange.StopLossShortPrice || ExchangeViewModel.Exchange.IsOpenLongOrder && Message.Data.Price <= ExchangeViewModel.Exchange.StopLossLongPrice)
+                            {
+                                ExchangeViewModel.ClosePositionsAsync();
+                            }
+                        }
                         if (!Symbol.IsRun)
                         {
                             socketClient.UnsubscribeAsync(socketId);
@@ -243,20 +253,21 @@ namespace VolumeShot.ViewModels
                 {
                     try
                     {
+                        //// Stop loss
+                        //if (!ExchangeViewModel.Exchange.IsWorkedStopLoss)
+                        //{
+                        //    if (ExchangeViewModel.Exchange.IsOpenShortOrder && Symbol.BestBidPrice >= ExchangeViewModel.Exchange.StopLossShortPrice || ExchangeViewModel.Exchange.IsOpenLongOrder && Symbol.BestAskPrice <= ExchangeViewModel.Exchange.StopLossLongPrice)
+                        //    {
+                        //        ExchangeViewModel.ClosePositionsAsync();
+                        //    }
+                        //}
                         if (!Symbol.IsRun)
                         {
                             socketClient.UnsubscribeAsync(socketId);
                         }
                         Symbol.BestAskPrice = Message.Data.BestAskPrice;
                         Symbol.BestBidPrice = Message.Data.BestBidPrice;
-                        // Stop loss
-                        if (!ExchangeViewModel.Exchange.IsWorkedStopLoss)
-                        {
-                            if (ExchangeViewModel.Exchange.IsOpenShortOrder && Symbol.BestBidPrice >= ExchangeViewModel.Exchange.StopLossShortPrice || ExchangeViewModel.Exchange.IsOpenLongOrder && Symbol.BestAskPrice <= ExchangeViewModel.Exchange.StopLossLongPrice)
-                            {
-                                ExchangeViewModel.ClosePositionsAsync();
-                            }
-                        }
+                        
                     }
                     catch (Exception ex)
                     {
