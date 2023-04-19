@@ -57,7 +57,6 @@ namespace VolumeShot.ViewModels
             {
                 while (Symbol.IsRun)
                 {
-                    await Task.Delay(1000);
                     await CheckBufferAsync(); 
                 }
             });
