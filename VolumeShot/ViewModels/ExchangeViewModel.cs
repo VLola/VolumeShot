@@ -323,6 +323,7 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async() =>
             {
+                Exchange.Requests++;
                 try
                 {
                     var result = await client.UsdFuturesApi.Trading.CancelAllOrdersAsync(symbol: Exchange.Symbol);
@@ -345,6 +346,7 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async() =>
             {
+                Exchange.Requests++;
                 try
                 {
                     var result = await client.UsdFuturesApi.Account.GetPositionInformationAsync(symbol: Exchange.Symbol);
@@ -380,6 +382,7 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
+                Exchange.Requests++;
                 try
                 {
                     var result = await client.UsdFuturesApi.Trading.PlaceOrderAsync(
@@ -403,6 +406,7 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
+                Exchange.Requests++;
                 try
                 {
                     var result = await client.UsdFuturesApi.Trading.PlaceOrderAsync(
@@ -428,6 +432,7 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
+                Exchange.Requests++;
                 try
                 {
                     var result = await client.UsdFuturesApi.Trading.PlaceOrderAsync(

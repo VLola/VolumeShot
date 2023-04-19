@@ -27,6 +27,16 @@ namespace VolumeShot.Models
                 OnPropertyChanged("Bet");
             }
         }
+        private int _requests { get; set; }
+        public int Requests
+        {
+            get { return _requests; }
+            set
+            {
+                _requests = value;
+                OnPropertyChanged("Requests");
+            }
+        }
         private string _loginUser { get; set; } = "null";
         public string LoginUser
         {
