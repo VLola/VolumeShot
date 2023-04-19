@@ -57,6 +57,7 @@ namespace VolumeShot.ViewModels
             {
                 while (Symbol.IsRun)
                 {
+                    await Task.Delay(1);
                     await CheckBufferAsync(); 
                 }
             });
@@ -143,10 +144,10 @@ namespace VolumeShot.ViewModels
         {
             if (!ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder && Symbol.DistanceLower > 0m && Symbol.DistanceUpper > 0m && Symbol.BestAskPrice > 0m && Symbol.BestBidPrice > 0m)
             {
-                await ExchangeViewModel.CancelAllOrdersAsync();
-                await Task.Delay(500);
                 if (Symbol.BufferLowerPrice >= Symbol.BestAskPrice || Symbol.BufferUpperPrice <= Symbol.BestBidPrice)
                 {
+                    await ExchangeViewModel.CancelAllOrdersAsync();
+                    await Task.Delay(500);
                     ReBuffers();
                     if (Symbol.IsTrading && !Symbol.Exchange.IsWait) await ExchangeViewModel.SetDistances(distanceUpper: Symbol.DistanceUpper, distanceLower: Symbol.DistanceLower, askPrice: Symbol.BestAskPrice, bidPrice: Symbol.BestBidPrice, bufferUpper: Symbol.BufferUpper, bufferLower: Symbol.BufferLower, bufferUpperPrice: Symbol.BufferUpperPrice, bufferLowerPrice: Symbol.BufferLowerPrice, volume: Symbol.Volume);
                 }
