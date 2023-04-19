@@ -59,8 +59,8 @@ namespace VolumeShot.Models
                 OnPropertyChanged("Tick");
             }
         }
-        private int _requests { get; set; }
-        public int Requests
+        private double _requests { get; set; }
+        public double Requests
         {
             get { return _requests; }
             set

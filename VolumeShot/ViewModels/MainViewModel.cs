@@ -250,7 +250,7 @@ namespace VolumeShot.ViewModels
                 {
                     Main.Tick++;
                     List<Symbol> symbols = Main.Symbols.ToList();
-                    int requests = 0;
+                    double requests = 0;
                     foreach (Symbol symbol in symbols)
                     {
                         symbol.Exchange.Requests -= (symbol.Exchange.Requests / 60);
