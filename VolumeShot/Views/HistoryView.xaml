@@ -72,7 +72,6 @@
                     <GridViewColumn Header="Volume" DisplayMemberBinding="{Binding Path=Volume, StringFormat={} {0:N0}}" Width="Auto"/>
                     <GridViewColumn Header="Quantity" DisplayMemberBinding="{Binding Path=Quantity, StringFormat={}  {0}}" Width="60"/>
                     <GridViewColumn Header="Usdt" DisplayMemberBinding="{Binding Path=Usdt, StringFormat={} {0:N2}}" Width="Auto"/>
-
                     <GridViewColumn Header="Show" Width="55">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
