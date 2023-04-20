@@ -82,6 +82,7 @@ namespace VolumeShot.Views
                 formsPlot1.Plot.AddScatterLines(xDictance, new double[] { stopLoss, stopLoss }, Color.Red, lineStyle: LineStyle.Dash, label: $"SL : {Math.Round(bet.StopLoss, 2)}");
                 formsPlot1.Plot.AddPoint(bet.OpenTime.ToOADate(), Decimal.ToDouble(bet.OpenPrice), color: Color.Orange, size: 8);
                 formsPlot1.Plot.AddPoint(bet.CloseTime.ToOADate(), Decimal.ToDouble(bet.ClosePrice), color: Color.DeepSkyBlue, size: 8);
+                
 
                 double[] buyersGroupingX = buyersX.GroupBy(p => p).Select(p => p.Key).ToArray();
                 double[] buyersGroupingY = buyers.GroupBy(b => b.DateTime).Select(p => p.Sum(p => Decimal.ToDouble(p.Quantity))).ToArray();
@@ -132,7 +133,7 @@ namespace VolumeShot.Views
                 volume3Y.AddRange(buyersGrouping3Y);
 
                 MyScatterPlot3 = formsPlot3.Plot.AddScatterPoints(volume3X.ToArray(), volume3Y.ToArray(), markerSize: 1, color: Color.Transparent);
-
+                formsPlot1.Refresh();
             }
             catch (Exception ex)
             {
@@ -220,7 +221,7 @@ namespace VolumeShot.Views
             }
 
             // update the GUI to describe the highlighted point
-            this.Title = $"Volume: {Math.Round(pointY)}";
+            volume.Text = $"Volume: {Math.Round(pointY).ToString("0,0")}";
         }
         private void FormsPlot3_MouseMove(object sender, MouseEventArgs e)
         {
@@ -242,7 +243,7 @@ namespace VolumeShot.Views
             }
 
             // update the GUI to describe the highlighted point
-            this.Title = $"Volume: {Math.Round(pointY)}";
+            volume.Text = $"Volume: {Math.Round(pointY).ToString("0,0")}";
         }
     }
 }

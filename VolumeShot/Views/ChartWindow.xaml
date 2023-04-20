@@ -20,5 +20,6 @@
                 <WpfPlot Name="formsPlot2"/>
             </TabItem>
         </TabControl>
+        <TextBlock x:Name="volume" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Center" Foreground="White" Margin="7" FontSize="22"/>
     </Grid>
 </Window>

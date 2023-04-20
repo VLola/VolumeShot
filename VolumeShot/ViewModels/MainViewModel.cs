@@ -604,6 +604,7 @@ namespace VolumeShot.ViewModels
         {
             try
             {
+                List<Symbol> symbols = Main.Symbols.ToList();
                 List<Order> list = new();
                 lock (Main.Orders) list = Main.Orders.ToList();
                 if (list.Count > 0)
@@ -615,6 +616,8 @@ namespace VolumeShot.ViewModels
                         {
                             Error.WriteLog(path, Main.LoginUser, $"Failed CancelOrderAsync: {result.Error?.Message}");
                         }
+                        Symbol? symbol = symbols.FirstOrDefault(s => s.Name == order.Symbol);
+                        if (symbol != null) symbol.Exchange.Requests += 1;
                     }
                 }
             }
