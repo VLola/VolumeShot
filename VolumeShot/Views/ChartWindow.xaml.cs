@@ -12,37 +12,18 @@ namespace VolumeShot.Views
 {
     public partial class ChartWindow : Window
     {
-        private ScatterPlot MyScatterPlot;
-        private MarkerPlot HighlightedPoint;
-        private int LastHighlightedIndex = -1;
+        private ScatterPlot MyScatterPlot2;
+        private ScatterPlot MyScatterPlot3;
+        private MarkerPlot HighlightedPoint2;
+        private int LastHighlightedIndex2 = -1;
+        private MarkerPlot HighlightedPoint3;
+        private int LastHighlightedIndex3 = -1;
         public ChartWindow(Bet bet)
         {
             InitializeComponent();
             Load(bet);
         }
 
-        private void FormsPlot2_MouseMove(object sender, MouseEventArgs e)
-        {
-            // determine point nearest the cursor
-            (double mouseCoordX, double mouseCoordY) = formsPlot2.GetMouseCoordinates();
-            double xyRatio = formsPlot2.Plot.XAxis.Dims.PxPerUnit / formsPlot2.Plot.YAxis.Dims.PxPerUnit;
-            (double pointX, double pointY, int pointIndex) = MyScatterPlot.GetPointNearest(mouseCoordX, mouseCoordY, xyRatio);
-
-            // place the highlight over the point of interest
-            HighlightedPoint.X = pointX;
-            HighlightedPoint.Y = pointY;
-            HighlightedPoint.IsVisible = true;
-
-            // render if the highlighted point chnaged
-            if (LastHighlightedIndex != pointIndex)
-            {
-                LastHighlightedIndex = pointIndex;
-                formsPlot2.Render();
-            }
-
-            // update the GUI to describe the highlighted point
-            this.Title = $"Volume: {Math.Round(pointY)}";
-        }
 
         private void FormsPlot1_AxesChanged(object sender, EventArgs e)
         {
@@ -60,11 +41,17 @@ namespace VolumeShot.Views
             {
                 Chart(bet.OpenPrice);
 
-                HighlightedPoint = formsPlot2.Plot.AddPoint(0, 0);
-                HighlightedPoint.Color = Color.Orange;
-                HighlightedPoint.MarkerSize = 10;
-                HighlightedPoint.MarkerShape = ScottPlot.MarkerShape.openCircle;
-                HighlightedPoint.IsVisible = false;
+                HighlightedPoint2 = formsPlot2.Plot.AddPoint(0, 0);
+                HighlightedPoint2.Color = Color.Orange;
+                HighlightedPoint2.MarkerSize = 10;
+                HighlightedPoint2.MarkerShape = ScottPlot.MarkerShape.openCircle;
+                HighlightedPoint2.IsVisible = false;
+
+                HighlightedPoint3 = formsPlot3.Plot.AddPoint(0, 0);
+                HighlightedPoint3.Color = Color.Orange;
+                HighlightedPoint3.MarkerSize = 10;
+                HighlightedPoint3.MarkerShape = ScottPlot.MarkerShape.openCircle;
+                HighlightedPoint3.IsVisible = false;
 
                 DateTime startTime = bet.OpenTime.AddSeconds(-20);
                 double bufferLower = Decimal.ToDouble(bet.PriceBufferLower);
@@ -118,7 +105,7 @@ namespace VolumeShot.Views
                 volumeY.AddRange(buyersGroupingY);
                 volumeY.AddRange(makersGroupingY);
 
-                MyScatterPlot = formsPlot2.Plot.AddScatterPoints(volumeX.ToArray(), volumeY.ToArray(), markerSize: 1, color: Color.Transparent);
+                MyScatterPlot2 = formsPlot2.Plot.AddScatterPoints(volumeX.ToArray(), volumeY.ToArray(), markerSize: 1, color: Color.Transparent);
 
 
                 Color colorRed = Color.FromArgb(150, Color.Red);
@@ -135,6 +122,16 @@ namespace VolumeShot.Views
                 var barsBuyers3 = formsPlot3.Plot.AddBar(buyersGrouping3Y, buyersGrouping3X, color: colorGreen);
                 barsBuyers3.BarWidth = 0.000001;
                 barsBuyers3.BorderColor = colorGreen;
+
+                List<double> volume3X = new();
+                volume3X.AddRange(makersGrouping3X);
+                volume3X.AddRange(buyersGrouping3X);
+
+                List<double> volume3Y = new();
+                volume3Y.AddRange(makersGrouping3Y);
+                volume3Y.AddRange(buyersGrouping3Y);
+
+                MyScatterPlot3 = formsPlot3.Plot.AddScatterPoints(volume3X.ToArray(), volume3Y.ToArray(), markerSize: 1, color: Color.Transparent);
 
             }
             catch (Exception ex)
@@ -200,12 +197,52 @@ namespace VolumeShot.Views
 
             formsPlot3.Plot.XAxis.TickLabelFormat("ss:f", dateTimeFormat: true);
 
-            formsPlot3.MouseMove += FormsPlot3_MouseMove; ;
+            formsPlot3.MouseMove += FormsPlot3_MouseMove;
         }
 
+        private void FormsPlot2_MouseMove(object sender, MouseEventArgs e)
+        {
+            // determine point nearest the cursor
+            (double mouseCoordX, double mouseCoordY) = formsPlot2.GetMouseCoordinates();
+            double xyRatio = formsPlot2.Plot.XAxis.Dims.PxPerUnit / formsPlot2.Plot.YAxis.Dims.PxPerUnit;
+            (double pointX, double pointY, int pointIndex) = MyScatterPlot2.GetPointNearest(mouseCoordX, mouseCoordY, xyRatio);
+
+            // place the highlight over the point of interest
+            HighlightedPoint2.X = pointX;
+            HighlightedPoint2.Y = pointY;
+            HighlightedPoint2.IsVisible = true;
+
+            // render if the highlighted point chnaged
+            if (LastHighlightedIndex2 != pointIndex)
+            {
+                LastHighlightedIndex2 = pointIndex;
+                formsPlot2.Render();
+            }
+
+            // update the GUI to describe the highlighted point
+            this.Title = $"Volume: {Math.Round(pointY)}";
+        }
         private void FormsPlot3_MouseMove(object sender, MouseEventArgs e)
         {
+            // determine point nearest the cursor
+            (double mouseCoordX, double mouseCoordY) = formsPlot3.GetMouseCoordinates();
+            double xyRatio = formsPlot3.Plot.XAxis.Dims.PxPerUnit / formsPlot3.Plot.YAxis.Dims.PxPerUnit;
+            (double pointX, double pointY, int pointIndex) = MyScatterPlot3.GetPointNearest(mouseCoordX, mouseCoordY, xyRatio);
 
+            // place the highlight over the point of interest
+            HighlightedPoint3.X = pointX;
+            HighlightedPoint3.Y = pointY;
+            HighlightedPoint3.IsVisible = true;
+
+            // render if the highlighted point chnaged
+            if (LastHighlightedIndex3 != pointIndex)
+            {
+                LastHighlightedIndex3 = pointIndex;
+                formsPlot3.Render();
+            }
+
+            // update the GUI to describe the highlighted point
+            this.Title = $"Volume: {Math.Round(pointY)}";
         }
     }
 }
