@@ -48,7 +48,10 @@ namespace VolumeShot.Views
         {
             formsPlot2.Plot.MatchAxis(formsPlot1.Plot, horizontal: true, vertical: false);
             formsPlot2.Plot.MatchLayout(formsPlot1.Plot, horizontal: true, vertical: false);
-            formsPlot2.Refresh();
+            formsPlot2.Refresh(); 
+            formsPlot3.Plot.MatchAxis(formsPlot1.Plot, horizontal: true, vertical: false);
+            formsPlot3.Plot.MatchLayout(formsPlot1.Plot, horizontal: true, vertical: false);
+            formsPlot3.Refresh();
         }
 
         private void Load(Bet bet)
@@ -62,12 +65,6 @@ namespace VolumeShot.Views
                 HighlightedPoint.MarkerSize = 10;
                 HighlightedPoint.MarkerShape = ScottPlot.MarkerShape.openCircle;
                 HighlightedPoint.IsVisible = false;
-
-                formsPlot1.AxesChanged += FormsPlot1_AxesChanged;
-
-                formsPlot2.Plot.XAxis.TickLabelFormat("ss:f", dateTimeFormat: true);
-
-                formsPlot2.MouseMove += FormsPlot2_MouseMove;
 
                 DateTime startTime = bet.OpenTime.AddSeconds(-20);
                 double bufferLower = Decimal.ToDouble(bet.PriceBufferLower);
@@ -105,13 +102,13 @@ namespace VolumeShot.Views
                 double[] makersGroupingX = makersX.GroupBy(p => p).Select(p => p.Key).ToArray();
                 double[] makersGroupingY = makers.GroupBy(b => b.DateTime).Select(p => p.Sum(p => Decimal.ToDouble(p.Quantity))).ToArray();
 
-                var barsBuyers = formsPlot2.Plot.AddBar(buyersGroupingY, buyersGroupingX, color: Color.LightGreen);
+                var barsBuyers = formsPlot2.Plot.AddBar(buyersGroupingY, buyersGroupingX, color: Color.Green);
                 barsBuyers.BarWidth = 0.000000001;
-                barsBuyers.BorderColor = Color.LightGreen;
+                barsBuyers.BorderColor = Color.Green;
 
-                var barsMakers = formsPlot2.Plot.AddBar(makersGroupingY, makersGroupingX, color: Color.Pink);
+                var barsMakers = formsPlot2.Plot.AddBar(makersGroupingY, makersGroupingX, color: Color.Red);
                 barsMakers.BarWidth = 0.000000001;
-                barsMakers.BorderColor = Color.Pink;
+                barsMakers.BorderColor = Color.Red;
 
                 List<double> volumeX = new();
                 volumeX.AddRange(buyersGroupingX);
@@ -122,6 +119,11 @@ namespace VolumeShot.Views
                 volumeY.AddRange(makersGroupingY);
 
                 MyScatterPlot = formsPlot2.Plot.AddScatterPoints(volumeX.ToArray(), volumeY.ToArray(), markerSize: 1, color: Color.Transparent);
+
+
+                //double[] buyersGrouping3Y = buyers.GroupBy(b => b.DateTime).Select(p => p.Sum(p => Decimal.ToDouble(p.Quantity))).ToArray();
+
+
             }
             catch (Exception ex)
             {
@@ -141,6 +143,7 @@ namespace VolumeShot.Views
             else if (price > 0.001m) format = "N7";
             else format = "N8";
 
+            formsPlot1.AxesChanged += FormsPlot1_AxesChanged;
             formsPlot1.Plot.Style(figureBackground: Color.Black, dataBackground: Color.Black);
 
             formsPlot1.Plot.XAxis.TickLabelStyle(color: Color.White);
@@ -171,7 +174,26 @@ namespace VolumeShot.Views
             formsPlot2.Plot.YAxis.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
 
             formsPlot2.Plot.XAxis.TickLabelFormat("ss:f", dateTimeFormat: true);
+            formsPlot2.MouseMove += FormsPlot2_MouseMove;
+
+            formsPlot3.Plot.Style(figureBackground: Color.Black, dataBackground: Color.Black);
+
+            formsPlot3.Plot.XAxis.TickLabelStyle(color: Color.White);
+            formsPlot3.Plot.XAxis.TickMarkColor(ColorTranslator.FromHtml("#333333"));
+            formsPlot3.Plot.XAxis.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
+
+            formsPlot3.Plot.YAxis.TickLabelStyle(color: Color.White);
+            formsPlot3.Plot.YAxis.TickMarkColor(ColorTranslator.FromHtml("#333333"));
+            formsPlot3.Plot.YAxis.MajorGrid(color: ColorTranslator.FromHtml("#333333"));
+
+            formsPlot3.Plot.XAxis.TickLabelFormat("ss:f", dateTimeFormat: true);
+
+            formsPlot3.MouseMove += FormsPlot3_MouseMove; ;
         }
 
+        private void FormsPlot3_MouseMove(object sender, MouseEventArgs e)
+        {
+
+        }
     }
 }
