@@ -7,6 +7,11 @@
         mc:Ignorable="d"
         Title="ChartWindow" Height="450" Width="800">
     <Grid>
-        <WpfPlot Name="plt"/>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <WpfPlot Grid.Row="0" Name="formsPlot1"/>
+        <WpfPlot Grid.Row="1" Name="formsPlot2"/>
     </Grid>
 </Window>

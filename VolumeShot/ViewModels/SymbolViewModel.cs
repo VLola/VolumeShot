@@ -221,7 +221,7 @@ namespace VolumeShot.ViewModels
                         Symbol.BuyerIsMaker = Message.Data.BuyerIsMaker;
                         Symbol.TradeTime = Message.Data.TradeTime;
                         Symbol.Price = Message.Data.Price;
-                        SymbolPrice symbolPrice = new SymbolPrice(Message.Data.Price, Message.Data.BuyerIsMaker, Message.Data.TradeTime, Symbol.Exchange.SymbolPrices);
+                        SymbolPrice symbolPrice = new SymbolPrice(Message.Data.Price, Message.Data.BuyerIsMaker, Message.Data.TradeTime, Symbol.Exchange.SymbolPrices, (Message.Data.Quantity * Message.Data.Price));
                         Symbol.Exchange.SymbolPrices.Add(symbolPrice);
                         if (Symbol.Exchange.IsWriteSymbolPrices)
                         {

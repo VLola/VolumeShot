@@ -9,12 +9,14 @@ namespace VolumeShot.Models
         public decimal Price { get; set; }
         public bool BuyerIsMaker { get; set; }
         public DateTime DateTime { get; set; }
+        public decimal Quantity { get; set; }
         public SymbolPrice() { }
-        public SymbolPrice(decimal price, bool buyerIsMaker, DateTime dateTime, List<SymbolPrice> prices)
+        public SymbolPrice(decimal price, bool buyerIsMaker, DateTime dateTime, List<SymbolPrice> prices, decimal quantity)
         {
             Price = price;
             BuyerIsMaker = buyerIsMaker;
             DateTime = dateTime;
+            Quantity = quantity;
             RunAsync(prices);
         }
         private async void RunAsync(List<SymbolPrice> prices)
