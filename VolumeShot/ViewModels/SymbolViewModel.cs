@@ -193,6 +193,7 @@ namespace VolumeShot.ViewModels
             }
             catch (Exception ex)
             {
+                Symbol.IsRun = false;
                 Error.WriteLog(path, Symbol.Name, $"Exception SubscribeAsync {ex.Message}");
             }
         }
@@ -200,6 +201,7 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
+                ExchangeViewModel.Exchange.Requests += 1;
                 int socketId = 0;
                 var result = await socketClient.UsdFuturesStreams.SubscribeToAggregatedTradeUpdatesAsync(Symbol.Name, Message =>
                 {
@@ -233,7 +235,11 @@ namespace VolumeShot.ViewModels
                         Error.WriteLog(path, Symbol.Name, $"Exception SubscribeToAggregatedTradeUpdatesAsync: {ex.Message}");
                     }
                 });
-                if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToAggregatedTradeUpdatesAsync: {result.Error?.Message}");
+                if (!result.Success)
+                {
+                    Symbol.IsRun = false;
+                    Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToAggregatedTradeUpdatesAsync: {result.Error?.Message}");
+                }
                 else socketId = result.Data.Id;
             });
         }
@@ -241,19 +247,12 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
+                ExchangeViewModel.Exchange.Requests += 1;
                 int socketId = 0;
                 var result = await socketClient.UsdFuturesStreams.SubscribeToBookTickerUpdatesAsync(Symbol.Name, Message =>
                 {
                     try
                     {
-                        //// Stop loss
-                        //if (!ExchangeViewModel.Exchange.IsWorkedStopLoss)
-                        //{
-                        //    if (ExchangeViewModel.Exchange.IsOpenShortOrder && Symbol.BestBidPrice >= ExchangeViewModel.Exchange.StopLossShortPrice || ExchangeViewModel.Exchange.IsOpenLongOrder && Symbol.BestAskPrice <= ExchangeViewModel.Exchange.StopLossLongPrice)
-                        //    {
-                        //        ExchangeViewModel.ClosePositionsAsync();
-                        //    }
-                        //}
                         if (!Symbol.IsRun)
                         {
                             socketClient.UnsubscribeAsync(socketId);
@@ -267,7 +266,11 @@ namespace VolumeShot.ViewModels
                         Error.WriteLog(path, Symbol.Name, $"Exception SubscribeToBookTickerUpdatesAsync: {ex.Message}");
                     }
                 });
-                if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToBookTickerUpdatesAsync: {result.Error?.Message}");
+                if (!result.Success)
+                {
+                    Symbol.IsRun = false; 
+                    Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToBookTickerUpdatesAsync: {result.Error?.Message}");
+                }
                 else socketId = result.Data.Id;
             });
         }
@@ -277,8 +280,13 @@ namespace VolumeShot.ViewModels
             {
                 try
                 {
+                    ExchangeViewModel.Exchange.Requests += 1;
                     var result = await client.UsdFuturesApi.ExchangeData.GetOrderBookAsync(Symbol.Name, limit: 1000);
-                    if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed GetOrderBookAsync: {result.Error?.Message}");
+                    if (!result.Success)
+                    {
+                        Symbol.IsRun = false;
+                        Error.WriteLog(path, Symbol.Name, $"Failed GetOrderBookAsync: {result.Error?.Message}");
+                    }
                     else
                     {
                         Symbol.OrderBook.Bids.Clear();
@@ -297,6 +305,7 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
+                ExchangeViewModel.Exchange.Requests += 1;
                 int socketId = 0;
                 int i = 0;
                 var result = await socketClient.UsdFuturesStreams.SubscribeToOrderBookUpdatesAsync(Symbol.Name, updateInterval: 500, Message =>
@@ -366,7 +375,11 @@ namespace VolumeShot.ViewModels
                     }
 
                 });
-                if (!result.Success) Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToOrderBookUpdatesAsync: {result.Error?.Message}");
+                if (!result.Success)
+                {
+                    Symbol.IsRun = false;
+                    Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToOrderBookUpdatesAsync: {result.Error?.Message}");
+                }
                 else socketId = result.Data.Id;
             });
         }
