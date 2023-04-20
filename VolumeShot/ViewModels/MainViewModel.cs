@@ -74,6 +74,36 @@ namespace VolumeShot.ViewModels
                 }));
             }
         }
+        private RelayCommand? _tradingOffSymbolsCommand;
+        public RelayCommand TradingOffSymbolsCommand
+        {
+            get
+            {
+                return _tradingOffSymbolsCommand ?? (_tradingOffSymbolsCommand = new RelayCommand(obj => {
+                    TradingOffSymbolsAsync();
+                }));
+            }
+        }
+        private RelayCommand? _runOnSymbolsCommand;
+        public RelayCommand RunOnSymbolsCommand
+        {
+            get
+            {
+                return _runOnSymbolsCommand ?? (_runOnSymbolsCommand = new RelayCommand(obj => {
+                    RunOnSymbolsAsync();
+                }));
+            }
+        }
+        private RelayCommand? _runOffSymbolsCommand;
+        public RelayCommand RunOffSymbolsCommand
+        {
+            get
+            {
+                return _runOffSymbolsCommand ?? (_runOffSymbolsCommand = new RelayCommand(obj => {
+                    RunOffSymbolsAsync();
+                }));
+            }
+        }
         public MainViewModel()
         {
             Main.Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(2);
@@ -83,6 +113,69 @@ namespace VolumeShot.ViewModels
             if (!Directory.Exists(pathPositions)) Directory.CreateDirectory(pathPositions);
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             LoginViewModel.Login.PropertyChanged += Login_PropertyChanged;
+        }
+
+        private async void RunOffSymbolsAsync()
+        {
+            await Task.Run(async () => {
+                try
+                {
+                    List<Symbol> symbols = Main.Symbols.ToList();
+                    foreach (var item in symbols)
+                    {
+                        if (item.IsRun)
+                        {
+                            item.IsRun = false;
+                            await Task.Delay(100);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, Main.LoginUser, $"Exception RunOnSymbolsAsync: {ex?.Message}");
+                }
+            });
+        }
+        private async void RunOnSymbolsAsync()
+        {
+            await Task.Run(async () => {
+                try
+                {
+                    List<Symbol> symbols = Main.Symbols.ToList();
+                    foreach (var item in symbols)
+                    {
+                        if (!item.IsRun)
+                        {
+                            item.IsRun = true;
+                            await Task.Delay(500);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, Main.LoginUser, $"Exception RunOnSymbolsAsync: {ex?.Message}");
+                }
+            });
+        }
+        private async void TradingOffSymbolsAsync()
+        {
+            await Task.Run(() => {
+                try
+                {
+                    List<Symbol> symbols = Main.Symbols.ToList();
+                    foreach (var item in symbols)
+                    {
+                        if (item.IsRun)
+                        {
+                            item.IsTrading = false;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, Main.LoginUser, $"Exception TradingOffSymbolsAsync: {ex?.Message}");
+                }
+            });
         }
         private async void TradingAllSymbolsAsync()
         {
