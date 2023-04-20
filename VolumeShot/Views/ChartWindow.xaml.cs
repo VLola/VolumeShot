@@ -121,8 +121,20 @@ namespace VolumeShot.Views
                 MyScatterPlot = formsPlot2.Plot.AddScatterPoints(volumeX.ToArray(), volumeY.ToArray(), markerSize: 1, color: Color.Transparent);
 
 
-                //double[] buyersGrouping3Y = buyers.GroupBy(b => b.DateTime).Select(p => p.Sum(p => Decimal.ToDouble(p.Quantity))).ToArray();
+                Color colorRed = Color.FromArgb(150, Color.Red);
+                Color colorGreen = Color.FromArgb(150, Color.LightGreen);
 
+                double[] makersGrouping3Y = makers.GroupBy(b => b.DateTime.ToString("yyyy/MM/ddThh:mm:ss.f")).Select(p => p.Sum(p => Decimal.ToDouble(p.Quantity))).ToArray();
+                double[] makersGrouping3X = makers.GroupBy(b => b.DateTime.ToString("yyyy/MM/ddThh:mm:ss.f")).Select(d => DateTime.Parse(d.Key + "5").ToOADate()).ToArray();
+                var barsMakers3 = formsPlot3.Plot.AddBar(makersGrouping3Y, makersGrouping3X, color: colorRed);
+                barsMakers3.BarWidth = 0.000001;
+                barsMakers3.BorderColor = colorRed;
+
+                double[] buyersGrouping3Y = buyers.GroupBy(b => b.DateTime.ToString("yyyy/MM/ddThh:mm:ss.f")).Select(p => p.Sum(p => Decimal.ToDouble(p.Quantity))).ToArray();
+                double[] buyersGrouping3X = buyers.GroupBy(b => b.DateTime.ToString("yyyy/MM/ddThh:mm:ss.f")).Select(d=>DateTime.Parse(d.Key+"5").ToOADate()).ToArray();
+                var barsBuyers3 = formsPlot3.Plot.AddBar(buyersGrouping3Y, buyersGrouping3X, color: colorGreen);
+                barsBuyers3.BarWidth = 0.000001;
+                barsBuyers3.BorderColor = colorGreen;
 
             }
             catch (Exception ex)
