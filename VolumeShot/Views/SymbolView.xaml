@@ -44,7 +44,7 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0">
-            <ComboBox ItemsSource="{Binding Path=Main.FullSymbols}" SelectedItem="{Binding Path=Main.SelectedFullSymbol}">
+            <ComboBox VerticalAlignment="Center" ItemsSource="{Binding Path=Main.FullSymbols}" SelectedItem="{Binding Path=Main.SelectedFullSymbol}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <Grid>
@@ -65,14 +65,14 @@
                 <TextBlock Text="Max: "/>
                 <TextBox Width="100" Text="{Binding Path=Main.MaxVolume}"/>
             </DockPanel>
-            <Button Content="Add" Command="{Binding Path=AddSymbolCommand}" Padding="5" Margin="10 0"/>
-            <Button Content="Clear" Command="{Binding Path=ClearSymbolsCommand}" Padding="5" Margin="10 0"/>
+            <Button Content="Add" Command="{Binding Path=AddSymbolCommand}" Padding="5" Margin="10 5"/>
+            <Button Content="Clear" Command="{Binding Path=ClearSymbolsCommand}" Padding="5" Margin="10 5"/>
             <TextBlock Text="{Binding Path=Main.Symbols.Count, StringFormat={}Count: {0}}" VerticalAlignment="Center"/>
             <DockPanel HorizontalAlignment="Right">
-                <Button Content="Run off" Command="{Binding Path=RunOffSymbolsCommand}" HorizontalAlignment="Right" Padding="5" Margin="5 0"/>
-                <Button Content="Run on" Command="{Binding Path=RunOnSymbolsCommand}" HorizontalAlignment="Right" Padding="5" Margin="5 0"/>
-                <Button Content="Trading off" Command="{Binding Path=TradingOffSymbolsCommand}" HorizontalAlignment="Right" Padding="5" Margin="5 0"/>
-                <Button Content="Trading on" Command="{Binding Path=TradingAllSymbolsCommand}" HorizontalAlignment="Right" Padding="5"/>
+                <Button Content="Run on" Command="{Binding Path=RunOnSymbolsCommand}" HorizontalAlignment="Right" Padding="5" Margin="5"/>
+                <Button Content="Run off" Command="{Binding Path=RunOffSymbolsCommand}" HorizontalAlignment="Right" Padding="5" Margin="5"/>
+                <Button Content="Trading on" Command="{Binding Path=TradingAllSymbolsCommand}" HorizontalAlignment="Right" Padding="5"  Margin="5"/>
+                <Button Content="Trading off" Command="{Binding Path=TradingOffSymbolsCommand}" HorizontalAlignment="Right" Padding="5" Margin="5"/>
             </DockPanel>
         </DockPanel>
         <ListView Grid.Row="1" ItemsSource="{Binding Path=Main.Symbols}" SelectedItem="{Binding Path=Main.SelectedSymbol}">
