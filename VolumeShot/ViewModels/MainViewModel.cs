@@ -903,7 +903,10 @@ namespace VolumeShot.ViewModels
                             symbol.Name == "FTTUSDT" || 
                             symbol.Name == "CVCUSDT" || 
                             symbol.Name == "SRMUSDT" || 
-                            symbol.Name == "SCUSDT") continue;
+                            symbol.Name == "SCUSDT" ||
+                            symbol.Name == "HNTUSDT" ||
+                            symbol.Name == "BTSUSDT" ||
+                            symbol.Name == "BTCSTUSDT") continue;
 
                         if (symbol.QuoteAsset == "USDT")
                         {
