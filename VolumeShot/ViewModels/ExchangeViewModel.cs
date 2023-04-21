@@ -277,8 +277,8 @@ namespace VolumeShot.ViewModels
                     Exchange.Profit = 0m;
                     Exchange.Quantity = 0m;
 
-                    await OpenOrderLimitAsync(PositionSide.Long, OrderSide.Buy, priceDistanceLower, openQuantity);
-                    await OpenOrderLimitAsync(PositionSide.Short, OrderSide.Sell, priceDistanceUpper, openQuantity);
+                    OpenOrderLimitAsync(PositionSide.Long, OrderSide.Buy, priceDistanceLower, openQuantity);
+                    OpenOrderLimitAsync(PositionSide.Short, OrderSide.Sell, priceDistanceUpper, openQuantity);
                 }
             }
             catch (Exception ex)

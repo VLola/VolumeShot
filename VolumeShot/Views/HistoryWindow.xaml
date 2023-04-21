@@ -62,7 +62,7 @@
                     <GridViewColumn Header="Show" Width="55">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Content="Show" Command="{Binding Path=ShowCommand}" Padding="5 0"/>
+                                <ToggleButton Content="Show" Command="{Binding Path=ShowCommand}" Padding="5 0"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
