@@ -18,9 +18,12 @@ namespace VolumeShot.Views
         private int LastHighlightedIndex2 = -1;
         private MarkerPlot HighlightedPoint3;
         private int LastHighlightedIndex3 = -1;
+        public string SymbolName { get; set; }
         public ChartWindow(Bet bet)
         {
+            SymbolName = bet.Symbol;
             InitializeComponent();
+            volume.Text = $"{SymbolName}";
             Load(bet);
         }
 
@@ -220,7 +223,7 @@ namespace VolumeShot.Views
             }
 
             // update the GUI to describe the highlighted point
-            volume.Text = $"Volume: {Math.Round(pointY).ToString("0,0")}";
+            volume.Text = $"{SymbolName}: {Math.Round(pointY).ToString("0,0")}";
         }
         private void FormsPlot3_MouseMove(object sender, MouseEventArgs e)
         {
@@ -242,7 +245,7 @@ namespace VolumeShot.Views
             }
 
             // update the GUI to describe the highlighted point
-            volume.Text = $"Volume: {Math.Round(pointY).ToString("0,0")}";
+            volume.Text = $"{SymbolName}: {Math.Round(pointY).ToString("0,0")}";
         }
     }
 }
