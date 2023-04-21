@@ -35,8 +35,6 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        
-        
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
