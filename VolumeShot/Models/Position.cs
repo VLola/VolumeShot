@@ -88,7 +88,7 @@ namespace VolumeShot.Models
             Quantity = position.Quantity;
             Price = position.EntryPrice;
             PositionSide = position.PositionSide;
-            OpenTime = DateTime.Now;
+            OpenTime = DateTime.UtcNow;
             SubscribeToAggregatedTradeUpdatesAsync();
         }
         public Position(BinancePositionDetailsUsdt position, BinanceClient client, BinanceSocketClient socketClient)
@@ -99,7 +99,7 @@ namespace VolumeShot.Models
             Quantity = position.Quantity;
             Price = position.EntryPrice;
             PositionSide = position.PositionSide;
-            OpenTime = position.UpdateTime.ToLocalTime();
+            OpenTime = position.UpdateTime;
             SubscribeToAggregatedTradeUpdatesAsync();
         }
 
