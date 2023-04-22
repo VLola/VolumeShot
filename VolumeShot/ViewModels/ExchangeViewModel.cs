@@ -67,6 +67,7 @@ namespace VolumeShot.ViewModels
                             {
                                 if (Exchange.IsOpenLongOrder) 
                                 {
+                                    CancelAllOrdersAsync();
                                     CloseBet(AccountUpdate.EventTime); 
                                 }
                                 Exchange.IsOpenLongOrder = false;
@@ -75,6 +76,7 @@ namespace VolumeShot.ViewModels
                             {
                                 if (Exchange.IsOpenShortOrder)
                                 {
+                                    CancelAllOrdersAsync();
                                     CloseBet(AccountUpdate.EventTime);
                                 }
                                 Exchange.IsOpenShortOrder = false;
@@ -98,7 +100,6 @@ namespace VolumeShot.ViewModels
                                 }
                                 Exchange.IsOpenShortOrder = true;
                             }
-
                         }
                     }
                 }
@@ -120,7 +121,6 @@ namespace VolumeShot.ViewModels
                         {
                             Exchange.Quantity += OrderUpdate.UpdateData.Quantity;
                             Exchange.ClosePrice = OrderUpdate.UpdateData.AveragePrice;
-                            ClearOrdersToSymbolAsync();
                         }
                     }
                     else if (OrderUpdate.UpdateData.Type == FuturesOrderType.Market)
@@ -129,9 +129,13 @@ namespace VolumeShot.ViewModels
                         {
                             Exchange.Quantity += OrderUpdate.UpdateData.Quantity;
                             Exchange.ClosePrice = OrderUpdate.UpdateData.AveragePrice;
-                            ClearOrdersToSymbolAsync();
                         }
                     }
+                }
+                else if(OrderUpdate.UpdateData.Status == OrderStatus.New && OrderUpdate.UpdateData.Type == FuturesOrderType.Limit)
+                {
+                    if(OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
+                    Exchange.IsCanceledOrders = false;
                 }
                 Exchange.Fee += OrderUpdate.UpdateData.Fee;
                 Exchange.Profit += OrderUpdate.UpdateData.RealizedProfit;
@@ -314,11 +318,11 @@ namespace VolumeShot.ViewModels
                 Exchange.IsWorkedStopLoss = false;
             });
         }
-        private async void ClearOrdersToSymbolAsync()
-        {
-            await CancelAllOrdersAsync();
-            GetPositionInformationAsync();
-        }
+        //private async void ClearOrdersToSymbolAsync()
+        //{
+        //    await CancelAllOrdersAsync();
+        //    GetPositionInformationAsync();
+        //}
         public async Task CancelAllOrdersAsync()
         {
             await Task.Run(async() =>
@@ -333,6 +337,7 @@ namespace VolumeShot.ViewModels
                     }
                     else
                     {
+                        Exchange.IsCanceledOrders = true;
                         Error.WriteLog(path, Exchange.Symbol, $"CancelAllOrdersAsync");
                     }
                 }

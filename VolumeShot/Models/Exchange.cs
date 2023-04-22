@@ -380,5 +380,15 @@ namespace VolumeShot.Models
                 OnPropertyChanged("ClosePrice");
             }
         }
+        private bool _isCanceledOrders { get; set; }
+        public bool IsCanceledOrders
+        {
+            get { return _isCanceledOrders; }
+            set
+            {
+                _isCanceledOrders = value;
+                OnPropertyChanged("IsCanceledOrders");
+            }
+        }
     }
 }
