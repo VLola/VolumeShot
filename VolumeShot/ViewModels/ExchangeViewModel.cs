@@ -329,7 +329,7 @@ namespace VolumeShot.ViewModels
             StopLossAsync();
             await CancelAllOrdersAsync(Method.ClosePositionsAsync);
             GetPositionInformationAsync();
-        } 
+        }
         private async void StopLossAsync()
         {
             await Task.Run(async () => {
