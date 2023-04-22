@@ -117,11 +117,7 @@ namespace VolumeShot.ViewModels
                 {
                     if (OrderUpdate.UpdateData.Type == FuturesOrderType.Limit)
                     {
-                        if (OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
-                        {
-                            //OpenOrder(OrderUpdate.UpdateData.OrderId, OrderUpdate.UpdateData.AveragePrice, OrderUpdate.UpdateData.Side, OrderUpdate.UpdateData.Quantity, OrderUpdate.UpdateData.UpdateTime);
-                        }
-                        else if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
+                        if (OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
                         {
                             Exchange.Quantity += OrderUpdate.UpdateData.Quantity;
                             Exchange.ClosePrice = OrderUpdate.UpdateData.AveragePrice;
@@ -233,20 +229,6 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
-        //private async void OpenOrder(long orderId, decimal price, OrderSide side, decimal quantity, DateTime time)
-        //{
-        //    int methodId = 3;
-        //    if (side == OrderSide.Buy)
-        //    {
-        //        await CancelAllOrdersAsync(methodId);
-        //        OpenOrderTakeProfitAsync(PositionSide.Long, OrderSide.Sell, Exchange.TakeProfitLongPrice, quantity);
-        //    }
-        //    else
-        //    {
-        //        await CancelAllOrdersAsync(methodId);
-        //        OpenOrderTakeProfitAsync(PositionSide.Short, OrderSide.Buy, Exchange.TakeProfitShortPrice, quantity);
-        //    }
-        //}
         private async void OpenOrder(PositionSide positionSide, decimal quantity)
         {
             if (positionSide == PositionSide.Long)
