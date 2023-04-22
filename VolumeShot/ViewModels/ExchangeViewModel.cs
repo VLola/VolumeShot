@@ -338,11 +338,6 @@ namespace VolumeShot.ViewModels
                 Exchange.IsWorkedStopLoss = false;
             });
         }
-        //private async void ClearOrdersToSymbolAsync()
-        //{
-        //    await CancelAllOrdersAsync();
-        //    GetPositionInformationAsync();
-        //}
         public async Task CancelAllOrdersAsync(Method method)
         {
             await Task.Run(async() =>
