@@ -325,6 +325,7 @@ namespace VolumeShot.ViewModels
         }
         public async void ClosePositionsAsync()
         {
+            Exchange.IsWorkedStopLoss = true;
             StopLossAsync();
             await CancelAllOrdersAsync(Method.ClosePositionsAsync);
             GetPositionInformationAsync();
@@ -333,7 +334,6 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () => {
                 Error.WriteLog(path, Exchange.Symbol, "StopLossAsync");
-                Exchange.IsWorkedStopLoss = true;
                 await Task.Delay(1000);
                 Exchange.IsWorkedStopLoss = false;
             });

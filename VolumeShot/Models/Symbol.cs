@@ -364,5 +364,15 @@ namespace VolumeShot.Models
                 OnPropertyChanged("IsTestnet");
             }
         }
+        private bool _isRedistance { get; set; }
+        public bool IsRedistance
+        {
+            get { return _isRedistance; }
+            set
+            {
+                _isRedistance = value;
+                OnPropertyChanged("IsRedistance");
+            }
+        }
     }
 }
