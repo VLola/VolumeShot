@@ -11,15 +11,13 @@ namespace VolumeShot.Models
         {
             try
             {
-                //if (!path.Contains("orders"))
-                //{
-                //    App.Current.Dispatcher.BeginInvoke(new Action(() => {
-                //        Log.Insert(0, $"{DateTime.UtcNow} {text}");
-                //    }));
-                //}
-                App.Current.Dispatcher.BeginInvoke(new Action(() => {
-                    Log.Insert(0, $"{DateTime.UtcNow} {text}");
-                }));
+                if (!path.Contains("orders"))
+                {
+                    App.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        Log.Insert(0, $"{DateTime.UtcNow} {file} {text}");
+                    }));
+                }
                 File.AppendAllText(path + file, $"{DateTime.UtcNow} {text}\n");
             }
             catch { }

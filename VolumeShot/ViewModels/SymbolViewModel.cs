@@ -131,7 +131,7 @@ namespace VolumeShot.ViewModels
         private async void ReDistanceChengeVolumeAsync()
         {
             ReBuffers();
-            if (Symbol.IsTrading && !Symbol.Exchange.IsWait && Symbol.DistanceLower > 0m && Symbol.DistanceUpper > 0m && Symbol.BestAskPrice > 0m && Symbol.BestBidPrice > 0m) await ExchangeViewModel.SetDistances(distanceUpper: Symbol.DistanceUpper, distanceLower: Symbol.DistanceLower, askPrice: Symbol.BestAskPrice, bidPrice: Symbol.BestBidPrice, bufferUpper: Symbol.BufferUpper, bufferLower: Symbol.BufferLower, bufferUpperPrice: Symbol.BufferUpperPrice, bufferLowerPrice: Symbol.BufferLowerPrice, volume: Symbol.Volume);
+            if (Symbol.IsTrading && !Symbol.Exchange.IsWait && Symbol.DistanceLower > 0m && Symbol.DistanceUpper > 0m && Symbol.BestAskPrice > 0m && Symbol.BestBidPrice > 0m) await ExchangeViewModel.SetDistances(Method.ReDistanceChengeVolumeAsync, distanceUpper: Symbol.DistanceUpper, distanceLower: Symbol.DistanceLower, askPrice: Symbol.BestAskPrice, bidPrice: Symbol.BestBidPrice, bufferUpper: Symbol.BufferUpper, bufferLower: Symbol.BufferLower, bufferUpperPrice: Symbol.BufferUpperPrice, bufferLowerPrice: Symbol.BufferLowerPrice, volume: Symbol.Volume);
         }
         private async Task ReDistanceAsync()
         {
@@ -139,10 +139,10 @@ namespace VolumeShot.ViewModels
             {
                 if (Symbol.BufferLowerPrice >= Symbol.BestAskPrice || Symbol.BufferUpperPrice <= Symbol.BestBidPrice)
                 {
-                    if (Symbol.IsTrading && !Symbol.Exchange.IsWait && !Symbol.Exchange.IsCanceledOrders) await ExchangeViewModel.CancelAllOrdersAsync();
-                    await Task.Delay(500);
                     ReBuffers();
-                    if (Symbol.IsTrading && !Symbol.Exchange.IsWait) await ExchangeViewModel.SetDistances(distanceUpper: Symbol.DistanceUpper, distanceLower: Symbol.DistanceLower, askPrice: Symbol.BestAskPrice, bidPrice: Symbol.BestBidPrice, bufferUpper: Symbol.BufferUpper, bufferLower: Symbol.BufferLower, bufferUpperPrice: Symbol.BufferUpperPrice, bufferLowerPrice: Symbol.BufferLowerPrice, volume: Symbol.Volume);
+                    if (Symbol.IsTrading && !Symbol.Exchange.IsWait && !Symbol.Exchange.IsCanceledOrders) await ExchangeViewModel.CancelAllOrdersAsync(Method.ReDistanceAsync);
+                    await Task.Delay(500);
+                    if (Symbol.IsTrading && !Symbol.Exchange.IsWait) await ExchangeViewModel.SetDistances(Method.ReDistanceAsync, distanceUpper: Symbol.DistanceUpper, distanceLower: Symbol.DistanceLower, askPrice: Symbol.BestAskPrice, bidPrice: Symbol.BestBidPrice, bufferUpper: Symbol.BufferUpper, bufferLower: Symbol.BufferLower, bufferUpperPrice: Symbol.BufferUpperPrice, bufferLowerPrice: Symbol.BufferLowerPrice, volume: Symbol.Volume);
                 }
             }
             else if (!ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder)
