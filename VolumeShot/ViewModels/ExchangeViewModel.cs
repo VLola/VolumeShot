@@ -98,7 +98,7 @@ namespace VolumeShot.ViewModels
                             {
                                 if (!Exchange.IsOpenShortOrder)
                                 {
-                                    OpenOrder(item.PositionSide, item.Quantity);
+                                    OpenOrder(item.PositionSide, -item.Quantity);
                                     OpenBet(item.PositionSide, AccountUpdate.EventTime, item.EntryPrice);
                                 }
                                 Exchange.IsOpenShortOrder = true;

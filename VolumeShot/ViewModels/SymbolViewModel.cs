@@ -208,12 +208,9 @@ namespace VolumeShot.ViewModels
                     try
                     {
                         // Stop loss
-                        if (!ExchangeViewModel.Exchange.IsWorkedStopLoss)
+                        if (!ExchangeViewModel.Exchange.IsWorkedStopLoss && ExchangeViewModel.Exchange.IsOpenShortOrder && Message.Data.Price >= ExchangeViewModel.Exchange.StopLossShortPrice || !ExchangeViewModel.Exchange.IsWorkedStopLoss && ExchangeViewModel.Exchange.IsOpenLongOrder && Message.Data.Price <= ExchangeViewModel.Exchange.StopLossLongPrice)
                         {
-                            if (ExchangeViewModel.Exchange.IsOpenShortOrder && Message.Data.Price >= ExchangeViewModel.Exchange.StopLossShortPrice || ExchangeViewModel.Exchange.IsOpenLongOrder && Message.Data.Price <= ExchangeViewModel.Exchange.StopLossLongPrice)
-                            {
-                                ExchangeViewModel.ClosePositionsAsync();
-                            }
+                            ExchangeViewModel.ClosePositionsAsync();
                         }
                         if (!Symbol.IsRun)
                         {
