@@ -14,6 +14,9 @@
         OpenOrderMarketAsync,
         OpenOrderTakeProfitAsync,
         OpenOrderLimitAsync,
-        ReDistanceChengeVolumeAsync
+        ReDistanceChengeVolumeAsync,
+        CheckBufferAsync1,
+        CheckBufferAsync2,
+        CheckBufferAsync3
     }
 }

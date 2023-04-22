@@ -142,8 +142,9 @@ namespace VolumeShot.ViewModels
                 Error.WriteLog(path, Symbol.Name, $"Exception ReBuffers: {ex.Message}");
             }
         }
-        private async Task ReDistanceAsync()
+        private async Task ReDistanceAsync(Method method)
         {
+            Error.WriteLog(path, Symbol.Exchange.Symbol, $"{method} -> ReDistanceAsync");
             ReBuffers();
             if (Symbol.IsTrading && !Symbol.Exchange.IsWait && !Symbol.Exchange.IsCanceledOrders) await ExchangeViewModel.CancelAllOrdersAsync(Method.ReDistanceAsync);
             await Task.Delay(500);
@@ -154,20 +155,22 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                if (Symbol.BufferLowerPrice == 0m || Symbol.BufferUpperPrice == 0m)
+                //if (Symbol.BufferLowerPrice == 0m || Symbol.BufferUpperPrice == 0m)
+                //{
+                //    await ReDistanceAsync(Method.CheckBufferAsync1);
+                //}
+                //else 
+                
+                if (!ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder)
                 {
-                    await ReDistanceAsync();
-                }
-                else if (Symbol.IsRedistance)
-                {
-                    Symbol.IsRedistance = false;
-                    await ReDistanceAsync();
-                }
-                else if (!ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder)
-                {
-                    if (Symbol.BufferLowerPrice >= Symbol.BestAskPrice || Symbol.BufferUpperPrice <= Symbol.BestBidPrice)
+                    if (Symbol.IsRedistance)
                     {
-                        await ReDistanceAsync();
+                        Symbol.IsRedistance = false;
+                        await ReDistanceAsync(Method.CheckBufferAsync2);
+                    }
+                    else if (Symbol.BufferLowerPrice >= Symbol.BestAskPrice || Symbol.BufferUpperPrice <= Symbol.BestBidPrice)
+                    {
+                        await ReDistanceAsync(Method.CheckBufferAsync3);
                     }
                 }
             });
