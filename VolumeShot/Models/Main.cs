@@ -7,7 +7,10 @@ namespace VolumeShot.Models
 {
     public class Main : Changed
     {
-        public General General { get; set; } = new();
+        public Main() {
+            General = Error.General;
+        }
+        public General General { get; set; }
         private string _version { get; set; }
         public string Version
         {

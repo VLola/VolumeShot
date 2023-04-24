@@ -322,7 +322,7 @@ namespace VolumeShot.ViewModels
             LoadChart();
             RunChartAsync();
             CheckPingAsync();
-            //RunTimeAsync();
+            RunTimeAsync();
         }
         private async void RunTimeAsync()
         {
@@ -332,7 +332,7 @@ namespace VolumeShot.ViewModels
                 {
                     await Task.Delay(1000);
                     Main.DateTime = DateTime.UtcNow;
-                    CheckLimitsAsync();
+                    if(Main.General.Orders > 0) Main.General.Orders -= (Math.Round((Main.General.Orders / 60)) + 1);
                 }
             });
         }
@@ -342,17 +342,17 @@ namespace VolumeShot.ViewModels
             {
                 try
                 {
-                    Main.General.Orders -= (Main.General.Orders / 60);
-                    if (!Main.IsMaxRequests && Main.General.Requests > 900)
-                    {
-                        Main.IsMaxRequests = true;
-                        MaxRequestsAsync();
-                    }
-                    else if (!Main.IsMaxRequests && Main.General.Orders > 600)
-                    {
-                        Main.IsMaxRequests = true;
-                        MaxOrdersAsync();
-                    }
+                    Main.General.Orders -= Math.Round((Main.General.Orders / 60));
+                    //if (!Main.IsMaxRequests && Main.General.Requests > 900)
+                    //{
+                    //    Main.IsMaxRequests = true;
+                    //    MaxRequestsAsync();
+                    //}
+                    //else if (!Main.IsMaxRequests && Main.General.Orders > 600)
+                    //{
+                    //    Main.IsMaxRequests = true;
+                    //    MaxOrdersAsync();
+                    //}
                 }
                 catch (Exception ex)
                 {
