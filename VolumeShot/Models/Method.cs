@@ -3,7 +3,8 @@
     internal enum Method
     {
         CancelAllOrdersAsync,
-        ReDistanceAsync,
+        ReDistanceAsync1,
+        ReDistanceAsync2,
         StopLossAsync,
         AccountUpdate,
         OrderUpdate,

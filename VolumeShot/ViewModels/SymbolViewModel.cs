@@ -1,4 +1,5 @@
-﻿using Binance.Net.Clients;
+﻿using Binance.Net;
+using Binance.Net.Clients;
 using Binance.Net.Objects.Models.Futures;
 using Newtonsoft.Json;
 using System;
@@ -18,11 +19,11 @@ namespace VolumeShot.ViewModels
         public ExchangeViewModel ExchangeViewModel { get; set; }
         public BinanceClient client { get; set; }
         public BinanceSocketClient socketClient { get; set; }
-        public SymbolViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, decimal volume, BinanceSocketClient _socketClient, BinanceClient _client, bool isTestnet, string loginUser) {
+        public SymbolViewModel(General general, BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, decimal volume, BinanceSocketClient _socketClient, BinanceClient _client, bool isTestnet, string loginUser) {
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             socketClient = _socketClient;
             client = _client;
-            ExchangeViewModel = new ExchangeViewModel(binanceFuturesUsdtSymbol, _socketClient, _client, loginUser);
+            ExchangeViewModel = new ExchangeViewModel(general, binanceFuturesUsdtSymbol, _socketClient, _client, loginUser);
             Symbol.Exchange = ExchangeViewModel.Exchange;
             Symbol.IsTestnet = isTestnet;
             Symbol.Name = binanceFuturesUsdtSymbol.Name;
@@ -144,12 +145,11 @@ namespace VolumeShot.ViewModels
         }
         private async Task ReDistanceAsync(Method method)
         {
-            Error.WriteLog(path, Symbol.Exchange.Symbol, $"{method} -> ReDistanceAsync");
             ReBuffers();
-            if (Symbol.IsTrading && !Symbol.Exchange.IsWait && !Symbol.Exchange.IsCanceledOrders && !ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder) await ExchangeViewModel.CancelAllOrdersAsync(Method.ReDistanceAsync);
+            if (Symbol.IsTrading && !Symbol.Exchange.IsWait && !Symbol.Exchange.IsCanceledOrders && !ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder) await ExchangeViewModel.CancelAllOrdersAsync(method);
             await Task.Delay(500);
             ReBuffers();
-            if (Symbol.IsTrading && !Symbol.Exchange.IsWait && !ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder) await ExchangeViewModel.SetDistances(Method.ReDistanceAsync, distanceUpper: Symbol.DistanceUpper, distanceLower: Symbol.DistanceLower, askPrice: Symbol.BestAskPrice, bidPrice: Symbol.BestBidPrice, bufferUpper: Symbol.BufferUpper, bufferLower: Symbol.BufferLower, bufferUpperPrice: Symbol.BufferUpperPrice, bufferLowerPrice: Symbol.BufferLowerPrice, volume: Symbol.Volume);
+            if (Symbol.IsTrading && !Symbol.Exchange.IsWait && !ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder) await ExchangeViewModel.SetDistances(method, distanceUpper: Symbol.DistanceUpper, distanceLower: Symbol.DistanceLower, askPrice: Symbol.BestAskPrice, bidPrice: Symbol.BestBidPrice, bufferUpper: Symbol.BufferUpper, bufferLower: Symbol.BufferLower, bufferUpperPrice: Symbol.BufferUpperPrice, bufferLowerPrice: Symbol.BufferLowerPrice, volume: Symbol.Volume);
         }
         private async Task CheckBufferAsync()
         {
@@ -166,11 +166,11 @@ namespace VolumeShot.ViewModels
                     if (Symbol.IsRedistance)
                     {
                         Symbol.IsRedistance = false;
-                        await ReDistanceAsync(Method.CheckBufferAsync2);
+                        await ReDistanceAsync(Method.ReDistanceAsync1);
                     }
                     else if (Symbol.BufferLowerPrice >= Symbol.BestAskPrice || Symbol.BufferUpperPrice <= Symbol.BestBidPrice)
                     {
-                        await ReDistanceAsync(Method.CheckBufferAsync3);
+                        await ReDistanceAsync(Method.ReDistanceAsync2);
                     }
                 }
             });
@@ -194,7 +194,6 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                ExchangeViewModel.Exchange.Requests += 1;
                 int socketId = 0;
                 var result = await socketClient.UsdFuturesStreams.SubscribeToAggregatedTradeUpdatesAsync(Symbol.Name, Message =>
                 {
@@ -237,7 +236,6 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                ExchangeViewModel.Exchange.Requests += 1;
                 int socketId = 0;
                 var result = await socketClient.UsdFuturesStreams.SubscribeToBookTickerUpdatesAsync(Symbol.Name, Message =>
                 {
@@ -270,7 +268,6 @@ namespace VolumeShot.ViewModels
             {
                 try
                 {
-                    ExchangeViewModel.Exchange.Requests += 1;
                     var result = await client.UsdFuturesApi.ExchangeData.GetOrderBookAsync(Symbol.Name, limit: 1000);
                     if (!result.Success)
                     {
@@ -283,6 +280,9 @@ namespace VolumeShot.ViewModels
                         Symbol.OrderBook.Asks.Clear();
                         Symbol.OrderBook.AddBids(result.Data.Bids);
                         Symbol.OrderBook.AddAsks(result.Data.Asks);
+
+                        var weight = BinanceHelpers.UsedWeight(result.ResponseHeaders);
+                        ExchangeViewModel.Exchange.General.Requests = weight;
                     }
                 }
                 catch (Exception ex)
@@ -295,9 +295,7 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
-                ExchangeViewModel.Exchange.Requests += 1;
                 int socketId = 0;
-                int i = 0;
                 var result = await socketClient.UsdFuturesStreams.SubscribeToOrderBookUpdatesAsync(Symbol.Name, updateInterval: 500, Message =>
                 {
                     try

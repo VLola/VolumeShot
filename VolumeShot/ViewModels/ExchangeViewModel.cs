@@ -1,4 +1,5 @@
-﻿using Binance.Net.Clients;
+﻿using Binance.Net;
+using Binance.Net.Clients;
 using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
 using Binance.Net.Objects.Models.Futures.Socket;
@@ -19,13 +20,13 @@ namespace VolumeShot.ViewModels
         public Exchange Exchange { get; set; }
         public BinanceClient client { get; set; }
         public BinanceSocketClient socketClient { get; set; }
-        public ExchangeViewModel(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, BinanceSocketClient _socketClient, BinanceClient _client, string loginUser)
+        public ExchangeViewModel(General general, BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, BinanceSocketClient _socketClient, BinanceClient _client, string loginUser)
         {
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             if (!Directory.Exists(pathHistory)) Directory.CreateDirectory(pathHistory);
             socketClient = _socketClient;
             client = _client;
-            Exchange = new(binanceFuturesUsdtSymbol);
+            Exchange = new(binanceFuturesUsdtSymbol, general);
             Exchange.LoginUser = loginUser;
             LoadHistoryAsync();
         }
@@ -135,8 +136,11 @@ namespace VolumeShot.ViewModels
                 else if(OrderUpdate.UpdateData.Status == OrderStatus.New && OrderUpdate.UpdateData.Type == FuturesOrderType.Limit)
                 {
                     if(OrderUpdate.UpdateData.Side == OrderSide.Buy && OrderUpdate.UpdateData.PositionSide == PositionSide.Long || OrderUpdate.UpdateData.Side == OrderSide.Sell && OrderUpdate.UpdateData.PositionSide == PositionSide.Short)
-                    Exchange.IsCanceledOrders = false;
+                    {
+                        Exchange.IsCanceledOrders = false;
+                    }
                 }
+
                 Exchange.Fee += OrderUpdate.UpdateData.Fee;
                 Exchange.Profit += OrderUpdate.UpdateData.RealizedProfit;
             }
@@ -320,11 +324,11 @@ namespace VolumeShot.ViewModels
                 Exchange.IsWorkedStopLoss = false;
             });
         }
+        // Weight 1
         public async Task CancelAllOrdersAsync(Method method)
         {
             await Task.Run(async() =>
             {
-                Exchange.Requests += 1;
                 try
                 {
                     var result = await client.UsdFuturesApi.Trading.CancelAllOrdersAsync(symbol: Exchange.Symbol);
@@ -335,6 +339,8 @@ namespace VolumeShot.ViewModels
                     else
                     {
                         Exchange.IsCanceledOrders = true;
+                        var weight = BinanceHelpers.UsedWeight(result.ResponseHeaders);
+                        Exchange.General.Requests = weight;
                         Error.WriteLog(path, Exchange.Symbol, $"{method} -> CancelAllOrdersAsync {result.Data.Code} {result.Data.Message}");
                     }
                 }
@@ -344,11 +350,11 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
+        // Weight 5
         private async void GetPositionInformationAsync()
         {
             await Task.Run(async() =>
             {
-                Exchange.Requests += 1;
                 try
                 {
                     var result = await client.UsdFuturesApi.Account.GetPositionInformationAsync(symbol: Exchange.Symbol);
@@ -358,7 +364,9 @@ namespace VolumeShot.ViewModels
                     }
                     else
                     {
-                        Error.WriteLog(path, Exchange.Symbol, "GetPositionInformationAsync");
+                        var weight = BinanceHelpers.UsedWeight(result.ResponseHeaders);
+                        Exchange.General.Requests = weight;
+                        Error.WriteLog(path, Exchange.Symbol, $"GetPositionInformationAsync");
                         foreach (var item in result.Data.ToList())
                         {
                             if (item.Quantity != 0m)
@@ -381,11 +389,11 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
+        // Weight: 0
         private async void OpenOrderMarketAsync(PositionSide positionSide, OrderSide side, decimal quantity)
         {
             await Task.Run(async () =>
             {
-                Exchange.Requests += 1;
                 try
                 {
                     var result = await client.UsdFuturesApi.Trading.PlaceOrderAsync(
@@ -409,11 +417,11 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
+        // Weight: 0
         private async Task OpenOrderTakeProfitAsync(PositionSide positionSide, OrderSide side, decimal price, decimal quantity)
         {
             await Task.Run(async () =>
             {
-                Exchange.Requests += 1;
                 try
                 {
                     var result = await client.UsdFuturesApi.Trading.PlaceOrderAsync(
@@ -439,11 +447,11 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
+        // Weight: 0
         private async Task OpenOrderLimitAsync(PositionSide positionSide, OrderSide side, decimal price, decimal quantity)
         {
             await Task.Run(async () =>
             {
-                Exchange.Requests += 1;
                 try
                 {
                     var result = await client.UsdFuturesApi.Trading.PlaceOrderAsync(

@@ -7,6 +7,7 @@ namespace VolumeShot.Models
 {
     public class Main : Changed
     {
+        public General General { get; set; } = new();
         private string _version { get; set; }
         public string Version
         {
@@ -47,26 +48,6 @@ namespace VolumeShot.Models
             {
                 _dateTime = value;
                 OnPropertyChanged("DateTime");
-            }
-        }
-        private int _tick { get; set; }
-        public int Tick
-        {
-            get { return _tick; }
-            set
-            {
-                _tick = value;
-                OnPropertyChanged("Tick");
-            }
-        }
-        private double _requests { get; set; }
-        public double Requests
-        {
-            get { return _requests; }
-            set
-            {
-                _requests = value;
-                OnPropertyChanged("Requests");
             }
         }
         public WpfPlot WpfPlot { get; set; } = new();
@@ -115,6 +96,16 @@ namespace VolumeShot.Models
             {
                 _isAddList = value;
                 OnPropertyChanged("IsAddList");
+            }
+        }
+        private bool _isMaxRequests { get; set; }
+        public bool IsMaxRequests
+        {
+            get { return _isMaxRequests; }
+            set
+            {
+                _isMaxRequests = value;
+                OnPropertyChanged("IsMaxRequests");
             }
         }
         private decimal _maxVolume { get; set; }

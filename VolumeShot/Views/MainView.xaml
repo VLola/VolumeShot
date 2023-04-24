@@ -98,7 +98,9 @@
                 <GridSplitter Width="1" HorizontalAlignment="Stretch" />
                 <TextBlock Text="{Binding Path=Main.Balance, StringFormat={}Balance: {0:N2}}" Margin="5 0" Foreground="White"/>
                 <GridSplitter Width="1" HorizontalAlignment="Stretch" />
-                <TextBlock Text="{Binding Path=Main.Requests, StringFormat={}Api: {0:N0}/2400}" Margin="10 0" Foreground="White"/>
+                <TextBlock Text="{Binding Path=Main.General.Orders, StringFormat={}Orders: {0:N0}/900}" Margin="10 0" Foreground="White"/>
+                <GridSplitter Width="1" HorizontalAlignment="Stretch" />
+                <TextBlock Text="{Binding Path=Main.General.Requests, StringFormat={}Api: {0}/1200}" Margin="10 0" Foreground="White"/>
                 <GridSplitter Width="1" HorizontalAlignment="Stretch" />
                 <TextBlock Text="{Binding Path=Main.Ping, StringFormat={}Ping: {0} ms}" Foreground="{Binding Path=Main.PingColor}" HorizontalAlignment="Right" Margin="10 0"/>
             </DockPanel>

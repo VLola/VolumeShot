@@ -112,7 +112,7 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="Take profit" Width="120">
+                    <!--<GridViewColumn Header="Take profit" Width="120">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <DockPanel Margin="10 0">
@@ -131,7 +131,7 @@
                                 </DockPanel>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
+                    </GridViewColumn>-->
 
                     <GridViewColumn Header="Distance ▲" DisplayMemberBinding="{Binding Path=DistanceUpper, StringFormat={}      {0:N2}}" Width="80"/>
                     <GridViewColumn Header="Distance ▼" DisplayMemberBinding="{Binding Path=DistanceLower, StringFormat={}      {0:N2}}" Width="80"/>
@@ -154,6 +154,8 @@
 
                     <GridViewColumn Header="Open long" DisplayMemberBinding="{Binding Path=Exchange.IsOpenLongOrder}" Width="Auto"/>
                     <GridViewColumn Header="Open short" DisplayMemberBinding="{Binding Path=Exchange.IsOpenShortOrder}" Width="Auto"/>
+                    <GridViewColumn Header="Requests / m" DisplayMemberBinding="{Binding Path=Exchange.Requests, StringFormat={}{0:N0}}" Width="Auto"/>
+                    <GridViewColumn Header="Orders / m" DisplayMemberBinding="{Binding Path=Exchange.Orders, StringFormat={}{0:N0}}" Width="Auto"/>
                 </GridView>
             </ListView.View>
         </ListView>

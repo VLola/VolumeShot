@@ -13,6 +13,7 @@ using System.Drawing;
 using VolumeShot.Command;
 using System.Windows;
 using System.Reflection;
+using Binance.Net;
 
 namespace VolumeShot.ViewModels
 {
@@ -321,7 +322,7 @@ namespace VolumeShot.ViewModels
             LoadChart();
             RunChartAsync();
             CheckPingAsync();
-            RunTimeAsync();
+            //RunTimeAsync();
         }
         private async void RunTimeAsync()
         {
@@ -341,20 +342,96 @@ namespace VolumeShot.ViewModels
             {
                 try
                 {
-                    Main.Tick++;
-                    List<Symbol> symbols = Main.Symbols.ToList();
-                    double requests = 0;
-                    foreach (Symbol symbol in symbols)
+                    Main.General.Orders -= (Main.General.Orders / 60);
+                    if (!Main.IsMaxRequests && Main.General.Requests > 900)
                     {
-                        symbol.Exchange.Requests -= (symbol.Exchange.Requests / 60);
-                        requests += symbol.Exchange.Requests;
+                        Main.IsMaxRequests = true;
+                        MaxRequestsAsync();
                     }
-                    Main.Requests = requests;
+                    else if (!Main.IsMaxRequests && Main.General.Orders > 600)
+                    {
+                        Main.IsMaxRequests = true;
+                        MaxOrdersAsync();
+                    }
                 }
                 catch (Exception ex)
                 {
                     Error.WriteLog(path, Main.LoginUser, $"Exception CheckLimitsAsync: {ex?.Message}");
                 }
+            });
+        }
+        private async void MaxOrdersAsync()
+        {
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    List<Symbol>? fullList = Main.Symbols.Where(symbol => symbol.IsTrading == true).ToList();
+                    int count = (fullList.Count / 2);
+                    List<Symbol>? list = fullList.Where((symbol, index) => symbol.IsTrading == true && index < count).ToList();
+                    if (list != null && list.Count > 0)
+                    {
+                        foreach (var item in list)
+                        {
+                            if (item.IsTrading) item.IsTrading = false;
+                        }
+                        string[] symbols = list.Select(item => item.Name).ToArray();
+                        Error.WriteLog(path, Main.LoginUser, $"Orders == {Math.Round(Main.General.Orders)}, stop trading: {string.Join(", ", symbols)}");
+                        while (true)
+                        {
+                            await Task.Delay(30000);
+                            if (Main.General.Orders <= 300) break;
+                        }
+                        Error.WriteLog(path, Main.LoginUser, $"Orders == {Math.Round(Main.General.Orders)}, start trading: {string.Join(", ", symbols)}");
+                        foreach (var item in list)
+                        {
+                            if (!item.IsTrading) item.IsTrading = true;
+                        }
+                    }
+                    Main.IsMaxRequests = false;
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, Main.LoginUser, $"Exception MaxOrdersAsync: {ex?.Message}");
+                }
+
+            });
+        }
+        private async void MaxRequestsAsync()
+        {
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    List<Symbol>? fullList = Main.Symbols.Where(symbol => symbol.IsTrading == true).ToList();
+                    int count = (fullList.Count / 2);
+                    List<Symbol>? list = fullList.Where((symbol, index) => symbol.IsTrading == true && index < count).ToList();
+                    if (list != null && list.Count > 0)
+                    {
+                        foreach (var item in list)
+                        {
+                            if (item.IsTrading) item.IsTrading = false;
+                        }
+                        string[] symbols = list.Select(item => item.Name).ToArray();
+                        Error.WriteLog(path, Main.LoginUser, $"Requests == {Main.General.Requests}, stop trading: {string.Join(", ", symbols)}");
+                        while (true)
+                        {
+                            await Task.Delay(30000);
+                            if (Main.General.Requests <= 500) break;
+                        }
+                        Error.WriteLog(path, Main.LoginUser, $"Requests == {Main.General.Requests}, start trading: {string.Join(", ", symbols)}");
+                        foreach (var item in list)
+                        {
+                            if (!item.IsTrading) item.IsTrading = true;
+                        }
+                    }
+                    Main.IsMaxRequests = false;
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, Main.LoginUser, $"Exception MaxRequestsAsync: {ex?.Message}");
+                }
+
             });
         }
         private async void CheckPingAsync()
@@ -616,8 +693,11 @@ namespace VolumeShot.ViewModels
                         {
                             Error.WriteLog(path, Main.LoginUser, $"Failed CancelOrderAsync: {result.Error?.Message}");
                         }
-                        Symbol? symbol = symbols.FirstOrDefault(s => s.Name == order.Symbol);
-                        if (symbol != null) symbol.Exchange.Requests += 1;
+                        else
+                        {
+                            var weight = BinanceHelpers.UsedWeight(result.ResponseHeaders);
+                            Main.General.Requests = weight;
+                        }
                     }
                 }
             }
@@ -693,6 +773,7 @@ namespace VolumeShot.ViewModels
                         {
                             OnOrderUpdate?.Invoke(onOrderUpdate.Data);
                             AddOrder(onOrderUpdate.Data.UpdateData);
+                            Main.General.Orders += 1;
                             WriteLogOrder(onOrderUpdate.Data.UpdateData);
                         },
                         onListenKeyExpired => { },
@@ -916,7 +997,7 @@ namespace VolumeShot.ViewModels
                                 Config? config = configs.FirstOrDefault(conf => conf.Name == symbol.Name);
                                 if (config != null) volume = config.Volume;
                             }
-                            SymbolViewModel symbolViewModel = new(symbol, volume, socketClient, client, LoginViewModel.Login.SelectedUser.IsTestnet, Main.LoginUser);
+                            SymbolViewModel symbolViewModel = new(Main.General , symbol, volume, socketClient, client, LoginViewModel.Login.SelectedUser.IsTestnet, Main.LoginUser);
                             OnOrderUpdate += symbolViewModel.ExchangeViewModel.OrderUpdate;
                             OnAccountUpdate += symbolViewModel.ExchangeViewModel.AccountUpdate;
                             symbolViewModel.Symbol.PropertyChanged += Symbol_PropertyChanged;

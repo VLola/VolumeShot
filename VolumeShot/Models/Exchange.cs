@@ -6,13 +6,15 @@ namespace VolumeShot.Models
 {
     public class Exchange : Changed
     {
-        public Exchange(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol)
+        public Exchange(BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, General general)
         {
+            General = general;
             Symbol = binanceFuturesUsdtSymbol.Name;
             MinQuantity = binanceFuturesUsdtSymbol.LotSizeFilter.MinQuantity;
             StepSize = binanceFuturesUsdtSymbol.LotSizeFilter.StepSize;
             TickSize = binanceFuturesUsdtSymbol.PriceFilter.TickSize;
         }
+        public General General { get; set; }
         public ObservableCollection<Bet> Bets { get; set; } = new();
         public List<SymbolPrice> OpenBetSymbolPrices { get; set; } = new();
         public List<SymbolPrice> SymbolPrices { get; set; } = new();
@@ -24,16 +26,6 @@ namespace VolumeShot.Models
             {
                 _bet = value;
                 OnPropertyChanged("Bet");
-            }
-        }
-        private double _requests { get; set; }
-        public double Requests
-        {
-            get { return _requests; }
-            set
-            {
-                _requests = value;
-                OnPropertyChanged("Requests");
             }
         }
         private string _loginUser { get; set; } = "null";
