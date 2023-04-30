@@ -1,4 +1,5 @@
 ﻿using Binance.Net.Objects.Models.Futures;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -13,11 +14,14 @@ namespace VolumeShot.Models
             MinQuantity = binanceFuturesUsdtSymbol.LotSizeFilter.MinQuantity;
             StepSize = binanceFuturesUsdtSymbol.LotSizeFilter.StepSize;
             TickSize = binanceFuturesUsdtSymbol.PriceFilter.TickSize;
+            BetHistory = new();
+            Error.BetHistories.Add(BetHistory);
         }
         public General General { get; set; }
         public ObservableCollection<Bet> Bets { get; set; } = new();
         public List<SymbolPrice> OpenBetSymbolPrices { get; set; } = new();
         public List<SymbolPrice> SymbolPrices { get; set; } = new();
+        public BetHistory BetHistory { get; set; } 
         private Bet _bet { get; set; }
         public Bet Bet
         {
@@ -26,6 +30,16 @@ namespace VolumeShot.Models
             {
                 _bet = value;
                 OnPropertyChanged("Bet");
+            }
+        }
+        private decimal _volumeSave { get; set; }
+        public decimal VolumeSave
+        {
+            get { return _volumeSave; }
+            set
+            {
+                _volumeSave = value;
+                OnPropertyChanged("VolumeSave");
             }
         }
         private string _loginUser { get; set; } = "null";

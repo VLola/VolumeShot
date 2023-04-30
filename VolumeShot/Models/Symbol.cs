@@ -29,6 +29,26 @@ namespace VolumeShot.Models
                 }));
             }
         }
+        private RelayCommand? _saveVolumeCommand;
+        public RelayCommand SaveVolumeCommand
+        {
+            get
+            {
+                return _saveVolumeCommand ?? (_saveVolumeCommand = new RelayCommand(obj => {
+                    IsSaveVolume = true;
+                }));
+            }
+        }
+        private bool _isSaveVolume { get; set; }
+        public bool IsSaveVolume
+        {
+            get { return _isSaveVolume; }
+            set
+            {
+                _isSaveVolume = value;
+                OnPropertyChanged("IsSaveVolume");
+            }
+        }
         private string _name { get; set; }
         public string Name
         {

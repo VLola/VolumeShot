@@ -67,6 +67,7 @@
             <Button Content="Clear" Command="{Binding Path=ClearSymbolsCommand}" Padding="5" Margin="10 5"/>
             <TextBlock Text="{Binding Path=Main.Symbols.Count, StringFormat={}Count: {0}}" VerticalAlignment="Center"/>
             <DockPanel HorizontalAlignment="Right">
+                <Button Content="Save all volumes" Command="{Binding Path=SaveAllVolumeCommand}" HorizontalAlignment="Right" Padding="5" Margin="5"/>
                 <Button Content="Run on" Command="{Binding Path=RunOnSymbolsCommand}" HorizontalAlignment="Right" Padding="5" Margin="5"/>
                 <Button Content="Run off" Command="{Binding Path=RunOffSymbolsCommand}" HorizontalAlignment="Right" Padding="5" Margin="5"/>
                 <Button Content="Trading on" Command="{Binding Path=TradingAllSymbolsCommand}" HorizontalAlignment="Right" Padding="5"  Margin="5"/>
@@ -102,6 +103,13 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBox Text="{Binding Path=Volume}" Width="85"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Action" Width="90">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Save volume" Command="{Binding Path=SaveVolumeCommand}" Padding="5 0"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>

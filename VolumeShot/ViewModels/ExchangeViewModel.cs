@@ -4,7 +4,9 @@ using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
 using Binance.Net.Objects.Models.Futures.Socket;
 using Newtonsoft.Json;
+using ScottPlot;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -32,7 +34,7 @@ namespace VolumeShot.ViewModels
         }
         private async void LoadHistoryAsync()
         {
-            await Task.Run(()=>{
+            await Task.Run(async ()=>{
                 try
                 {
                     if (File.Exists(pathHistory + Exchange.LoginUser + "/" + Exchange.Symbol))
@@ -41,9 +43,17 @@ namespace VolumeShot.ViewModels
                         ObservableCollection<Bet>? bets = JsonConvert.DeserializeObject<ObservableCollection<Bet>>(json);
                         if (bets != null && bets.Count > 0)
                         {
-                            foreach (var item in bets)
+                            int i = 0;
+                            foreach (var item in bets.Reverse())
                             {
-                                Exchange.Bets.Add(item);
+                                
+                                Exchange.Bets.Insert(0, item);
+                                if(i > bets.Count - 4)
+                                {
+                                    await ResultBetHistryAsync(item);
+                                    await Task.Delay(100);
+                                }
+                                i++;
                             }
                         }
                     }
@@ -211,6 +221,7 @@ namespace VolumeShot.ViewModels
                     else bet.IsPositive = true;
                     Exchange.Bet = bet;
                     SaveHistoryAsync();
+                    ResultBetHistryAsync(bet);
                 }
                 catch (Exception ex)
                 {
@@ -218,6 +229,38 @@ namespace VolumeShot.ViewModels
                 }
             });
         }
+        private async Task ResultBetHistryAsync(Bet bet)
+        {
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    DateTime startTime = bet.OpenTime.AddSeconds(-20);
+                    IEnumerable<SymbolPrice> buyers = bet.SymbolPrices.Where(price => price != null).Where(price => price.BuyerIsMaker == false && price.DateTime >= startTime);
+                    IEnumerable<SymbolPrice> makers = bet.SymbolPrices.Where(price => price != null).Where(price => price.BuyerIsMaker == true && price.DateTime >= startTime);
+                    if (buyers != null && buyers.Count() > 0 && makers != null && makers.Count() > 0)
+                    {
+                        double[] makersGrouping3Y = makers.GroupBy(b => b.DateTime.ToString("yyyy/MM/dd HH:mm:ss.f")).Select(p => p.Sum(p => Decimal.ToDouble(p.Quantity))).ToArray();
+                        double[] buyersGrouping3Y = buyers.GroupBy(b => b.DateTime.ToString("yyyy/MM/dd HH:mm:ss.f")).Select(p => p.Sum(p => Decimal.ToDouble(p.Quantity))).ToArray();
+
+                        List<double> volume3Y = new();
+                        volume3Y.AddRange(makersGrouping3Y);
+                        volume3Y.AddRange(buyersGrouping3Y);
+                        decimal volume = (decimal)volume3Y.Max();
+                        if (Exchange.BetHistory.History.Count > 2) Exchange.BetHistory.History.RemoveAt(0);
+                        Exchange.BetHistory.History.Add(volume);
+
+                        decimal average = Exchange.BetHistory.History.Sum() / Exchange.BetHistory.History.Count;
+                        Exchange.VolumeSave = Math.Round(average, 0);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, Exchange.Symbol, $"Exception ResultBetHistryAsync: {ex.Message}");
+                }
+            });
+        } 
         private async void SaveHistoryAsync()
         {
             await Task.Run(() =>

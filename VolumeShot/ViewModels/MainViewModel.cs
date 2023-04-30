@@ -105,6 +105,16 @@ namespace VolumeShot.ViewModels
                 }));
             }
         }
+        private RelayCommand? _saveAllVolumeCommand;
+        public RelayCommand SaveAllVolumeCommand
+        {
+            get
+            {
+                return _saveAllVolumeCommand ?? (_saveAllVolumeCommand = new RelayCommand(obj => {
+                    SaveAllVolumeAsync();
+                }));
+            }
+        }
         public MainViewModel()
         {
             Main.Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(2);
@@ -115,7 +125,26 @@ namespace VolumeShot.ViewModels
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             LoginViewModel.Login.PropertyChanged += Login_PropertyChanged;
         }
-
+        private async void SaveAllVolumeAsync()
+        {
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    List<Symbol> symbols = Main.Symbols.ToList();
+                    foreach (var item in symbols)
+                    {
+                        item.IsSaveVolume = true;
+                        await Task.Delay(100);
+                    }
+                    MessageBox.Show("Save ok");
+                }
+                catch (Exception ex)
+                {
+                    Error.WriteLog(path, Main.LoginUser, $"Exception SaveAllVolumeAsync: {ex?.Message}");
+                }
+            });
+        }
         private async void RunOffSymbolsAsync()
         {
             await Task.Run(async () => {

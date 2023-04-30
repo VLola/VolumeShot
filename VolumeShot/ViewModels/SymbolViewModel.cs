@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using VolumeShot.Command;
 using VolumeShot.Models;
 
 namespace VolumeShot.ViewModels
@@ -19,6 +20,8 @@ namespace VolumeShot.ViewModels
         public ExchangeViewModel ExchangeViewModel { get; set; }
         public BinanceClient client { get; set; }
         public BinanceSocketClient socketClient { get; set; }
+
+        
         public SymbolViewModel(General general, BinanceFuturesUsdtSymbol binanceFuturesUsdtSymbol, decimal volume, BinanceSocketClient _socketClient, BinanceClient _client, bool isTestnet, string loginUser) {
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             socketClient = _socketClient;
@@ -40,6 +43,10 @@ namespace VolumeShot.ViewModels
                 {
                     WaitAsync();
                 }
+            }
+            if (e.PropertyName == "VolumeSave")
+            {
+                Symbol.Volume = Symbol.Exchange.VolumeSave;
             }
         }
 
@@ -68,7 +75,7 @@ namespace VolumeShot.ViewModels
         {
             if (e.PropertyName == "Volume")
             {
-                SaveVolumeAsync();
+                //SaveVolumeAsync();
                 if(Symbol.IsRun) Symbol.IsRedistance = true;
             }
             else if (e.PropertyName == "IsRun")
@@ -88,6 +95,10 @@ namespace VolumeShot.ViewModels
                 {
                     ExchangeViewModel.ClosePositionsAsync();
                 }
+            }
+            else if (e.PropertyName == "IsSaveVolume")
+            {
+                SaveVolumeAsync();
             }
         }
 
