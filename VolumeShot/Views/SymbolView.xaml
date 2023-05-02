@@ -35,6 +35,14 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <Style TargetType="Button" x:Key="styleButtonSaveAllVolume" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="IsEnabled" Value="True"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Main.IsSaveAllVolumes}" Value="True">
+                    <Setter Property="IsEnabled" Value="False"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -67,7 +75,7 @@
             <Button Content="Clear" Command="{Binding Path=ClearSymbolsCommand}" Padding="5" Margin="10 5"/>
             <TextBlock Text="{Binding Path=Main.Symbols.Count, StringFormat={}Count: {0}}" VerticalAlignment="Center"/>
             <DockPanel HorizontalAlignment="Right">
-                <Button Content="Save all volumes" Command="{Binding Path=SaveAllVolumeCommand}" HorizontalAlignment="Right" Padding="5" Margin="5"/>
+                <Button Content="Save all volumes" Command="{Binding Path=SaveAllVolumeCommand}" HorizontalAlignment="Right" Padding="5" Margin="5" Style="{StaticResource styleButtonSaveAllVolume}"/>
                 <Button Content="Run on" Command="{Binding Path=RunOnSymbolsCommand}" HorizontalAlignment="Right" Padding="5" Margin="5"/>
                 <Button Content="Run off" Command="{Binding Path=RunOffSymbolsCommand}" HorizontalAlignment="Right" Padding="5" Margin="5"/>
                 <Button Content="Trading on" Command="{Binding Path=TradingAllSymbolsCommand}" HorizontalAlignment="Right" Padding="5"  Margin="5"/>

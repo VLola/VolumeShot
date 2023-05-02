@@ -289,21 +289,21 @@ namespace VolumeShot.ViewModels
                 OpenOrderTakeProfitAsync(PositionSide.Short, OrderSide.Buy, Exchange.TakeProfitShortPrice, quantity);
             }
         }
-        public async Task SetDistances(Method method, decimal distanceUpper, decimal distanceLower, decimal askPrice, decimal bidPrice, decimal bufferUpper, decimal bufferLower, decimal bufferUpperPrice, decimal bufferLowerPrice, decimal volume)
+        public async Task SetDistances(Method method, decimal distanceUpper, decimal distanceLower, decimal price, decimal bufferUpper, decimal bufferLower, decimal bufferUpperPrice, decimal bufferLowerPrice, decimal volume)
         {
             try
             {
                 if (!Exchange.IsOpenLongOrder && !Exchange.IsOpenShortOrder)
                 {
                     Error.WriteLog(path, Exchange.Symbol, $"{method} -> SetDistances");
-                    decimal openQuantity = RoundQuantity(Exchange.Usdt / askPrice);
+                    decimal openQuantity = RoundQuantity(Exchange.Usdt / price);
 
-                    if (openQuantity * askPrice < 10.5m)
+                    if (openQuantity * price < 10.5m)
                     {
                         openQuantity += Exchange.StepSize;
                     }
 
-                    decimal priceDistanceLower = RoundPriceDecimal(bidPrice - (bidPrice / 100 * distanceLower));
+                    decimal priceDistanceLower = RoundPriceDecimal(price - (price / 100 * distanceLower));
                     Exchange.DistanceLowerPrice = priceDistanceLower;
                     Exchange.DistanceLower = distanceLower;
                     Exchange.TakeProfitLong = distanceLower / Exchange.DenominatorTakeProfit;
@@ -311,7 +311,7 @@ namespace VolumeShot.ViewModels
                     Exchange.TakeProfitLongPrice = RoundPriceDecimal(priceDistanceLower + (priceDistanceLower / 100 * distanceLower / Exchange.DenominatorTakeProfit));
                     Exchange.StopLossLongPrice = RoundPriceDecimal(priceDistanceLower - (priceDistanceLower / 100 * distanceLower / Exchange.DenominatorStopLoss));
 
-                    decimal priceDistanceUpper = RoundPriceDecimal(askPrice + (askPrice / 100 * distanceUpper));
+                    decimal priceDistanceUpper = RoundPriceDecimal(price + (price / 100 * distanceUpper));
                     Exchange.DistanceUpperPrice = priceDistanceUpper;
                     Exchange.DistanceUpper = distanceUpper;
                     Exchange.TakeProfitShort = distanceUpper / Exchange.DenominatorTakeProfit;

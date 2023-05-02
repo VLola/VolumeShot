@@ -129,6 +129,7 @@ namespace VolumeShot.ViewModels
         {
             await Task.Run(async () =>
             {
+                Main.IsSaveAllVolumes = true;
                 try
                 {
                     List<Symbol> symbols = Main.Symbols.ToList();
@@ -143,6 +144,7 @@ namespace VolumeShot.ViewModels
                 {
                     Error.WriteLog(path, Main.LoginUser, $"Exception SaveAllVolumeAsync: {ex?.Message}");
                 }
+                Main.IsSaveAllVolumes = false;
             });
         }
         private async void RunOffSymbolsAsync()

@@ -88,7 +88,7 @@ namespace VolumeShot.Models
             {
                 if (value)
                 {
-                    if(IsRun && DistanceLower > 0m && DistanceUpper > 0m && BestAskPrice > 0m && BestBidPrice > 0m)
+                    if(IsRun && DistanceLower > 0m && DistanceUpper > 0m && Price > 0m)
                     {
                         _isTrading = value;
                         OnPropertyChanged("IsTrading");
@@ -182,26 +182,6 @@ namespace VolumeShot.Models
                 OnPropertyChanged("TradeTime");
             }
         }
-        private decimal _bestAskPrice { get; set; }
-        public decimal BestAskPrice
-        {
-            get { return _bestAskPrice; }
-            set
-            {
-                _bestAskPrice = value;
-                OnPropertyChanged("BestAskPrice");
-            }
-        }
-        private decimal _bestBidPrice { get; set; }
-        public decimal BestBidPrice
-        {
-            get { return _bestBidPrice; }
-            set
-            {
-                _bestBidPrice = value;
-                OnPropertyChanged("BestBidPrice");
-            }
-        }
         private DateTime _dateTime { get; set; }
         public DateTime DateTime
         {
@@ -210,26 +190,6 @@ namespace VolumeShot.Models
             {
                 _dateTime = value;
                 OnPropertyChanged("DateTime");
-            }
-        }
-        private decimal _bestAskPriceLast { get; set; }
-        public decimal BestAskPriceLast
-        {
-            get { return _bestAskPriceLast; }
-            set
-            {
-                _bestAskPriceLast = value;
-                OnPropertyChanged("BestAskPriceLast");
-            }
-        }
-        private decimal _bestBidPriceLast { get; set; }
-        public decimal BestBidPriceLast
-        {
-            get { return _bestBidPriceLast; }
-            set
-            {
-                _bestBidPriceLast = value;
-                OnPropertyChanged("BestBidPriceLast");
             }
         }
         private decimal _distanceUpper { get; set; }

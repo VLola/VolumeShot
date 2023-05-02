@@ -144,10 +144,8 @@ namespace VolumeShot.ViewModels
         {
             try
             {
-                Symbol.BestAskPriceLast = Symbol.BestAskPrice;
-                Symbol.BestBidPriceLast = Symbol.BestBidPrice;
-                Symbol.BufferLowerPrice = Symbol.BestBidPriceLast - (Symbol.BestBidPriceLast / 100 * Symbol.BufferLower);
-                Symbol.BufferUpperPrice = Symbol.BestAskPriceLast + (Symbol.BestAskPriceLast / 100 * Symbol.BufferUpper);
+                Symbol.BufferLowerPrice = Symbol.Price - (Symbol.Price / 100 * Symbol.BufferLower);
+                Symbol.BufferUpperPrice = Symbol.Price + (Symbol.Price / 100 * Symbol.BufferUpper);
             }
             catch (Exception ex)
             {
@@ -160,7 +158,7 @@ namespace VolumeShot.ViewModels
             if (Symbol.IsTrading && !Symbol.Exchange.IsWait && !Symbol.Exchange.IsCanceledOrders && !ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder) await ExchangeViewModel.CancelAllOrdersAsync(method);
             await Task.Delay(500);
             ReBuffers();
-            if (Symbol.IsTrading && !Symbol.Exchange.IsWait && !ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder) await ExchangeViewModel.SetDistances(method, distanceUpper: Symbol.DistanceUpper, distanceLower: Symbol.DistanceLower, askPrice: Symbol.BestAskPrice, bidPrice: Symbol.BestBidPrice, bufferUpper: Symbol.BufferUpper, bufferLower: Symbol.BufferLower, bufferUpperPrice: Symbol.BufferUpperPrice, bufferLowerPrice: Symbol.BufferLowerPrice, volume: Symbol.Volume);
+            if (Symbol.IsTrading && !Symbol.Exchange.IsWait && !ExchangeViewModel.Exchange.IsOpenShortOrder && !ExchangeViewModel.Exchange.IsOpenLongOrder) await ExchangeViewModel.SetDistances(method, distanceUpper: Symbol.DistanceUpper, distanceLower: Symbol.DistanceLower, price: Symbol.Price, bufferUpper: Symbol.BufferUpper, bufferLower: Symbol.BufferLower, bufferUpperPrice: Symbol.BufferUpperPrice, bufferLowerPrice: Symbol.BufferLowerPrice, volume: Symbol.Volume);
         }
         private async Task CheckBufferAsync()
         {
@@ -179,7 +177,7 @@ namespace VolumeShot.ViewModels
                         Symbol.IsRedistance = false;
                         await ReDistanceAsync(Method.ReDistanceAsync1);
                     }
-                    else if (Symbol.BufferLowerPrice >= Symbol.BestAskPrice || Symbol.BufferUpperPrice <= Symbol.BestBidPrice)
+                    else if (Symbol.BufferLowerPrice >= Symbol.Price || Symbol.BufferUpperPrice <= Symbol.Price)
                     {
                         await ReDistanceAsync(Method.ReDistanceAsync2);
                     }
@@ -191,7 +189,6 @@ namespace VolumeShot.ViewModels
             try
             {
                 await SubscribeToAggregatedTradeUpdatesAsync();
-                await SubscribeToBookTickerUpdatesAsync();
                 await GetOrderBookAsync();
                 await SubscribeToOrderBookUpdatesAsync();
             }
@@ -239,36 +236,6 @@ namespace VolumeShot.ViewModels
                 {
                     Symbol.IsRun = false;
                     Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToAggregatedTradeUpdatesAsync: {result.Error?.Message}");
-                }
-                else socketId = result.Data.Id;
-            });
-        }
-        private async Task SubscribeToBookTickerUpdatesAsync()
-        {
-            await Task.Run(async () =>
-            {
-                int socketId = 0;
-                var result = await socketClient.UsdFuturesStreams.SubscribeToBookTickerUpdatesAsync(Symbol.Name, Message =>
-                {
-                    try
-                    {
-                        if (!Symbol.IsRun)
-                        {
-                            socketClient.UnsubscribeAsync(socketId);
-                        }
-                        Symbol.BestAskPrice = Message.Data.BestAskPrice;
-                        Symbol.BestBidPrice = Message.Data.BestBidPrice;
-                        
-                    }
-                    catch (Exception ex)
-                    {
-                        Error.WriteLog(path, Symbol.Name, $"Exception SubscribeToBookTickerUpdatesAsync: {ex.Message}");
-                    }
-                });
-                if (!result.Success)
-                {
-                    Symbol.IsRun = false; 
-                    Error.WriteLog(path, Symbol.Name, $"Failed SubscribeToBookTickerUpdatesAsync: {result.Error?.Message}");
                 }
                 else socketId = result.Data.Id;
             });

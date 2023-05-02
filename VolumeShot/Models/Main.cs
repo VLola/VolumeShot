@@ -91,6 +91,16 @@ namespace VolumeShot.Models
                 OnPropertyChanged("MinVolume");
             }
         }
+        private bool _isSaveAllVolumes { get; set; }
+        public bool IsSaveAllVolumes
+        {
+            get { return _isSaveAllVolumes; }
+            set
+            {
+                _isSaveAllVolumes = value;
+                OnPropertyChanged("IsSaveAllVolumes");
+            }
+        }
         private bool _isAddList { get; set; }
         public bool IsAddList
         {
