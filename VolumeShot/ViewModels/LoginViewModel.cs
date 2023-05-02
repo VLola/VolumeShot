@@ -118,6 +118,8 @@ namespace VolumeShot.ViewModels
                     if (CheckLogin())
                     {
                         Login.IsLogin = true;
+                        MessageBox.Show("Login binance succes!");
+
                     }
                     else
                     {
